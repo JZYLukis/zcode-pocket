@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式批2-3（ADR 0035，dark-mode-plan §2 批2-3）：夜间启动主题
+         受控化——原为模板残留 Theme.Black + 白色 launch_background 组合，
+         实测纯黑启动窗（mean 0.2）与深色首帧（#161616）存在色阶断层。
+         现窗口底/状态栏统一 #161616，启动→首帧无缝。浅色侧
+         values/styles.xml 不动=零回归。 -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:statusBarColor">#FF161616</item>
+        <item name="android:navigationBarColor">#FF161616</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:statusBarColor">#FF161616</item>
+        <item name="android:navigationBarColor">#FF161616</item>
+    </style>
+</resources>

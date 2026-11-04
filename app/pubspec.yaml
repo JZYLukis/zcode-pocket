@@ -1,0 +1,48 @@
+name: zcode_pocket
+description: "ZCode 桌面端的安卓原生客户端（连接官方 Web 远控通道）。"
+publish_to: 'none'
+
+version: 1.0.0+2026110501
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  web_socket_channel: ^3.0.0
+  crypto: ^3.0.0
+  flutter_svg: ^2.0.10+1
+  flutter_secure_storage: ^10.0.0 # 钉 10.x：11 改加密参数需真机迁移验证后再升
+  mobile_scanner: ^7.4.0
+  webview_flutter: ^4.13.0 # V2 登录（ADR 0032）：官方 OAuth 页取 zcodejwttoken
+  flutter_markdown_plus: ^1.0.12 # 原 flutter_markdown 已停更；此为其官方推荐续作（API 兼容，2026-11-04 换）
+  path_provider: ^2.1.5
+  flutter_local_notifications: ^22.3.2
+  file_picker: ^13.1.0
+  # 语音识别走系统 SpeechRecognizer（零第三方语音依赖），识别语言随
+  # 界面语言；依赖升级前必须重跑 notify+cache+语音三哨兵套件。
+  permission_handler: 12.0.0
+  highlight: ^0.7.0
+  markdown: ^7.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # 测试缝用（FakeSecureStorage 覆写需要 options 类型；随 flutter_secure_storage 传递）
+  flutter_secure_storage_platform_interface: ^2.1.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/brand_logos/
+    # 关于页（2026-11-04）：项目许可与第三方声明随包分发、应用内可读
+    - LICENSE
+    - THIRD-PARTY-NOTICES.md
+    - NOTICE-ZCode.md

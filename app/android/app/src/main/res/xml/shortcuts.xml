@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 长按图标快捷入口（阶段 6.6①，ADR 0061）：静态 shortcuts（API 25+，
+     minSdk 24 的 7.0 机型自动忽略）。动作经 extra 传入 MainActivity，
+     冷启动走 getLaunchArgs 拉取、热启动走 onNewIntent 原生→Dart 推送。 -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="new_task"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_new"
+        android:shortcutShortLabel="@string/shortcut_new_task"
+        android:shortcutLongLabel="@string/shortcut_new_task">
+        <intent
+            android:action="dev.zcodeapp.zcode_companion.action.SHORTCUT"
+            android:targetPackage="dev.zcodeapp.zcode_companion"
+            android:targetClass="dev.zcodeapp.zcode_companion.MainActivity">
+            <extra android:name="shortcut_action" android:value="new_task"/>
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="last_session"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_recent"
+        android:shortcutShortLabel="@string/shortcut_last_session"
+        android:shortcutLongLabel="@string/shortcut_last_session">
+        <intent
+            android:action="dev.zcodeapp.zcode_companion.action.SHORTCUT"
+            android:targetPackage="dev.zcodeapp.zcode_companion"
+            android:targetClass="dev.zcodeapp.zcode_companion.MainActivity">
+            <extra android:name="shortcut_action" android:value="last_session"/>
+        </intent>
+    </shortcut>
+</shortcuts>
