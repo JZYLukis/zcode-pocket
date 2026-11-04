@@ -35,6 +35,11 @@ ZCode 桌面端的安卓原生客户端（Flutter）：把桌面端的多电脑�
 - 一个可登录的 ZCode 账号，且桌面端（或云端会话）在运行
 - 屏幕逻辑宽度 320dp–840dp（竖屏为唯一主方向）
 
+## 安装
+
+从 [Releases](https://github.com/JZYLukis/zcode-pocket/releases) 下载预编译 APK
+（多数手机选 `arm64-v8a`），或按下方说明从源码构建。
+
 ## 构建
 
 ```bash

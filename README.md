@@ -50,6 +50,11 @@ ZCode account and a running desktop.
   session)
 - Logical screen width 320dp–840dp (portrait is the only main orientation)
 
+## Installation
+
+Grab a prebuilt APK from [Releases](https://github.com/JZYLukis/zcode-pocket/releases)
+(most phones: `arm64-v8a`) — or build from source below.
+
 ## Build
 
 ```bash
