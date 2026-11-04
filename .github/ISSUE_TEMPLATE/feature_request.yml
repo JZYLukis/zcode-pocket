@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea for a new capability or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What do you want to be able to do? （希望实现什么）
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does this solve for you?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional details (optional)
