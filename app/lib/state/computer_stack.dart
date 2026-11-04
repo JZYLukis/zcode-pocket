@@ -148,7 +148,7 @@ class ComputerStack extends ChangeNotifier {
   /// resume 见 _client 未清而空转，栈被留在悬挂态无人恢复）。
   Future<void>? _suspendInFlight;
 
-  /// controller/tasks-index 订阅（ADR 0031：跨工作区搜索数据源+任务
+  /// controller/tasks-index 订阅（：跨工作区搜索数据源+任务
   /// 实时标志增量的官方继任通道；随 bridge 生命周期，si dormant 不影响）。
   List<Map<String, dynamic>> get workspaces => _workspaceController.workspaces;
   set workspaces(List<Map<String, dynamic>> value) =>
@@ -334,7 +334,7 @@ class ComputerStack extends ChangeNotifier {
 
   void _onTaskListChangedForCache() => _scheduleDeviceCacheWrite();
 
-  /// 预渲 si 条目 running 清洗（开源审查 J3 P3-6）：si 原始条目 phase 可
+  /// 预渲 si 条目 running 清洗（ J3 P3-6）：si 原始条目 phase 可
   /// 能是 running（缓存落盘于回合进行中）——两路任务行（workspaceTasks/
   /// channelActive）已有 sanitize，sessions 这一路此前原样进预渲，dormant
   /// 模型把已结束回合渲染成"运行中"。落盘保留原值（真实数据到达自然
@@ -373,7 +373,7 @@ class ComputerStack extends ChangeNotifier {
   /// 连续多次写同内容。内容未变不落盘。
   String? _lastDeviceCacheContentJson;
 
-  /// 设备写串行链（review-fix-1 A8/B-2）：防抖定时器写与 flush 直呼
+  /// 设备写串行链（ A8/B-2）：防抖定时器写与 flush 直呼
   /// 并发时 tmp+rename 落序无保证——链式排队后终态恒为最后发起的内容。
   Future<void> _deviceWriteChain = Future<void>.value();
 
@@ -396,7 +396,7 @@ class ComputerStack extends ChangeNotifier {
       deletedIds: model.deletedIdsForCache,
       savedAt: DateTime.now().millisecondsSinceEpoch,
     );
-    // encode 包裹（review-fix-1 B-1）：jsonEncode 已从 store 的吞错圈移
+    // encode 包裹（ B-1）：jsonEncode 已从 store 的吞错圈移
     // 出——未来塞入不可编码值不得把 flush/suspend 炸成半关态。
     String contentJson;
     try {
@@ -460,7 +460,7 @@ class ComputerStack extends ChangeNotifier {
     // 真实 bootstrap/订阅到达后按既有路径整体覆盖。
     unawaited(_loadDeviceCache());
     final client = switch (profile) {
-      // 双栈选栈（ADR 0032）：V1=pass_hash 档案；V2=账号档案（JWT 经
+      // 双栈选栈：V1=pass_hash 档案；V2=账号档案（JWT 经
       // AccountStore 注入；缺 provider=测试环境 → auth-required 降级）。
       RelayProfile p => CompanionClient(p.params, onLog: _log),
       AccountV2Profile p => CompanionClient.v2(
@@ -537,7 +537,7 @@ class ComputerStack extends ChangeNotifier {
   Future<void> switchWorkspace(Map<String, dynamic> workspace) =>
       _workspaceController.switchWorkspace(workspace);
 
-  /// 切换项目（ADR 0033 工作区列表修复）：3.16 workspace-list=当前窗口
+  /// 切换项目（ 工作区列表修复）：3.16 workspace-list=当前窗口
   /// tabs，项目全集在 project.readTree；未开 tab 的项目走
   /// workspace-bridge-open 的 project intent（桌面现场 prepareProjectWorkspace）。
   /// 请求 workspaceKey 为主根目录占位（官方 web 同款语义），真实工作区以
@@ -552,7 +552,7 @@ class ComputerStack extends ChangeNotifier {
   /// 机制复用——readTree 重拉不覆盖。
   void switchToConversations() => _workspaceController.switchToConversations();
 
-  /// A5（parity-fix-1）：查看态上报（官方 mobileTaskView 逐次变化上报、
+  /// A5：查看态上报（官方 mobileTaskView 逐次变化上报、
   /// Home/后台立即取消，task-realtime-sync.ts:225 对位）——桌面据此抑
   /// 未读。开桥时已发一次；此处补"打开任务=带 activeTaskId、退后台/
   /// 回主页=不带"两态。失败静默（best-effort）。
@@ -622,7 +622,7 @@ class ComputerStack extends ChangeNotifier {
   /// 缓存预渲都会重建 TaskListModel，监听者须跟随重挂）。
   void Function(TaskListModel? model)? onTaskListRebuilt;
 
-  /// 任务移动归属（docs/move-task-plan.md，官方 project.moveTask：
+  /// 任务移动归属（官方 project.moveTask：
   /// contract.ts:42-47）。[task] 为 readTree 任务行（workspacePath/
   /// workspaceIdentity?/taskId/hostId 齐备）。目标目录不在项目 roots 时
   /// 服务端抛 `project.root-confirmation-required`——调用方弹确认后带
@@ -642,7 +642,7 @@ class ComputerStack extends ChangeNotifier {
   Map<String, dynamic>? projectForKey(String key) =>
       _taskCatalog.projectForKey(key);
 
-  // ---------------------------------------- controller/tasks-index（ADR 0031）
+  // ---------------------------------------- controller/tasks-index
 
   /// 拉取 zcodeTask 任务索引三列表（listTasks/listPinnedTasks/listArchivedTasks，
   /// 官方 windowHostControllerService.readSourceTaskIndex 同款成员关系语义）。
@@ -698,7 +698,7 @@ class ComputerStack extends ChangeNotifier {
       _taskCatalog.markTaskUnread(taskId, unread: unread);
 
   /// 下拉刷新：重拉 workspace-list（sessions-index 本身是实时订阅）+
-  /// 项目全集（ADR 0033）。
+  /// 项目全集。
   Future<void> refreshWorkspaces() => _workspaceController.refreshWorkspaces();
 
   // ---------------------------------------------------------- conversation
@@ -730,7 +730,7 @@ class ComputerStack extends ChangeNotifier {
   /// 切电脑场景桥仍活，重试即恢复（比 HEAD 的静默泄漏订阅更自愈）；
   /// 关栈场景 transport 已空，重试抛「no active workspace」给页面
   /// 错误态（可重开）。交付即死（防御分支）同样重试。
-  /// 识别走专用异常类型（开源审查 I1 P3-7/I3 P3-2）：此前按错误文案
+  //识别走专用异常类型：此前按错误文案
   /// 子串匹配，文案改动/本地化会静默失去这层自愈。
   Future<ConversationSubscription> ensureConversation(String sessionId) async {
     ConversationSubscription sub;
@@ -793,7 +793,7 @@ class ComputerStack extends ChangeNotifier {
   /// 后台驻留会话明细订阅（电量优化批 #16，2026-10-31）：保活分支
   /// （审批提醒开）退后台时 relay/bridge/si/tasks-index 全活——桌面活跃
   /// 会话的流式帧持续唤醒无线电是后台耗电主因（真机实证 660mAh/h，见
-  /// docs/battery-measure.md 2026-10-30 节）。驻留=协议层退订全部会话
+  /// 2026-10-30 节）。驻留=协议层退订全部会话
   /// 订阅但保留对象与状态（打开中的会话页引用继续有效），si+tasks-index
   /// 保留（通知数据源）。回前台 ensureConversation 惰性恢复（增量续订，
   /// 服务端只补 delta）。FGS 保活下预期 -250~400 mAh/h。

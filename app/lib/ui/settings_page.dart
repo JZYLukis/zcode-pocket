@@ -13,7 +13,7 @@ import 'settings_voice_page.dart';
 import 'subagents_page.dart';
 import 'usage_page.dart';
 
-/// 设置页（ADR 0028 二级化改造，2026-10-20）：一级页只留分组入口——
+/// 设置页（ 二级化改造，2026-10-20）：一级页只留分组入口——
 /// 偏好组（对话/通知/语音输入三入口进二级页）+ 功能组（子智能体/订阅
 /// 用量维持原直达跳转）+ 关于组（版本信息内联底部）。各设置项的显示
 /// 文案/存储 key/控件行为原样迁入对应二级页，不新增语义。分组头统一用
@@ -222,11 +222,11 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-/// 三档段选器（开源审查 M1 P3-13/M2 P3-5 收敛单源：语言/主题两份逐行
+//三档段选器（/ 收敛单源：语言/主题两份逐行
 /// 同构实现——触控规格/视觉调整需双改，历史上触控高 46→48 修正两处各
 /// 记一遍）。自绘 token 化（官方黑白骨架语言：选中=selected 底+
 /// foreground 字，未选=transparent 底+foregroundSubtle 字；48dp 触控高；
-/// 胶囊外形）。交互范式参考 zemote 三段式（ADR 0013 纪律：只参考设计
+/// 胶囊外形）。交互范式参考 zemote 三段式（ 纪律：只参考设计
 /// 不移植代码）。
 class _SegmentSelector extends StatelessWidget {
   const _SegmentSelector({
@@ -298,7 +298,7 @@ class _SegmentSelector extends StatelessWidget {
 }
 
 /// 关于行副标题：本机版本（release 含 HEAD 指纹）+ 桌面端版本。
-/// B27（parity-fix-1）：官方快照 channel 读包管理器，测试环境回落静态文案。
+/// B27：官方快照 channel 读包管理器，测试环境回落静态文案。
 class _AppVersionText extends StatefulWidget {
   const _AppVersionText();
 
@@ -315,7 +315,7 @@ class _AppVersionTextState extends State<_AppVersionText> {
     const MethodChannel('companion/appinfo')
         .invokeMethod<Map>('get')
         .then((res) {
-          // 开源审查 M3 P3-12：缺键/非字符串时显式判 null（原实现
+          // 缺键/非字符串时显式判 null（原实现
           // '${res['versionName']}' 会把 null 插值成 "null" 字符串通过
           // 非空校验；当前 native 恒填，纯防御）。
           final raw = res?['versionName'];

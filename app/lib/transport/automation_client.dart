@@ -6,7 +6,7 @@ import 'companion_client.dart';
 /// 字段对照官方 ZCodeAutomation（automation-types.ts:65-101 + rowToAutomation
 /// automationRepo.ts:114-149）。注意：顶层 model/provider/thoughtLevel 是
 /// sqlite 旧列、返回恒缺席——模型信息一律走 modelSelection（2026-10-19
-/// 官方语义仲裁，ADR 0023 批）。
+/// 官方语义仲裁， 批）。
 class AutomationEntry {
   final String automationId;
   final String title;
@@ -51,7 +51,7 @@ class AutomationEntry {
       cronExpr = '${raw['cronExpr'] ?? ''}',
       mode = '${raw['mode'] ?? ''}',
       recurring = raw['recurring'] == true,
-      // 开源审查 H2-P3-8：畸形行（字段非 Map）此前硬 cast 抛 TypeError
+      // H2-P3-8：畸形行（字段非 Map）此前硬 cast 抛 TypeError
       // 炸整个列表——改 is Map 判定式取值（与其余字段的宽松解析一致）。
       scheduleRule = raw['scheduleRule'] is Map
           ? (raw['scheduleRule'] as Map).cast<String, dynamic>()
@@ -111,7 +111,7 @@ class AutomationEntry {
   /// 优先 scheduleRule（调度权威），缺省解析 cronExpr（automationCardSchedule
   /// 同款：scheduleRule 优先、cron 兜底）。
   String scheduleLabel() {
-    // 开源审查 H2-P2-2（官方 automationCardSchedule.ts:30-35 对位）：相对
+    // H2-P2-2（官方 automationCardSchedule.ts:30-35 对位）：相对
     // 时间一次性任务（"4 分钟后提醒"）被存成 minute scheduleRule 只是
     // 兼容展示形态，跑一次即结束——recurring=false 且 maxRuns<=1 统一
     // 显示「自定义」，防误读成"每 N 分钟"循环。
@@ -155,7 +155,7 @@ class AutomationEntry {
                   .where((s) => s.isNotEmpty)
                   .join('、'))
             : '';
-        // 开源审查 H1-P3-06：interval==1 特例（daily/hourly/minute 均有，
+        // H1-P3-06：interval==1 特例（daily/hourly/minute 均有，
         // weekly/monthly 此前缺——「每 1 周 周一」观感，官方口径「每周一」）。
         final prefix = interval == 1 ? '每周' : '每 $interval 周';
         return '$prefix${dayLabel.isEmpty ? '' : ' $dayLabel'}';
@@ -253,7 +253,7 @@ class AutomationClient {
         if (endAt != null) 'endAt': endAt,
         // modelSelection 官方 strict（model-selection.ts:4-17）：providerId/
         // modelId 均 min1——空串会被 zod 拒（toSmall）；无选型整体省略
-        // （可选项）。旧 provider/model/thoughtLevel 拼写会被剥离（M4 审计
+        // （可选项）。旧 provider/model/thoughtLevel 拼写会被剥离（
         // + 2026-10-19 仲裁修正）。
         if (provider.isNotEmpty && model.isNotEmpty)
           'modelSelection': {

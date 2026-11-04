@@ -68,7 +68,7 @@ class TaskListModel extends ChangeNotifier {
 
   /// 缓存预渲模型（_seedCachePreview 构建）：数据是上次落盘的陈旧快照。
   /// 通知差分禁止以它建基线或消费对账水位——陈旧 running 基线会在 live
-  /// 重放时误报"完成"，预渲还会提前吃掉断连对账水位（盲审发现1）。
+  /// 重放时误报"完成"，预渲还会提前吃掉断连对账水位（发现1）。
   final bool cachePreview;
   final SessionsIndexState sessions;
   final String workspaceKey;
@@ -205,7 +205,7 @@ class TaskListModel extends ChangeNotifier {
           changed = true;
         }
       }
-      // 内容无差异的已知 id 跳过（开源审查 J1-6/J2 P3-4，电量同源半项）：
+      // 内容无差异的已知 id 跳过（ J1-6/J2 P3-4，电量同源半项）：
       // tasks-index 活跃期约 5s 一推、行内容多数一致——恒 changed=true 会
       // 让每次推送都全量 merge+sort+notify+缓存写防抖重挂（磁盘侧指纹
       // 去重只兜住写盘，UI 重建链路纯浪费）。mapEquals 对标量字段（String/
@@ -235,7 +235,7 @@ class TaskListModel extends ChangeNotifier {
     _rebuild();
   }
 
-  /// 批量本地移除（开源审查 J2 P3-3）：remote 重连换代/投影重建时
+  /// 批量本地移除（ J2 P3-3）：remote 重连换代/投影重建时
   /// removedIds 成批到达——逐 id 调 markRemovedLocally 会触发 N 次全量
   /// merge+sort+notify（每次又重挂缓存写防抖）。循环只写墓碑，收尾一次
   /// 重建。
@@ -273,7 +273,7 @@ class TaskListModel extends ChangeNotifier {
 
   void _rebuild() {
     if (sessions.ready || dormant) {
-      // 过期清理与 keys 迭代分离（开源审查 J1-1/J2 P1-1/J3 P1-1 三路）：
+      // 过期清理与 keys 迭代分离（ J1-1/J2 P1-1/J3 P1-1 三路）：
       // 原实现把 remove 放进 .where 谓词——Map.keys 是惰性活视图，迭代
       // 中改 map 必抛 ConcurrentModificationError（单条过期也炸），归档/
       // 删除任务 60s 后的下一次 rebuild 必现；notifyListeners 逐监听器
@@ -334,7 +334,7 @@ List<TaskCardData> mergeTaskSources({
     final title = (s != null && s.title.trim().isNotEmpty)
         ? s.title
         : ('${task?['title'] ?? ''}');
-    // 守卫（开源审查 J3-P2-2）：同 task_catalog 排序器同族——畸形行
+    // 守卫（ J3-P2-2）：同 task_catalog 排序器同族——畸形行
     // 硬转换会沿 notifyListeners 上抛，改安全读取按 0 兜底。
     final activity = s != null && s.lastActivityAt > 0
         ? s.lastActivityAt
@@ -356,7 +356,7 @@ List<TaskCardData> mergeTaskSources({
           : (prev?.lastActivityAt ?? activity),
       createdAt: created > 0 ? created : (prev?.createdAt ?? 0),
       pinned: pinnedIds.contains(id) || (prev?.pinned ?? false),
-      // hasBackgroundWork 兜底链补 task 行（开源审查 J1-8）：行映射特意
+      // hasBackgroundWork 兜底链补 task 行（ J1-8）：行映射特意
       // 携带 activity.hasBackgroundWork，但 channel-task-only 的历史卡在
       // merge 层永远读不到（恒 false）——taskHomeCardRow 兜底行丢后台
       // 工作标志。
@@ -384,7 +384,7 @@ List<TaskCardData> mergeTaskSources({
   return list;
 }
 
-/// controller/tasks-index 行 → workspace-list 任务条目形状（ADR 0031：
+/// controller/tasks-index 行 → workspace-list 任务条目形状（：
 /// 官方 3.16 删 workspace-list tasks[] 后，跨工作区搜索/实时标志增量的
 /// 数据源迁 controller 主题；行映射回 legacy 形状，既有消费方
 /// _CrossTaskCard/filterCrossWorkspaceTasks/applyWorkspaceListTasks 零改动）。
@@ -473,7 +473,7 @@ List<Map<String, dynamic>> filterCrossWorkspaceTasks({
 /// 官方 listTaskList 全文命中拆分（纯函数）：按工作区归属把命中分成
 /// 当前工作区 taskId 集合（页面据此把"正文命中、标题/预览没命中"的
 /// 本地卡片提为可见）与其他工作区任务行（跨区卡片直用，官方
-/// workspaceIdentity ?? workspacePath 同 key 语义，protocol-notes §2.1）。
+/// workspaceIdentity ?? workspacePath 同 key 语义）。
 ({Set<String> currentIds, List<Map<String, dynamic>> crossHits})
 splitSearchHitsByWorkspace({
   required List<Map<String, dynamic>> hits,

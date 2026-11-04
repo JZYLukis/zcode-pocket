@@ -135,7 +135,7 @@ void main() {
   group('relay 自愈（T1：网络中断→恢复，relay 必须自己连回来）', () {
     test('服务器关闭→重启同端口+桌面上线 → client 回 paired', () async {
       final fake = FakeRelayV2();
-      // 开源审查 R1-P2-4/R2-P2-2：固定端口 bind 冲突即整文件环境性红——
+      // P2-4/R2-P2-2：固定端口 bind 冲突即整文件环境性红——
       // 首绑走 port: 0 内核分配；"同端口重启"语义保留（重启复用同一
       // 分配端口，客户端端点不变、自愈不换端点）。
       await fake.start();
@@ -466,7 +466,7 @@ void main() {
     });
   });
 
-  // 开源审查 H1-P1-01：_attachStack 的旧 bridgeSessionId 在 _swap 之后才
+  // H1-P1-01：_attachStack 的旧 bridgeSessionId 在 _swap 之后才
   // 读——swap 后 session._bridge 已是新桥，oldId 恒等于新 id，remove 永不
   // 生效。后果：每次桥重开泄漏一个 router 条目（指向已 dispose 的旧
   // transport），迟到旧帧（relay 对旧帧有重投/乱序语义）会打进已 close

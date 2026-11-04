@@ -6,7 +6,7 @@ import '../core/theme.dart';
 import '../state/app_state_scope.dart';
 import '../state/notify_core.dart' show LedgerEntry;
 
-/// 通知台账页（阶段 3 第二段）："零漏发"以台账核对判定（ADR 0018 决策
+/// 通知台账页（阶段 3 第二段）："零漏发"以台账核对判定（ 决策
 /// 2/6）——每条差分事件的处置结果（已发/首见抑制/去重/静音/聚合）逐行
 /// 落盘，真用期对照通知栏核对。支持一键复制文本（发给 AI 排查用）。
 class NotifyLedgerPage extends StatelessWidget {
@@ -27,7 +27,7 @@ class NotifyLedgerPage extends StatelessWidget {
     'muted': '通道静音',
     'viewing': '查看中未打扰',
     'aggregated': '并入聚合',
-    // ADR 0029 对账补发收敛：超阈值单条只落台账不逐条弹通知。
+    // 对账补发收敛：超阈值单条只落台账不逐条弹通知。
     'converged': '补发收敛未弹',
     'noChannel': '通知不可用',
   };

@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// 备份策略静态断言（H02，ADR 0046）：allowBackup 未显式声明时安卓默认
+/// 备份策略静态断言（H02）：allowBackup 未显式声明时安卓默认
 /// 开启自动备份——应用目录的会话缓存/通知台账为明文 JSON，会进系统云
 /// 备份/换机迁移。本断言防模板或依赖清单合并把该声明改回默认。
 ///
-/// 前台服务类型断言（开源前审查 Q1 P2-1 / Q2 P1-1）：审批提醒保活服务
+/// 前台服务类型断言（开源前审查 / ）：审批提醒保活服务
 /// 必须用 specialUse 型——dataSync 型在 Android 14+ 有每 24h 累计 6h
 /// 运行硬限（Android 15+ 超限后 startForeground 直接失败），过夜保活
 /// 确定性失效；且超时路径须有 onTimeout 优雅收尾防

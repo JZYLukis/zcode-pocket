@@ -65,7 +65,7 @@ class NotifyCoordinator {
   static int _defaultNow() => DateTime.now().millisecondsSinceEpoch;
 
   /// 挂接一个栈（AppState 建栈时调用；重复挂接幂等）。
-  /// review-fix-1（A4）：已 dispose 的幽灵栈不得挡住新栈重挂——换账号
+  /// ：已 dispose 的幽灵栈不得挡住新栈重挂——换账号
   /// 重连/auth-required 等拆栈路径不 detach 时，旧 map 条目会让新栈的
   /// 通知静默永久失效（attachStack 被 containsKey 短路）。
   void attachStack(ComputerStack stack) {
@@ -98,7 +98,7 @@ class NotifyCoordinator {
     _removers.remove(deviceSid)?.call();
     if (model != null) {
       // live 模型换代（relay 闪断重连/si 重订阅/复活）而栈没经过
-      // suspend——换代前后的数据缺口无人对账会静默丢事件（盲审发现6）。
+      // suspend——换代前后的数据缺口无人对账会静默丢事件（发现6）。
       // 以旧模型最后活帧时间为水位做 mini 对账；suspend 路径已有更准的
       // 水位（onSuspended），不覆盖。
       if (prev != null &&
@@ -163,8 +163,8 @@ class NotifyCoordinator {
   }
 
   /// si 原始 phase 归一化（si 官方只发六值域，但任务索引词汇
-  /// completed/failed 一旦漏进来也不至于判不中终态——盲审发现14）。
-  /// 开源审查 H2-P3-10：补 'cancelled'（对齐 task_list.normalizePhase
+  /// completed/failed 一旦漏进来也不至于判不中终态——发现14）。
+  /// H2-P3-10：补 'cancelled'（对齐 task_list.normalizePhase
   /// 词表——两词表不一致会让同一条 si 行在 upsert 与 cards 两路径产出
   /// 不同 phase，基线双值翻转产生多余基线写与无谓 diff）。
   static String _normalizePhase(String raw) {
@@ -183,7 +183,7 @@ class NotifyCoordinator {
   void _onCards(String deviceSid, TaskListModel model) {
     if (model.cachePreview) {
       // 预渲=陈旧快照：不建基线（stale running 会在 live 重放误报完成）、
-      // 不消费水位（盲审发现1）。等 live 模型/快照。
+      // 不消费水位（发现1）。等 live 模型/快照。
       return;
     }
     // 聚合快照路径职责：①对账（水位后的全量重放对账）；②基线与列表现实
@@ -193,7 +193,7 @@ class NotifyCoordinator {
     final cards = model.cards;
     if (cards.isEmpty) {
       // si 未重放（新建模型首帧空列表）：对账等待；非对账时空卡是
-      // 瞬态（快照未到），清基线会造成窗口内事件丢失（盲审发现11）。
+      // 瞬态（快照未到），清基线会造成窗口内事件丢失（发现11）。
       // 冷启动标记也不消费——等真正的快照。
       return;
     }
@@ -220,7 +220,7 @@ class NotifyCoordinator {
     if (sinceMs != null) {
       // 对账模式：事件进聚合缓冲（跨设备汇总后一条聚合+高优先级单发），
       // 同步收敛基线（空事件也要写——断连期间新建的任务才能进基线，
-      // 否则其后续完成被首见吞掉，盲审发现5）。窗口内逐条路径已并入的
+      // 否则其后续完成被首见吞掉，发现5）。窗口内逐条路径已并入的
       // 事件合并而非覆盖。
       _pendingReconcile.remove(deviceSid);
       if (result.events.isNotEmpty) {
@@ -229,7 +229,7 @@ class NotifyCoordinator {
         _reconcileTimer?.cancel();
         _reconcileTimer = Timer(_reconcileWindow, _flushReconcile);
       }
-      // 开源审查 H2-P2-1：merge 而非整体替换——current 只是当前工作区
+      // H2-P2-1：merge 而非整体替换——current 只是当前工作区
       // cards 的快照，整体替换会清零其他工作区任务基线。
       store.replaceBaselines(
         deviceSid,
@@ -238,7 +238,7 @@ class NotifyCoordinator {
       return;
     }
     // 非对账：只收敛基线（常规事件由 _onUpsert 逐条产出）。merge 保留
-    // 其他工作区条目（开源审查 H2-P2-1，语义见 mergeBaselines 注释）。
+    // 其他工作区条目（ H2-P2-1，语义见 mergeBaselines 注释）。
     store.replaceBaselines(
       deviceSid,
       mergeBaselines(baselines, result.nextBaselines),
@@ -303,7 +303,7 @@ class NotifyCoordinator {
     if (plan.aggregated != null) {
       _dispatch(plan.aggregated!);
     }
-    // 开源审查批B组5（H1 P1-02/H2 P1-2）：审批豁免收敛——"等审批不能
+    // （H1 P1-02/H2 P1-2）：审批豁免收敛——"等审批不能
     // 埋没"是 ReconcilePlan.singles 的字段契约（notify_core.dart:63），
     // 且收敛后基线已含该 interactionId、第二道闸不在册，该审批提醒会
     // 永久丢失。审批恒逐条发；收敛策略只作用于其余 singles。
@@ -316,7 +316,7 @@ class NotifyCoordinator {
     final rest = plan.singles
         .where((e) => e.kind != NotifyEventKind.approvalPending)
         .toList();
-    // 补发收敛（ADR 0029 决策 2）：singles 超阈值只发上面那条聚合，
+    // 补发收敛（ 决策 2）：singles 超阈值只发上面那条聚合，
     // 不再逐条 post（"重连一次爆一屏"是通知栏折叠区堆积主因之二）。
     // 台账照常全量记录（outcome=converged），信息不丢、核对口径不变。
     if (shouldConvergeSingles(rest.length)) {
@@ -387,7 +387,7 @@ class NotifyCoordinator {
   }
 
   /// 事件 detail 里没带 interactionId——差分产事件时只有 kind。语义去重
-  /// 需要回查当前快照：取该任务当前 pending 的 interactionId。开源审查
+  /// 需要回查当前快照：取该任务当前 pending 的 interactionId。
   /// H1-P3-03：回查同样过 [_normalizeInteractionId]（trim/空串归 null），
   /// 与差分路径的键口径一致。
   String _interactionIdOf(NotifyEvent e) {
@@ -425,7 +425,7 @@ class NotifyCoordinator {
     _clearStaleTimer?.cancel();
     _clearStaleTimer = Timer(const Duration(seconds: 3), () {
       final pending = <String>{};
-      // 开源审查 H1-P2-01：pending 判据此前只看触发时刻的 watched cards
+      // H1-P2-01：pending 判据此前只看触发时刻的 watched cards
       // ——后台 >90s 回前台时 TaskCatalog 重建空 cards 的新模型，si 快照
       // 未到的 3s 空窗里 pending 为空集 → 在栏审批通知被全量误清；且基线
       // 已含该 interactionId、第二道闸也不在册 → 该审批提醒永久丢失。
@@ -452,6 +452,6 @@ class NotifyCoordinator {
   Future<void> Function(Set<String> stillPendingTaskIds, Set<int> staleIds)?
       onClearStale;
 
-  // （开源审查 H2-P3-2：onOpenTask 死代码已删——点击路由实际走
+  // （ H2-P3-2：onOpenTask 死代码已删——点击路由实际走
   // NotificationService.onTap → AppState.openTaskFromNotification。）
 }

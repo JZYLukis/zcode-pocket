@@ -800,7 +800,7 @@ void main() {
     await tester.runAsync(() async {
       AttachmentAnnotatePage.debugImage = await _decodePng(base64Decode(png));
     });
-    // 静态缝复位（开源审查 R2 P3-2）：与 attachment_annotate_test/游览
+    // 静态缝复位：与 attachment_annotate_test/游览
     // S28 两处既有写法对齐——此前未复位且恰因本用例是文件最后一个 test
     // 被位置掩盖，其后新增用例会继承预置底图/笔迹，出现"只在加测试后
     // 出现"的诡异失败。

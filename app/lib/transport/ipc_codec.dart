@@ -29,7 +29,7 @@ class ValueReader {
   static const maxContainerItems = 100000;
 
   /// 单值字节上限=64MiB，与 [RpcFrameTransport.maxMessageBytes] 单一真源
-  /// 绑定（开源审查批B组2 G2 P2-3/G3 P2-4：旧值 16MiB 与 rpc-frame 重组
+  //绑定（ /：旧值 16MiB 与 rpc-frame 重组
   /// 层的 64MiB 跨层不一致——16-64MiB 的逻辑消息在重组成功后被解码层
   /// 静默丢弃，历史回归"大快照静默丢=永久 spinner"在上一层复活；真源
   /// 在本层，rpc_frame_transport 引用此值）。
@@ -100,7 +100,7 @@ void encodeValue(ValueWriter w, Object? value) {
   }
 }
 
-/// 解码递归深度上限（开源审查 G1-P3-3/G2-P3-12/G3-P3-8）：16MiB 上限
+/// 解码递归深度上限（P3-3/G2-P3-12/G3-P3-8）：16MiB 上限
 /// 内可构造百万级嵌套数组 → 栈溢出（handleMessage 的 catch 能兜 Error，
 /// 但栈溢出后恢复不可靠）。128 层远超任何合法载荷（快照嵌套 ~10 级）。
 const int maxValueDepth = 128;

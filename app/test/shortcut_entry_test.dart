@@ -8,7 +8,7 @@ import 'package:zcode_pocket/transport/project_tree.dart';
 import 'package:zcode_pocket/ui/conversation_page.dart';
 import 'package:zcode_pocket/ui/task_center_page.dart';
 
-/// 长按图标快捷入口（6.6①，ADR 0061）：动作归一、挂起与任务中心消费
+/// 长按图标快捷入口（6.6①）：动作归一、挂起与任务中心消费
 /// （new_task→新建弹层 / last_session→跨工作区最近任务直达；原生层
 /// shortcuts.xml/Manifest/MainActivity 转发属设备路径，真机复验）。
 

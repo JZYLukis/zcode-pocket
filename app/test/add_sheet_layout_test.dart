@@ -12,7 +12,7 @@ import 'package:zcode_pocket/ui/voice_input_sheet.dart'
 /// 360dp 屏，最右"用量详情"被右缘截断。改 Wrap 3×2 后：全部入口
 /// 在屏内、无 RenderFlex 溢出异常。
 ///
-/// 多机型批（阶段 6.1，ADR 0043）：宽度改参（原 360 写死两处）+ 补
+/// 多机型批（阶段 6.1）：宽度改参（原 360 写死两处）+ 补
 /// 320dp 小屏档——小屏下 Wrap 换行布局，每入口完整可见即可（不再
 /// 钉 86/两行三列形态，那是 360 档的锁定值）。
 Future<void> _sheetEntriesVisible(WidgetTester tester, double w) async {

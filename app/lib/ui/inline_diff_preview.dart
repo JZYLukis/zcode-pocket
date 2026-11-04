@@ -8,7 +8,7 @@ import '../state/app_state_scope.dart';
 /// 会话内联 diff 预览（编辑/写入工具行展开区首块，官方
 /// EditInlineDiffContent 对位）。2026-10-23 Paseo 参考批从
 /// conversation_page 抽出公开（独立可测）；同批 DiffViewer 语法高亮
-/// 清偿 ADR 0011 P1 欠账时一并对齐官方：文字色=语法 token 色（官方
+/// 清偿 P1 欠账时一并对齐官方：文字色=语法 token 色（官方
 /// EditInlineDiffContent.tsx:68-80 内联 diff 同样带 shiki 高亮），
 /// 增删由行底 tint+行首竖条表达，marker 不作为代码内容显示。
 ///

@@ -26,7 +26,7 @@ class TurnBar extends StatefulWidget {
   /// 段内正文行的长按行操作（编辑重发等——正文移入段内后由段条转交）。
   final void Function(Map<String, dynamic> row)? onRowActions;
 
-  /// 是否会话末轮。语义注（2026-10-26 用户澄清，拨回 ADR 0045 拍板②）：
+  /// 是否会话末轮。语义注（2026-10-26 用户澄清，拨回 拍板②）：
   /// 末轮不再默认展开——语义=运行中展开、完成后收起只剩最后回复；
   /// 当时报的"冻结重进整页收起"由 [phaseRunning] 承接。字段保留（轮尾
   /// 操作行等仍按末轮定位，且后续或有用）。
@@ -98,13 +98,13 @@ class TurnBarState extends State<TurnBar> {
 
   late bool _open = _defaultOpen(widget.work);
 
-  /// 运行中的历史区被用户手动折叠（盲审 #5：不可折叠会顶满屏）。
+  /// 运行中的历史区被用户手动折叠（ #5：不可折叠会顶满屏）。
   /// ③（2026-10-20）：工具显示关=运行中默认收起（免打扰只看进度条）；
   /// 用户点开仍见全部步骤（桌面三层折叠语义）。
   late bool _liveCollapsed = !widget.showTools;
 
   /// H11 窄修（2026-10-25 批①，用户拍板"只修手动收起"）：运行中被用户
-  /// 收起=显式选择，完成边沿不得按末轮默认档强行展开覆盖（ADR 0045
+  /// 收起=显式选择，完成边沿不得按末轮默认档强行展开覆盖（
   /// "手动收起不变"承诺的补落地；重新点开则回到自动档）。上轮失去末轮
   /// 身份的自动收起不在本修范围（用户拍板接受现状）。
   bool _manuallyCollapsedWhileRunning = false;
@@ -114,7 +114,7 @@ class TurnBarState extends State<TurnBar> {
   @override
   void initState() {
     super.initState();
-    // 开源审查 B1-P3-2/B2-3：挂载即运行的轮（搜索跳转/懒列表重挂进
+    // B1-P3-2/B2-3：挂载即运行的轮（搜索跳转/懒列表重挂进
     // running 但桌面静默的回合）没有 didUpdateWidget 驱动——秒表冻在
     // 挂载瞬间值。与 ReasoningTile 的 initState→_startTicker 同构。
     _wasRunning = _effectiveRunning;
@@ -133,7 +133,7 @@ class TurnBarState extends State<TurnBar> {
         if (mounted) setState(() {});
       });
     } else if (!running && _ticker != null) {
-      // 盲审 #7：build 期间不可 setState（running→completed 边沿会踩
+      // #7：build 期间不可 setState（running→completed 边沿会踩
       // 断言）——停 ticker 即可，didUpdateWidget 已触发重建。
       _ticker?.cancel();
       _ticker = null;
@@ -165,7 +165,7 @@ class TurnBarState extends State<TurnBar> {
   bool get _effectiveRunning =>
       widget.work.stateLabel == 'running' || widget.phaseRunning;
 
-  /// 开源审查 B1-P3-4：折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
+  /// B1-P3-4：折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
   /// 按 header rowId、无头半截回合按尾行 rowId）——多个 -1 哨兵键会让
   /// 折叠状态跨回合串扰；页面侧写入同源。
   int get _turnId => widget.work.collapseKeyId;
@@ -193,7 +193,7 @@ class TurnBarState extends State<TurnBar> {
     final running = _effectiveRunning;
     // controlOnly 轮（官方 executionKind 门控）：不出工作条，内容直出。
     final controlOnly = work.isControlOnly;
-    // 完成边沿的收敛/ticker 启停在 didUpdateWidget（盲审 #7）。
+    // 完成边沿的收敛/ticker 启停在 didUpdateWidget（ #7）。
     // 搜索命中只临时展开目标，不写 _open/liveCollapsedByRow；关闭搜索
     // 或切换命中后恢复用户原有折叠选择。
     final searchReveal = work.work.any(
@@ -210,7 +210,7 @@ class TurnBarState extends State<TurnBar> {
                         : !widget.liveCollapsedByRow![_turnId]!)));
     // ③（2026-10-20 二轮澄清）：展开=用户显式想看步骤列表，不受工具
     // 显示开关限制（开关只管运行中的实时展示）；仅无工作行才不可展开。
-    // 开源审查 B1-P3-3：controlOnly 不再钉死收起分支——旧实现把设置轮
+    // B1-P3-3：controlOnly 不再钉死收起分支——旧实现把设置轮
     // 钉进收起态（只显最后一段正文，轮内更早正文/工具行永不渲染、
     // 搜索命中也无法展开）；「不出工作条」语义由下方 header 隐藏承接，
     // 有工作行的 controlOnly 轮照走展开分支（内容直出）。
@@ -415,7 +415,7 @@ class TurnBarState extends State<TurnBar> {
                     ),
                   ),
                 RowUnit(:final row) => switch ('${row['kind']}') {
-                  // 开源审查 B2-1（lane 语义）：mid-turn auto-compact
+                  // B2-1（lane 语义）：mid-turn auto-compact
                   //（lane=assistantWork）落在回合内部的标记行——内嵌
                   // 分隔线渲染，不劈开运行中轮。
                   'timelineMarker' => () {
@@ -443,7 +443,7 @@ class TurnBarState extends State<TurnBar> {
                             // 只认 complete）；B2：guided 只挂末段。
                             !work.completedOk ||
                             !work.isLastSegment ||
-                            // 开源审查 B2-2：发了文件卡的轮操作行改挂卡尾
+                            // B2-2：发了文件卡的轮操作行改挂卡尾
                             //（收起态 316 行同款守卫）——展开态漏守卫会
                             // 与 FileSummaryCard 尾部各出一条=双操作行。
                             work.hasSummaryCard)
@@ -486,7 +486,7 @@ class TurnBarState extends State<TurnBar> {
                           ),
                   ),
                   'subagent' => SubagentTile(row: row, openSession: widget.openSession),
-                  // B5（parity-fix-1，2026-10-29 审查）：TodoWrite 待办
+                  // B5（2026-10-29 审查）：TodoWrite 待办
                   // 清单官方有专用渲染（renderers/todo.tsx：状态图标+
                   // 完成计数+当前项）——此前降级为通用文本行。
                   'toolCall'
@@ -656,7 +656,7 @@ class ReasoningTileState extends State<ReasoningTile> {
         if (line.trim().isNotEmpty) {
         // 对抗审查 2-2：保尾不保头——官方语义"永远显示最新 token"，
         // 截头 60 字会让长行摘要冻结在旧内容；手机不做横滚（触屏手势
-        // 冲突），前省略号截尾为等价实现。开源审查 B2-14：截点走代理对
+        // 冲突），前省略号截尾为等价实现。 B2-14：截点走代理对
         // 安全版（劈开 emoji=replacement 字形）。
         return clipHeadSafe(line.trim(), 60);
       }
@@ -1087,6 +1087,6 @@ class SubagentTile extends StatelessWidget {
     );
   }
 }
-// （开源审查 B1-P3-10/B2-12：排队条已随 ADR 0079 迁出本文件——
+// （ B1-P3-10/B2-12：排队条已随 迁出本文件——
 //  OfflineSendQueueStrip 见 conversation_composer.dart、QueueStrip 的
 //  sendQueuedNow/deleteQueueItem 转发层见 app_state.dart。）

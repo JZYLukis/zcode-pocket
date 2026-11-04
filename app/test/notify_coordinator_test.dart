@@ -632,7 +632,7 @@ void main() {
     expect(failed.every((e) => e.outcome == 'converged'), isTrue);
   });
 
-  // 开源审查批B组5（H1 P1-02/H2 P1-2）：对账收敛曾把 approvalPending 一并
+  // （H1 P1-02/H2 P1-2）：对账收敛曾把 approvalPending 一并
   // converged——「等审批不能埋没」是 ReconcilePlan.singles 的字段契约，且
   // 收敛后基线已含 interactionId、第二道闸不在册=该审批提醒永久丢失。
   // 修复：审批恒逐条发，收敛阈值只作用于其余 singles。

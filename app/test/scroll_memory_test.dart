@@ -39,7 +39,7 @@ class _RowsApp extends AppState {
       );
 }
 
-/// 开源审查 A1-P2/A3-P1 两阶段红绿夹具：缓存预渲（本地读，先落地）+
+/// A1-P2/A3-P1 两阶段红绿夹具：缓存预渲（本地读，先落地）+
 /// 可控延迟的活订阅（ensureConversation 过 gate，模拟冷会话网络唤醒）。
 /// A3 实证：此前测试环境的订阅路径从不落地（_RowsApp 无 stack 恒抛），
 /// 「预渲先还原 → live ready 无条件 _stickToBottom=true+_snapToBottom

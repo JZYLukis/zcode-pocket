@@ -1,4 +1,4 @@
-// 任务移动归属（docs/move-task-plan.md，用户 2026-10-24 立项）回填：
+// 任务移动归属（用户 2026-10-24 立项）回填：
 // 项目选择 sheet（候选=同 host 可见项目、当前归属标记、伪项目排除）、
 // 点选→moveTask 调用形状、root-confirmation-required 二段确认
 // （addMissingRoot 重发）、任务行缺失的降级提示。

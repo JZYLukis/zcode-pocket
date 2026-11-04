@@ -155,7 +155,7 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                             sessionId: widget.sessionId,
                             runId: '${run['runId']}',
                             title: label,
-                            // review-fix-1（workflow 组）：官方 afterSequence
+                            // 官方 afterSequence
                             // 缺省=从头取（最旧一页）——用 run 的
                             // lastEventSequence 反推最新页。
                             lastEventSequence:
@@ -221,7 +221,7 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                                   ),
                                 ),
                               ),
-                              // review-fix-1：320+1.3 英文档实测右侧
+                              // 320+1.3 英文档实测右侧
                               // 溢出 100px——窄屏隐藏相对时间（次要信息，
                               // 官方桌面窄侧栏也只留状态）。
                               if (constraints.maxWidth >= 300) ...[
@@ -291,7 +291,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
       _error = null;
     });
     try {
-      // 两路只读查询并行。review-fix-1（workflow 组）：官方 afterSequence
+      // 两路只读查询并行。：官方 afterSequence
       // 缺省=从头取（最旧一页，页大小 CLI 钳 ≤500）——此前标题标"最新
       // N 条"实际显示最早事件。用 run 的 lastEventSequence 反推最新页。
       final lastSeq = widget.lastEventSequence;
@@ -338,7 +338,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
   }
 
   /// 内容产物分块读取（≤512KiB/块；文本类拼到 8 块止，防超长拖垮 UI）。
-  /// review-fix-1（workflow 组）：①行内 busy 防重入（此前可双击叠推两个
+  /// ：①行内 busy 防重入（此前可双击叠推两个
   /// 预览页）；②块间字节缓冲——512KiB 边界可能切在多字节字符中间，逐
   /// 块独立 decode 会各出一个替换符；③8 块截断不再静默（预览页顶部
   /// 明示"内容过长已截断"）。
@@ -382,7 +382,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
       final name = truncated
           ? '${artifact['title'] ?? artifact['id']}（${tr('内容过长已截断')}）'
           : '${artifact['title'] ?? artifact['id']}';
-      // review-fix-1（workflow 组）：html 嗅探正则锚定文首（此前 `|` 优先
+      // html 嗅探正则锚定文首（此前 `|` 优先
       // 级让正文任意位置的 <html 字样也会误进 WebView）。
       if (RegExp(r'^\s*(<!doctype html|<html)', caseSensitive: false)
           .hasMatch(text)) {
@@ -498,7 +498,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
                       child: InkWell(
                         key: ValueKey('workflow-artifact-${a['id']}'),
                         borderRadius: BorderRadius.circular(AppRadius.sm),
-                        // review-fix-1（workflow 组）：看板四类（chart/
+                        // 看板四类（chart/
                         // table/metrics/board）无内容字节——ArtifactRead
                         // 必失败，禁点并明示（官方 workflow-artifacts.ts:26）。
                         onTap: _artifactReadable(a)
@@ -683,7 +683,7 @@ class OffPeakTaskCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    // review-fix-1（A7）：分段本地化；协议 status token 走
+                    // 分段本地化；协议 status token 走
                     // 五态映射（原样透传=中英界面都露协议词）。
                     '$queueLine · ${tr('运行在当前会话')}'
                     '${s.status != null ? ' · ${workflowRunStatusOf(context, s.status!).label}' : ''}',

@@ -50,7 +50,7 @@ class InteractionBanner extends StatelessWidget {
       );
     } catch (e) {
       // alreadyResolved（先到先得）静默；其余（网络失败等）必须让用户知道
-      // 应答没发出去（盲审 #8：静默吞失败会让用户误以为已批准）。
+      // 应答没发出去（ #8：静默吞失败会让用户误以为已批准）。
       // A5（2026-10-19 审查）：精确匹配 alreadyResolved——原
       // `|| msg.contains('already')` 会把任何恰好含 already 的错误
       // （如 "already in progress"）也静默吞掉。alreadyResolved 仍静默
@@ -74,7 +74,7 @@ class InteractionBanner extends StatelessWidget {
     if (interactions.isEmpty || sessionId == null) {
       return const SizedBox.shrink();
     }
-    // 多条审批同屏会挤压内容区（盲审 #1/#9）——单槽展示第一条 +
+    // 多条审批同屏会挤压内容区（ #1/#9）——单槽展示第一条 +
     // 计数提示；卡片内部限高滚动，保证选项按钮始终可达。
     return Column(
       children: [
@@ -153,7 +153,7 @@ Map<String, dynamic> buildQuestionsResponseContent(
   for (var i = 0; i < questions.length; i++) {
     final q = questions[i];
     final picked = selected[i];
-    // B2（parity-fix-1，官方 ElicitationDialog customAnswer 对位）：
+    // B2（官方 ElicitationDialog customAnswer 对位）：
     // 自定义答案并入该题作答（selected+custom 同数组，getQuestionAnswers
     // 同款）；单选时自定义顶替选项选择。
     final customText = (custom[i] ?? '').trim();
@@ -257,7 +257,7 @@ class _InteractionCardState extends State<_InteractionCard> {
           ? ((widget.interaction['payload'] as Map)['questions'] as List).length
           : 0;
 
-  /// 开源审查批B组5（O1 P1-1/O2 P1-1/O3 P1-2 三路同根）：某题「已作答」
+  //（O1 P1-1/O2 P1-1/O3 P1-2 三路同根）：某题「已作答」
   /// =选中项**或非空自定义**——官方 getQuestionAnswers（ElicitationDialog
   /// .tsx:263-270）把 customAnswer 与选中项同为合法作答。提交使能/翻页
   /// /计数统一走本判据：多选题仅填自定义不再死锁在「选择后继续」。
@@ -471,7 +471,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                             cur
                               ..clear()
                               ..add(value);
-                            // 开源审查批B组5（O2 P2-1）：单选选中=重置该题
+                            // （O2 P2-1）：单选选中=重置该题
                             // 自定义草稿（官方 updateElicitationDraftsForOption
                             // 单选分支 customAnswer:""，ElicitationDialog.tsx
                             // :321）——否则已放弃的自定义文本随 answers 发出
@@ -708,7 +708,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                     IconButton(
                       padding: EdgeInsets.zero,
                       iconSize: 24,
-                      // 开源审查 O1 P2-5：tooltip 不是 Text 组件，不经
+                      // O1 P2-5：tooltip 不是 Text 组件，不经
                       // 自定义 Text 的自动查表——需显式 tr()。
                       tooltip: _detailsExpanded ? tr('收起明细') : tr('展开明细'),
                       onPressed: () =>
@@ -1020,7 +1020,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                                   ? null
                                   : () => _go(
                                         optionId: '${opt['optionId'] ?? ''}',
-                                        // review-fix-1（协议组）：permission
+                                        // permission
                                         // 官方形态=optionId(+content)不带
                                         // action——action 会让 broker 走
                                         // accept/decline 精确映射，deny_once
@@ -1139,7 +1139,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                       ),
                       onPressed: _busy
                           ? null
-                          // review-fix-1（协议组）：官方自由输入只发
+                          // 官方自由输入只发
                           // freeText（V4UserInputDialog:37）——action 会让
                           // broker 走映射路径，freeText 可能被忽略。
                           : () => _go(freeText: _freeText.text),
@@ -1393,7 +1393,7 @@ class _AutoResolutionCountdown extends StatefulWidget {
 class _AutoResolutionCountdownState extends State<_AutoResolutionCountdown> {
   Timer? _ticker;
 
-  /// A2（parity-fix-1）：每个交互只发一次幂等 snooze（跨重建防重）。
+  /// A2：每个交互只发一次幂等 snooze（跨重建防重）。
   static final Set<String> _snoozed = {};
 
   @override
@@ -1408,7 +1408,7 @@ class _AutoResolutionCountdownState extends State<_AutoResolutionCountdown> {
     final sessionId = widget.sessionId;
     final interactionId = '${widget.interaction['interactionId'] ?? ''}';
     final auto = widget.interaction['autoResolution'];
-    // review-fix-1（协议组）：官方 V4InteractionDialogs 的 useEffect 以
+    // 官方 V4InteractionDialogs 的 useEffect 以
     // interactionId 为 deps——pending 挂载即发（hiddenGrace 静默期同样
     // 带 deadlineAt 倒计时）。此前限定 visibleCountdown=静默期看题仍会
     // 被自动结束（审查 D1a 实锤，官方源码核验）。

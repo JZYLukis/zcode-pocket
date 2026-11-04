@@ -111,7 +111,7 @@ void main() {
     expect(box.size, const Size(240, 240));
     expect(find.byType(QrScanPage), findsOneWidget);
     expect(tester.takeException(), isNull);
-    // 开源审查批B组5（M1 P1-1/M2 P2-1）：相机失败必须浮出页面级提示——
+    // 相机失败必须浮出页面级提示——
     // 修复前 _cameraError 是死状态（errorBuilder 渲染在 0×0 盒内不可见），
     // 权限被拒/无相机=静默死页，本断言红。errorBuilder→帧尾 setState。
     await tester.pump();

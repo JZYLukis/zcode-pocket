@@ -41,7 +41,7 @@ import 'motion.dart';
       surface: colors.surface,
       label: '草稿',
     ),
-    // controller/tasks-index liveStatus 新增词（ADR 0031）：等待用户
+    // controller/tasks-index liveStatus 新增词：等待用户
     // 审批/输入——视觉与首页 pendingInteraction 分支同款"待处理"。
     'waiting' => (
       color: colors.interactionAskForeground,

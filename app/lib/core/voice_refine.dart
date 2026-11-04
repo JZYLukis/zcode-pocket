@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 
-/// 语音口语整理（ADR 0018 决策 5；2026-10-19 扩展为多提供商）：
+/// 语音口语整理（ 决策 5；2026-10-19 扩展为多提供商）：
 /// 听写文本 → 用户自己的 API key 调所选平台的快速档模型 → 相对规范的
 /// 指令。无 key/失败/超时一律退回原文，不影响主流程；整理步骤可整体
 /// 关闭（uiPrefs.voiceRefineEnabled）。
@@ -76,7 +76,7 @@ String? debugRefineEndpointOverride;
 @visibleForTesting
 Duration? debugBodyReadTimeout;
 
-/// body 读取超时（开源审查 D1-P2-3/D2-P2-03/D3-P2-2/P3-P2-4 四路同报）：
+/// body 读取超时（ D1-P2-3/D2-P2-03/D3-P2-2/P3-P2-4 四路同报）：
 /// connectionTimeout/postUrl/close 三级超时只覆盖连接与响应头，body
 /// `.join()` 无界——弱网/劣化代理下服务端发完头后 body 停滞时，语音面板
 /// refining 态 PopScope canPop=false（voice_input_sheet.dart）会把用户锁死

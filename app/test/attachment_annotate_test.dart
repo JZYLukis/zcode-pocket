@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/core/theme.dart';
 import 'package:zcode_pocket/ui/attachment_annotate_page.dart';
 
-/// 截图圈点标注（6.6④，ADR 0062）：绘制/撤销/清空/保存合成与页面旅程。
+/// 截图圈点标注（6.6④）：绘制/撤销/清空/保存合成与页面旅程。
 /// toImage/instantiateImageCodec 走真实引擎异步——生成与保存断言在
 /// runAsync 内完成（游览 _snap 同款约束）。
 

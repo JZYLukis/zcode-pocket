@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// 多账号凭据存储（2026-10-25 多账号批，docs/multi-account-plan.md §4.1）：
+/// 多账号凭据存储（2026-10-25 多账号批）：
 /// 每账号一组键（`account.<id>.jwt/provider`）+ 有序列表（`account.list`，
 /// 首项=最近使用）。旧单账号键（`account.jwt`/`account.provider`）首访问
 /// 时迁移为一条账号记录后删除。
 ///
-/// 账号 id 三层推导（18086 真机事故修正，ADR 0080 §7）：
+/// 账号 id 三层推导（18086 真机事故修正）：
 /// ①JWT payload 标准 claim（sub/uid/user_id/open_id 首个非空）；
 /// ②官方页 `oauth:<provider>:user_info` 的 `id`（UserInfo{id,username,
 ///   displayName}——与 token 同步写入，登录页收割时顺带读取）；
@@ -81,7 +81,7 @@ String deriveAccountId(String jwt, {String? identity}) {
     h1 = ((h1 ^ b) * 0x01000193) & 0xFFFFFFFF;
     h2 = ((h2 + b) * 31) & 0xFFFFFFFF;
   }
-  // 开源审查 K1-P3-6：逐组件补零——toRadixString 去前导零使两组件在
+  // K1-P3-6：逐组件补零——toRadixString 去前导零使两组件在
   // 拼接后边界丢失（不同 (h1,h2) 可拼出同一 id）。注：拼接形态变化对
   // 存量兜底账号会在下次重登时落新条目（"宁可并存重复也不毁库"拍板，
   // 旧条目可手动删）。
@@ -165,7 +165,7 @@ class AccountStore {
       );
 
   // ------------------------------------------------------ B3 串行队列
-  // （开源审查批B组2 K1 P2-1/K2 P2-2）：本 store 的读-改-写此前不经任何
+  // （ K1 P2-1/K2 P2-2）：本 store 的读-改-写此前不经任何
   // 队列——登录页 save 与 auth-required 自动 clearAccount 并发交错可丢
   // 更新/复活已删账号（幽灵条目：列表在、凭据键已删；或孤儿凭据键）。
   // 照搬 ProfileStore._serialized 同款范式；公开方法只包一层，内部互调
@@ -240,11 +240,11 @@ class AccountStore {
   }
 
   // 单账号兼容层：作用于最近使用账号。
-  // （开源审查 K1-P3-8：readProvider/readProviderFor 生产零调用方，
+  // （ K1-P3-8：readProvider/readProviderFor 生产零调用方，
   // 死代码已删；readJwt 保留——单账号兼容断言在测试中使用。）
 
   /// 保存/续期一个账号（同 id 续期：jwt/provider 覆盖、条目同步 provider
-  /// 并移回首位——"首项=最近使用"不变式，开源审查 K1-P3-7/K2-P3-2）；
+  /// 并移回首位——"首项=最近使用"不变式， K1-P3-7/K2-P3-2）；
   /// 设为最近使用。返回账号 id。[identity]=登录页收割的官方 user_info.id
   /// ——bigmodel 的 zcode JWT 零标准 claim，没有它两个不同账号会全部
   /// 落入内容哈希兜底（旧版"同 provider 覆盖"启发式据此把添加第二账号
@@ -277,7 +277,7 @@ class AccountStore {
     await _ensureMigrated();
     final id = deriveAccountId(jwt, identity: identity);
     final list = await _readListRaw();
-    // 开源审查 K1-P2-2：列表先落、凭据后写（对齐 _migrate 写序）——
+    // K1-P2-2：列表先落、凭据后写（对齐 _migrate 写序）——
     // 此前 jwt 键先落、列表后落，两写之间被杀会留下 clear()/remove
     // Account 都按列表枚举而清不掉的孤儿凭据键（明文 JWT 永久残留）；
     // 反序的中间态（列表有 id 凭据缺）可经重删/重登自愈。
@@ -335,9 +335,9 @@ class AccountStore {
     await _writeListRaw(list);
   }
 
-  /// 按账号清（auth-required 收窄用）。开源审查批B组2（K1 P2-3/I1 P1-1/
-  /// I3 P1-1）：accountId=null **不再**隐式全清——旧契约把"未绑定档案的
-  /// 401"放大成清光全部账号凭据（ADR 0051「auth-required 只清失败账号」
+  //按账号清（auth-required 收窄用）。（K1 P2-3//
+  //）：accountId=null **不再**隐式全清——旧契约把"未绑定档案的
+  /// 401"放大成清光全部账号凭据（「auth-required 只清失败账号」
   /// 被击穿）；全清回登录门必须显式调 [clear]。null=no-op（调用方
   /// device_stack_registry 侧已回落 lastUsed 精确点名）。
   Future<void> clearAccount(String? accountId) async {
@@ -350,7 +350,7 @@ class AccountStore {
 
   Future<void> _clearRaw() async {
     _migrated = _migrate(); // 幂等：旧键若仍在先吸收
-    // 开源审查 K2-P3-1：迁移失败时复位 _migrated 再抛——残留失败 future
+    // K2-P3-1：迁移失败时复位 _migrated 再抛——残留失败 future
     // 会让下一次访问先吃一次假失败+重试周期。
     try {
       await _migrated;

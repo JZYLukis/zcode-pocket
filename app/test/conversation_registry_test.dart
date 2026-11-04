@@ -14,7 +14,7 @@ class _ControlledConversation implements ConversationTransport {
   int resumeCalls = 0;
   int resumeTrueCalls = 0;
 
-  /// 模拟协议层驻留态：park 落地前 resume 返回 false（开源审查 G3 P2-2
+  /// 模拟协议层驻留态：park 落地前 resume 返回 false（
   /// 的静默 no-op 病灶形态）。
   bool parked = false;
 

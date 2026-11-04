@@ -112,7 +112,7 @@ void main() {
     expect(q.containsKey('t'), isFalse);
   });
 
-  // 开源审查 M2-P1-1：Android WebView evaluateJavascript 对字符串结果返回
+  // P1-1：Android WebView evaluateJavascript 对字符串结果返回
   // JSON 编码形态（外层引号+内层引号 \" 转义，webview_flutter_android
   // 4.14.1 实证）——只剥外层引号不反转义，oauth:<provider>:user_info 的
   // jsonDecode 必败 → identity 恒 null → bigmodel 每次重登生成新账号。

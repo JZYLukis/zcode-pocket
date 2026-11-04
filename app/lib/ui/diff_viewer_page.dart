@@ -11,7 +11,7 @@ import '../state/app_state_scope.dart';
 /// 按目录分组 + 逐文件 hunk 着色 + git-checkpoint 单文件回滚
 /// （fileRewindPreview 预检 → applyFileRewind）。
 ///
-/// 语法高亮（2026-10-23 清偿 ADR 0011 P1 欠账）：官方 diff 全表面带
+/// 语法高亮（2026-10-23 清偿 P1 欠账）：官方 diff 全表面带
 /// shiki 高亮（diff-viewer.tsx:99/previewPanePatchFallbackContent.tsx:
 /// 50-58/EditInlineDiffContent.tsx:68-80），文字色=语法 token 色、增删
 /// 由行底 tint+行首竖条表达——我们用 code_highlight（github 双主题同源）
@@ -140,7 +140,7 @@ class _DiffViewerPageState extends State<DiffViewerPage> {
     final app = AppStateScope.of(context);
     final path = '${item['path']}';
     // 先取预检：协议语义=整轮工作区文件撤销（applyFileRewind 不截断聊天
-    // 历史，safeFiles 逐文件 restore/delete）——盲审 #4 抓出旧文案
+    // 历史，safeFiles 逐文件 restore/delete）—— #4 抓出旧文案
     // "不影响其他文件"与协议不符，改为诚实表述。
     Map<String, dynamic>? preview;
     try {

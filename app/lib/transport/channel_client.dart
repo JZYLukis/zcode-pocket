@@ -45,7 +45,7 @@ class ChannelClient {
       }
       if (header.length < 2 || header[1] is! num) return;
       final id = (header[1] as num).toInt();
-      // 开源审查批D组1（G3 P3-5）：无 handler 的帧（超时后迟到响应/未知
+      // 无 handler 的帧（超时后迟到响应/未知
       // id）不再整帧解码——最坏 64MiB JSON 解码纯白耗 CPU；帧间自包含，
       // 跳过读取不影响后续帧。
       final h = _handlers[id];
@@ -54,7 +54,7 @@ class ChannelClient {
         final data = decodeValue(reader);
         h(type, data);
       } on Object catch (e) {
-        // 开源审查批B组2（G2 P2-3/G3 P2-4）：载荷解码失败（超限/畸形）
+        // 载荷解码失败（超限/畸形）
         // 不再只打一行日志让在途 call 干等 timeout——一次性调用立即
         // 失败走调用方重试链（failPendingOnGap 同款语义，"响应帧不可
         // 用"）；持久事件监听不动（订阅看门狗自愈）。重试若再次收到
@@ -191,7 +191,7 @@ class ChannelClient {
   }
 
   void dispose() {
-    // 开源审查批D组1（G3 P3-9）：换桥/销桥时在途 call 立即失败（gap 同款
+    // 换桥/销桥时在途 call 立即失败（gap 同款
     // 语义——响应可能已随旧通道丢失，调用方按「结果未知/可重试」收敛），
     // 不再各自干等 30-120s timeout；持久事件监听无 completer，清表即可。
     failPendingOnGap();
@@ -204,7 +204,7 @@ class ChannelRpcError implements Exception {
   final String message;
   final Object? data;
 
-  /// 「响应帧丢失（结果未知）」的结构化标记（开源审查 G2 P3-18）：此前
+  /// 「响应帧丢失（结果未知）」的结构化标记：此前
   /// 消费方（conversation_page）靠裸字符串 contains('response frame lost')
   /// 跨层匹配，任一侧改文案即静默把「结果未知」降级成普通失败（用户
   /// 重发=双投递）。生产方在此立单一真源，消费方按字段判定（UI 侧接线
@@ -254,10 +254,10 @@ class Channels {
   static const offPeakTask = 'off-peak-task';
 
   /// 窗口宿主 Controller 服务（controller/tasks-index 主题所在，
-  /// ADR 0031）——官方 ServiceChannels.WindowController（channels.ts:112）。
+  /// ）——官方 ServiceChannels.WindowController（channels.ts:112）。
   static const windowController = 'window-controller';
 
-  /// Host 项目服务（readTree 项目全集，ADR 0033 工作区列表修复）——
+  /// Host 项目服务（readTree 项目全集， 工作区列表修复）——
   /// 官方 ServiceChannels.Project（channels.ts:117）。
   static const project = 'project';
 }

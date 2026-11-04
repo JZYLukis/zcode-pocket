@@ -17,7 +17,7 @@ String _reqId(String prefix) => generateRequestId(prefix);
 /// High-level facade replicating the web client's `otn()` flow:
 /// relay connect -> pair -> bootstrap -> workspace bridge -> channel RPC.
 ///
-/// 双栈（ADR 0032）：默认构造=V1（pass_hash 档案）；`CompanionClient.v2`
+/// 双栈：默认构造=V1（pass_hash 档案）；`CompanionClient.v2`
 /// =Relay V2（账号 JWT 档案）。relay 对外类型=RelayConnection 公共接口。
 class CompanionClient {
   final void Function(String line)? onLog;
@@ -144,7 +144,7 @@ class CompanionClient {
     // relay 未配对时不发探测/开桥请求（对抗审查 B4 双路交叉命中）：
     // V2 出站通道非 paired 态把载荷排进 _outboundQueue（上限 100），
     // 无限恢复循环每轮 2 条请求会把队列积满，重连同刻冲刷几十条陈旧
-    // bridge-open 给桌面（桥重建风暴，ADR 0020 同类风险）。跳过本轮
+    // bridge-open 给桌面（桥重建风暴， 同类风险）。跳过本轮
     // 等慢速档再试——配对后循环自然收敛。
     if (relay.state != RelayState.paired) {
       _log('[bridge] recovery deferred: relay not paired '
@@ -234,7 +234,7 @@ class CompanionClient {
       if (router != null) {
         router(payload);
       } else if (id != null) {
-        // 开源审查 G1-P3-10/G3-P3-6：无上限缓冲对永不注册的 bridge id
+        // P3-10/G3-P3-6：无上限缓冲对永不注册的 bridge id
         // 无限蓄积（open 超时失败/换桥后 relay 重放旧帧）。每 id 上限
         // 64 帧，超限丢最旧；孤儿 id 的清理见 openBridge 失败路径与
         // _attachStack/onDispose 的换桥清退。
@@ -328,7 +328,7 @@ class CompanionClient {
   /// workspace-bridge-open -> workspace-bridge-ready, then builds the
   /// rpc-frame transport + IPC channel client for the workspace.
   ///
-  /// [project]（ADR 0033）：project intent（{projectId, hostId?}）——桌面
+  /// [project]：project intent（{projectId, hostId?}）——桌面
   /// 现场准备该项目工作区，不受"workspaceKey 必须在当前窗口 tabs"限制
   /// （官方 zod：project 与 taskId/fileTreeTaskId 互斥，这里一并防护）。
   /// [taskId]+[taskHostId]：任务 intent（官方手机壳打开侧栏任务的路径，
@@ -371,7 +371,7 @@ class CompanionClient {
         timeout: timeout,
       );
     } catch (e) {
-      // 开源审查 G1-P3-10/G3-P3-6：open 失败（超时/error）后该
+      // P3-10/G3-P3-6：open 失败（超时/error）后该
       // bridgeSessionId 永不注册——已缓冲的待定帧成孤儿，随即清退。
       _pendingBridgePayloads.remove(bridgeSessionId);
       rethrow;
@@ -393,7 +393,7 @@ class CompanionClient {
         _activeBridges.remove(s);
         final id = s.bridge['bridgeSessionId'];
         _frameRouters.remove(id);
-        // 开源审查 G1-P3-10/G3-P3-6：销桥时同步清退该 id 的待定帧缓冲。
+        // P3-10/G3-P3-6：销桥时同步清退该 id 的待定帧缓冲。
         if (id != null) _pendingBridgePayloads.remove(id);
       },
     );
@@ -415,7 +415,7 @@ class CompanionClient {
     Map<String, dynamic> bridge,
   ) {
     session._transport.dispose();
-    // 开源审查批D组1（G3 P3-9）：旧 ChannelClient 一并收口——dispose 现在
+    // 旧 ChannelClient 一并收口——dispose 现在
     // 会立即失败在途 call（gap 同款语义），换桥后调用方重试链走新桥，
     // 不再各自干等 30-120s timeout。
     session._channels.dispose();
@@ -436,7 +436,7 @@ class CompanionClient {
     transport.messages.listen(channels.handleMessage);
     // 病②：物理丢帧 → 立即失败在途 RPC（响应可能已丢，秒级重试）。
     transport.onGapDetected = channels.failPendingOnGap;
-    // 开源审查 H1-P1-01：旧 bridgeSessionId 必须在 _swap 之前读——swap
+    // H1-P1-01：旧 bridgeSessionId 必须在 _swap 之前读——swap
     // 后 session._bridge 已是新桥，oldId 恒等于新 id，remove 永不生效
     // （每代桥泄漏一个 router 条目，且迟到旧帧会打进已 dispose 的旧
     // transport）。
@@ -448,7 +448,7 @@ class CompanionClient {
     final id = transport.bridgeSessionId;
     if (oldId != null && oldId != id) {
       _frameRouters.remove(oldId);
-      // 旧桥 id 的待定帧随换代清退（开源审查 G1-P3-10/G3-P3-6）。
+      // 旧桥 id 的待定帧随换代清退（P3-10/G3-P3-6）。
       _pendingBridgePayloads.remove(oldId);
     }
     _frameRouters[id] = transport.acceptPayload;
@@ -464,7 +464,7 @@ class CompanionClient {
   /// bridgeSessionId, bumped generation, carries recoveryId), then swaps
   /// the stack into the existing [BridgeSession].
   ///
-  /// project intent（ADR 0033）：随 session 携带重发——project 桥的工作区
+  /// project intent：随 session 携带重发——project 桥的工作区
   /// 可能不在桌面当前 tabs 里，纯 workspaceKey 重开会被拒
   /// （"目标工作区不在当前桌面窗口中"）。
   Future<void> _reopenBridge(BridgeSession session, String workspaceKey) async {
@@ -518,7 +518,7 @@ class CompanionClient {
       },
         'deviceInfo': {
           'platform': companionPlatformName(),
-          // 开源审查 F1-P3-2/F3-P3-11：缺省版本不得用字面量 'web' 冒充
+          // P3-2/F3-P3-11：缺省版本不得用字面量 'web' 冒充
           //（桌面端"已连接客户端"展示）——统一兜底 'unknown'。
           'version': _appVersion ?? 'unknown',
           'name': companionAppName,
@@ -573,11 +573,11 @@ class BridgeSession {
   final void Function(BridgeSession) _onDispose;
   bool _disposed = false;
 
-  /// project intent（ADR 0033）：null=普通 workspaceKey 桥；非 null=项目桥，
+  /// project intent：null=普通 workspaceKey 桥；非 null=项目桥，
   /// 重开时随新 bridge-open 重发（见 _reopenBridge 注释）。
   final Map<String, dynamic>? projectIntent;
 
-  /// 任务 intent（taskId+taskHostId，ADR 0033 v1.1）：重开时随新
+  /// 任务 intent（taskId+taskHostId， v1.1）：重开时随新
   /// bridge-open 重发（同 project intent 理由——任务目录可能不在 tabs）。
   final Map<String, dynamic>? taskIntent;
 
@@ -668,7 +668,7 @@ class BridgeSession {
     degraded.dispose();
     recovered.dispose();
     _transport.dispose();
-    // 开源审查批D组1（G3 P3-9）：ChannelClient 收口——在途 call 立即失败
+    // ChannelClient 收口——在途 call 立即失败
     //（gap 同款语义），不干等各自 timeout。
     _channels.dispose();
     _onDispose(this);

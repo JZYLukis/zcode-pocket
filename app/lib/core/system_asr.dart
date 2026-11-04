@@ -28,7 +28,7 @@ class SystemAsr {
     } on MissingPluginException {
       _availableCache = false;
     } on PlatformException {
-      // 瞬时异常不落缓存（开源审查 P1 P3-4）：开机识别服务暂不可用等
+      // 瞬时异常不落缓存（ P1 P3-4）：开机识别服务暂不可用等
       // 一次性错误若缓存 false，本会话语音入口永久隐藏（重启才恢复）。
       // 本次返回 false，下次再探；插件缺席（MissingPlugin）才是终态 false。
       return false;
@@ -58,7 +58,7 @@ class SystemAsr {
     return session;
   }
 
-  /// 单槽 handler 会话守卫（开源审查 P1 P3-3/P2 P2-4/Q1 P3-10）：
+  /// 单槽 handler 会话守卫（ P1 P3-3/P2 P2-4/）：
   /// companion 通道是全进程单 handler 槽——后 start 覆盖、先 cancel
   /// 无差别置 null 会让并存会话互踩（前者失聪/后者被摘）。约定同通道
   /// 同一时刻至多一个活动会话：bind 时登记，cancel 只在槽位仍属于
@@ -109,7 +109,7 @@ class SystemAsrSession {
     try {
       await _ch.invokeMethod(method, args);
     } on PlatformException catch (e) {
-      // review-fix-1：原生侧 result.error（unavailable/start_failed）统一
+      // 原生侧 result.error（unavailable/start_failed）统一
       // 并入失败分支（此前穿透成无人接的异步异常）。
       if (!_closed) {
         _closed = true;

@@ -3,7 +3,7 @@ import 'dart:async';
 
 import 'fake_relay_v2.dart';
 
-/// FakeRelayV2 常驻 runner（ADR 0032 模拟器冒烟用，非测试）：
+/// FakeRelayV2 常驻 runner（ 模拟器冒烟用，非测试）：
 /// 启动本地假中继 + 注册一台"桌面"设备并保持 device 角色在线——
 /// 模拟器里的 app 经 `--es relay_v2_origin http://10.0.2.2:<port>` +
 /// `--es account_jwt injected-test-jwt` 注入后即可走完整 V2 流程

@@ -3,7 +3,7 @@
 ///
 /// 值来源：shiki 官方主题包 @shikijs/themes@4.5.0 的 github-light/
 /// github-dark（与官方桌面端 codePreviewSettings.ts 同源；调研留痕
-/// ADR 0035 批 2-5 补记）。官方做法：shiki 只贡献 token 颜色，块底色
+/// 批 2-5 补记）。官方做法：shiki 只贡献 token 颜色，块底色
 /// 走 app 表面色（bg 强制透明）——我们保持 codeblockDecoration=surface
 /// 不变，浅色侧除 token 上色外零改动。
 ///

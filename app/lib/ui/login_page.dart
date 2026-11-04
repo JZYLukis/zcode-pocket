@@ -10,14 +10,14 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../core/theme.dart';
 import '../state/app_state_scope.dart';
 
-/// V2 账号登录页（ADR 0032）：内嵌官方远控页 https://zcode.z.ai/remote/v4
+/// V2 账号登录页：内嵌官方远控页 https://zcode.z.ai/remote/v4
 /// 完成双平台 OAuth（Z.AI/BigModel）——官方页回调后把 zcode JWT 写进
 /// **同源 localStorage `zcodejwttoken`**（官方 browserOAuthCredentialRepo
 /// :82-93），我们在 WebView 上下文里轮询该键取凭据。
 ///
 /// 为什么不自己发 OAuth：授权 redirect_uri 白名单限定官方回调路径
 /// （oauthStateCodec.ts:4），原生自定义 scheme 服务端不认（本仓源码
-/// 实证，ADR 0032 调查）；走官方页 = 与官方 web 端零漂移。
+/// 实证， 调查）；走官方页 = 与官方 web 端零漂移。
 ///
 /// [qrParams]：扫码进入时透传 sid/mid/name/app_version——官方页会把
 /// 白名单参数带进授权回调（web-remote-login.md:8-9），登录完成即自动
@@ -92,11 +92,11 @@ const String kLoginWipeJs =
 /// 只为收割 token（token 写入先于页面发起连接，实测 ~500ms 内轮询即取
 /// 到）。占位而非真实活跃 sid：避免页面短暂连上真实设备把本体连接踢成
 /// session-conflict。
-/// 登录-only 入口合成的 app_version（开源审查 M1 P3-4/M2 P3-4 常量化）：
+//登录-only 入口合成的 app_version（/ 常量化）：
 /// 必须是官方已发布版本号（18084 实证：'app'=失败卡、'0.0.0'/'1.0.0'=
 /// Not Found——部署版按已发布版本白名单校验）。官方清理旧版本白名单时
 /// 此处会静默退化为失败卡——升级桌面端时须同步更新（登记
-/// docs/desktop-update-assessment.md 台账联动项）。
+/// 台账联动项）。
 const String kLoginPlaceholderAppVersion = '3.17.1';
 
 Uri loginTargetUri(Map<String, String> qrParams) {
@@ -108,7 +108,7 @@ Uri loginTargetUri(Map<String, String> qrParams) {
     if (entry.value.trim().isNotEmpty) q[entry.key] = entry.value.trim();
   }
   if (q.isEmpty) {
-    // 25 位字母数字（applogin+17×0；开源审查 M2 P3-3 注释对齐实测——
+    // 25 位字母数字（applogin+17×0； 注释对齐实测——
     // 实证 22 位纯字母亦过验，部署版只查字符集/长度形态）。
     q['sid'] = 'applogin00000000000000000';
     q['mid'] = '00000000-0000-4000-8000-000000000000'; // 标准 UUID
@@ -125,7 +125,7 @@ Uri loginTargetUri(Map<String, String> qrParams) {
 /// 剥壳必须走 jsonDecode 整体解码：手工剥首尾引号会给含引号的值（如官方
 /// `oauth:<provider>:user_info` 的 JSON 文本）留下非法 `\"` 转义，下游
 /// jsonDecode 必败 → identity 恒 null → bigmodel 每次重登生成新账号
-///（开源审查 M2-P1-1）。'null'（JS null/键不存在）返回 null；非 JSON
+///（P1-1）。'null'（JS null/键不存在）返回 null；非 JSON
 /// 编码形态回落旧剥壳逻辑（个别通道原样返回的兜底）。
 String? decodeWebViewJsStringResult(Object raw) {
   final s = raw.toString();
@@ -148,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
   /// 到 logcat（[login] 前缀，与 [app] 同通道）——清场三步、每次 finish
   /// 的真实 URL、闸门转换、导航、提取结果。排查 ①添加账号失败的
   /// 决定性证据（此前 WebView 内部对 logcat 完全静默，只能盲猜）。
-  // 诊断打点（18083-18096 排查期）：排查已收口（ADR 0080 §9），置为
+  // 诊断打点（18083-18096 排查期）：排查已收口，置为
   // 静默保留调用点——未来排查一键恢复函数体即可。
   void _diag(String line) {}
   WebViewController? _controller;
@@ -162,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
   /// 账号落库连续失败计数（达 5 次停止重试，页面留用户手动处置）。
   int _saveRetries = 0;
 
-  /// 落库重试耗尽后的显式失败态（开源审查 M1 P2-1：此前 5 次失败后页面
+  /// 落库重试耗尽后的显式失败态（：此前 5 次失败后页面
   /// 静默死端——OAuth 已成功、轮询已停、零反馈，返回还被当“用户取消”）。
   bool _saveFailed = false;
 
@@ -210,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
               'resource-error: ${e.errorCode} ${e.description} '
               'main=${e.isForMainFrame} url=${e.url}',
             );
-            // 开源审查 M2 P2-4：OAuth 流程多次跨域重定向期间，Android
+            // OAuth 流程多次跨域重定向期间，Android
             // WebView 对主框架报 ERR_ABORTED(-1)（被新导航取代）是已知
             // 常态——不过滤会把进行中的授权流程整页换成错误视图。真实
             // 失败（DNS/TLS 等）仍走错误态。
@@ -251,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
       }
       if (!mounted) return;
       _diag('entry load: $_target');
-      // 开源审查 M2 P3-6：导航起航失败（区别于加载失败）不再裸奔成
+      // 导航起航失败（区别于加载失败）不再裸奔成
       // 未处理异步异常——错误态复用 _loadError 通道（重试按钮可恢复）。
       try {
         await controller.loadRequest(_target);
@@ -261,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }());
     _poll = Timer.periodic(const Duration(milliseconds: 700), (_) {
-      // 开源审查 M2 P3-12/M3 P3-5：WebView 不可用/错误视图态不空转轮询。
+      // WebView 不可用/错误视图态不空转轮询。
       if (_loadError != null || _controller == null) return;
       if (!_extracting) _tryExtract();
     });
@@ -303,7 +303,7 @@ class _LoginPageState extends State<LoginPage> {
       // 立即回规范地址：丢弃官方页注入的过期 sid/mid URL（H2），
       // 并以导航终止残留页（H3：不留写回窗口）。
       _diag('hygiene: navigate canonical $_target');
-      // 开源审查 M2 P3-6：起航失败兜底——下轮 finish/轮询不可达时用户
+      // 起航失败兜底——下轮 finish/轮询不可达时用户
       // 仍有错误视图重试出口，异常不裸奔。
       await controller.loadRequest(_target).catchError((Object e) {
         _diag('hygiene navigate FAILED: $e');
@@ -338,7 +338,7 @@ class _LoginPageState extends State<LoginPage> {
     if (controller == null) return;
     _extracting = true;
     try {
-      // review-fix-1（安全组）：收割面收口——只读官方 origin 的 localStorage
+      // 收割面收口——只读官方 origin 的 localStorage
       //（轮询期间 WebView 可能被外链带到第三方页，该页可在自己 origin 预置
       // zcodejwttoken 让我们把任意串存为账号凭据）+ JWT 三段形态校验。
       final url = await controller.currentUrl();
@@ -378,7 +378,7 @@ class _LoginPageState extends State<LoginPage> {
       try {
         // multi-account-ux-1 批2（2026-11-04 拍板）：登录只入库不改当前
         // 账号。用 store 默认智能语义（setActive=null：仅当 lastUsed 尚
-        // 空=首账号时自动设当前）——回测组3 P1-1 修正：显式 false 会把
+        // 空=首账号时自动设当前）—— P1-1 修正：显式 false 会把
         // 「首账号自动设当前」一并短路，全新安装后 lastUsed 永不存在，
         // 添加第二账号时"当前账号"静默翻转且 toast 撒谎。
         await app.accountStore.save(
@@ -392,7 +392,7 @@ class _LoginPageState extends State<LoginPage> {
         _diag('extract: save FAILED retries=$_saveRetries $e');
         debugPrint('[login] account save failed (retries=$_saveRetries): $e');
         if (_saveRetries >= 5) {
-          // 开源审查 M1 P2-1：不再静默死端——显式失败态给重试出口
+          // 不再静默死端——显式失败态给重试出口
           //（OAuth 已成功、token 仍在 localStorage，重试只需复位计数）。
           _done = true;
           _poll?.cancel();
@@ -423,7 +423,7 @@ class _LoginPageState extends State<LoginPage> {
           .pop(<String, String>{'jwt': jwt, 'provider': provider});
     } catch (e) {
       // runJavaScript 在页面跳转窗口会抛——下轮轮询重试。其余异常（编程
-      // 错误/状态机缺陷）至少 debugPrint 留痕（开源审查 M2 P3-11：原
+      // 错误/状态机缺陷）至少 debugPrint 留痕（：原
       // catch(_) 全静默，排查期零线索）。
       debugPrint('[login] extract error (nav window expected): $e');
     } finally {
@@ -439,7 +439,7 @@ class _LoginPageState extends State<LoginPage> {
       "localStorage.getItem('$key')",
     );
     // 返回形如 '"eyJ..."' 或 'null'——Android JSON 编码形态，含引号值的
-    // 正确解码见 [decodeWebViewJsStringResult]（开源审查 M2-P1-1 修复）。
+    // 正确解码见 [decodeWebViewJsStringResult]（P1-1 修复）。
     return decodeWebViewJsStringResult(raw);
   }
 
@@ -500,7 +500,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// 落库重试耗尽的失败横幅（开源审查 M1 P2-1）：人话说明+重试出口。
+  /// 落库重试耗尽的失败横幅：人话说明+重试出口。
   Widget _saveFailedBanner(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -558,7 +558,7 @@ class _LoginPageState extends State<LoginPage> {
               // 状态机后回规范地址重来。
               setState(() => _loadError = null);
               _hygiene.reset();
-              // 开源审查 M2 P3-6：起航失败不裸奔为未处理异步异常。
+              // 起航失败不裸奔为未处理异步异常。
               unawaited(
                 _controller?.loadRequest(_target).catchError((Object e) {
                   debugPrint('[login] retry loadRequest failed: $e');

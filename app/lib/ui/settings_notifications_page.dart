@@ -6,7 +6,7 @@ import '../state/app_state_scope.dart';
 import 'notify_guide_page.dart';
 import 'notify_ledger_page.dart';
 
-/// 通知设置子页（ADR 0028，2026-10-20）：审批提醒总开关 + 等审批/任务
+/// 通知设置子页（2026-10-20）：审批提醒总开关 + 等审批/任务
 /// 完成/目标进展三个通道开关 + 后台保障设置/通知台账两个入口——六项
 /// 原样自 settings_page 一级页迁入（文案/存储 key/控件行为不变，阶段 3
 /// 第二段的"零漏发"链路不动）。子页骨架同 notify_ledger_page。

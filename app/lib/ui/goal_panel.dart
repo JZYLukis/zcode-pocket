@@ -19,7 +19,7 @@ class GoalPanel extends StatefulWidget {
 }
 
 class _GoalPanelState extends State<GoalPanel> {
-  /// 默认折叠为一行（盲审 #1：chrome 区堆叠挤压内容区）；
+  /// 默认折叠为一行（ #1：chrome 区堆叠挤压内容区）；
   /// 点击展开详情与操作。
   bool _expanded = false;
 

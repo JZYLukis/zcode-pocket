@@ -62,12 +62,12 @@ class OfflineSendQueueController {
     app.addListener(_onAppChanged);
     unawaited(refresh());
     if (draftRestore != null) {
-      // 开源审查 A1-P1/A2-P1-1（离线开页死锁）：bucketProvider 依赖页面
+      // A1-P1/A2-P1-1（离线开页死锁）：bucketProvider 依赖页面
       // _draftIdentity——它在 draftRestore 内部异步就绪，arm 的同步
       // refresh 必然空跑（bucket==null 直接 return）。恢复完成后先重试
       // 装载再 drain：离线开页时已持久化的排队条目才能显示（可撤销），
       // online 边沿的 entries 门才有数据可比。
-      // 开源审查 E2-P3-9：whenComplete 会透传上游错误（unawaited 链上
+      // P3-9：whenComplete 会透传上游错误（unawaited 链上
       // 成 zone 未处理异步错误）——catchError 兜住。
       unawaited(
         draftRestore
@@ -93,7 +93,7 @@ class OfflineSendQueueController {
     final bridgeRestored = bridge != null && !identical(_lastBridge, bridge);
     _lastBridge = bridge;
     if ((backOnline || bridgeRestored) && !_draining) {
-      // 开源审查 A1-P1：online 边沿不信任内存 entries——离线开页时
+      // A1-P1：online 边沿不信任内存 entries——离线开页时
       // 装载窗口可能错过，先查 store 重载后再判 drain。
       _retryTimer?.cancel();
       host.scheduleDrain(() async {
@@ -102,7 +102,7 @@ class OfflineSendQueueController {
       });
       return;
     }
-    // 开源审查 E3-P2-3：非边沿的 notify 驱动不得旁路 15s 失败退避——
+    // P2-3：非边沿的 notify 驱动不得旁路 15s 失败退避——
     // replay 持续失败时（如新建桶陈旧选型被目录校验拒绝），每次
     // AppState notify（relay failure/引导事件）都会立即重走完整发送
     // 路径+刷错误横幅，退避形同虚设。退避计时器在场=由它统一驱动；
@@ -139,7 +139,7 @@ class OfflineSendQueueController {
     if (app == null || _disposed) return;
     if (app.bridge == null || app.phase != LinkPhase.online) {
       _lastPhase = app.phase;
-      // 开源审查 A2-P1-1：离线早退也要装载——持久化的排队条目先显示
+      // A2-P1-1：离线早退也要装载——持久化的排队条目先显示
       // （排队条可见/可撤销），重连边沿再补发。
       await refresh();
       return;
@@ -158,9 +158,9 @@ class OfflineSendQueueController {
         if (replayCommandId == null) {
           replayCommandId = generateUuid();
           await store.setCommandId(bucket, entry.id, replayCommandId);
-          // 开源审查 E2-P1-1/E3-P2-1（双发红线）：setCommandId 只等内存
+          // P1-1/E3-P2-1（双发红线）：setCommandId 只等内存
           // 不等盘尾——进程在「服务端已接受该 commandId」后、落盘 rename
-          // 完成前被杀，重启换新 ID 重放=同消息双发（ADR 0069 红线）。
+          // 完成前被杀，重启换新 ID 重放=同消息双发（ 红线）。
           // 先 await flush（操作队列+盘尾写全部落定）再发起发送。
           await store.flush();
           entry = SendQueueEntry(
@@ -171,12 +171,12 @@ class OfflineSendQueueController {
             commandId: replayCommandId,
           );
         }
-        // 开源审查 E1-P3-9：撤销与 drain 拾取竞态——pickup 后、replay 前
+        // P3-9：撤销与 drain 拾取竞态——pickup 后、replay 前
         // 用户撤销该条（cancel 只删存储）。replay 前二次确认条目仍是
         // 队首：已被撤销/消费则本轮终止（尚未发起发送，撤销语义成立）。
         final confirm = await store.entries(bucket);
         if (confirm.isEmpty || confirm.first.id != entry.id) break;
-        // 开源审查 A2-P1-2：单条重放的意外异常不再外泄（unawaited 链上
+        // A2-P1-2：单条重放的意外异常不再外泄（unawaited 链上
         // 是 zone 未处理错误）——按失败同语义处理（条目留存，commandId
         // 幂等保护下走 15s 重试），不中断其余条目的消费链。
         var ok = false;

@@ -238,7 +238,7 @@ void main() {
   });
 
   group('通道判定（系统默认/HMS 仅覆盖/隐藏）', () {
-    // ADR 0065 脱敏翻转：默认构建 hmsVoiceConfigured=false（VOICE_HMS
+    // 脱敏翻转：默认构建 hmsVoiceConfigured=false（VOICE_HMS
     // dart-define 缺省），系统通道是主体；HMS 仅经覆盖变量或测试缝打开。
     tearDown(() => sheet.debugVoiceHmsOverride = null);
 

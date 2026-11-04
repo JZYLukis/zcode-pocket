@@ -98,7 +98,7 @@ int? linePointHitIndex(double dx, double width, int n) {
 
 /// x 标签人话化："2026-10-18"→"10月18日"；小时粒度串（无日期前缀
 /// 匹配）退 shortChartDate 截短。
-/// 开源审查 N1 P3-10/N3 P3-4：日期+小时形态（today 档 'YYYY-MM-DD HH'）
+/// N1 P3-10/N3 P3-4：日期+小时形态（today 档 'YYYY-MM-DD HH'）
 /// 保留小时位——此前被 chartDayLabel 截成纯日期，24 个点全显同一天而
 /// x 轴标签却有小时；官方 buildHourlyAxis 纯 'HH:00:00' 形态不匹配本
 /// 分支、照走 shortChartDate。
@@ -143,10 +143,10 @@ double lineRangeTotal(List<ChartSeries> series) => series.fold<double>(
   (sum, s) => sum + s.values.fold<double>(0, (a, v) => a + v),
 );
 
-/// 环形图描边宽（painter 与命中判定共用——开源审查 N3 P3-3）。
+/// 环形图描边宽（painter 与命中判定共用—— N3 P3-3）。
 const double kDonutStroke = 18.0;
 
-/// 环形图半径（开源审查 N3 P3-3：原 height/2-6 的外缘=height/2+3 超出
+/// 环形图半径（ N3 P3-3：原 height/2-6 的外缘=height/2+3 超出
 /// 画布半高 ~3px（选中片 +5.5px），Stack 默认裁掉外缘环带；改扣
 /// stroke/2+3 让非选中外缘收进 3px、选中外缘恰好贴边）。
 double donutRadius(Size size) => size.height / 2 - kDonutStroke / 2 - 3;
@@ -182,7 +182,7 @@ int? donutHitIndex(Offset p, Size size, List<ChartSeries> series) {
   return null;
 }
 
-/// 热力图格子点选明细行：已退役（开源审查 N1 P3-2/N2-9：18074 结构化
+/// 热力图格子点选明细行：已退役（ N1 P3-2/N2-9：18074 结构化
 /// 明细卡替代后全仓零调用，删除；此处不留桩——需要时查 git 历史）。
 
 /// 模型饼图切片数据（官方范式 refs/ZCode/packages/ui/src/settings/

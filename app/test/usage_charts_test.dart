@@ -375,7 +375,7 @@ void main() {
       expect(a.shouldRepaint(b), isTrue);
       expect(a.shouldRepaint(DonutPainter(series: [_s('a', [1])])), isFalse);
     });
-    // heatDayDetailLine 已随生产代码删除（开源审查 N1 P3-2：18074
+    // heatDayDetailLine 已随生产代码删除（ N1 P3-2：18074
     // 结构化明细卡替代后全仓零调用的死代码）。
   });
 }

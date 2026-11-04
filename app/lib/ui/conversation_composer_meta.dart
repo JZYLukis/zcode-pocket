@@ -58,7 +58,7 @@ class ContextDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final usage = state.usage;
     final cw = usage?['contextWindow'];
-    // 数字守卫（开源审查 D1/D2/D3：usedTokens 缺失而 maxTokens>0 时
+    // 数字守卫（ D1/D2/D3：usedTokens 缺失而 maxTokens>0 时
     // used! 崩 build；String 形态漂移同炸——统一走 payload_guard 兜底）。
     final used = numOf(cw is Map ? cw['usedTokens'] : null) ?? 0;
     final max = numOf(cw is Map ? cw['maxTokens'] : null) ?? 0;
@@ -407,7 +407,7 @@ class InfoRow extends StatelessWidget {
 
     final cw = usage?['contextWindow'];
 
-    // 数字守卫（开源审查 D1-P2/D2-06/D3-P2-1）：usedTokens 缺失而
+    // 数字守卫（ D1-P2/D2-06/D3-P2-1）：usedTokens 缺失而
     // maxTokens>0 时旧 used! 空断言崩整页 build；与同文件
     // ContextDetailsCard 对齐走 payload_guard（缺字段/畸形形态按 0 兜底）。
     final used = numOf(cw is Map ? cw['usedTokens'] : null) ?? 0;

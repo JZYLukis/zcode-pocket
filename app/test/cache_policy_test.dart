@@ -5,7 +5,7 @@ import 'package:zcode_pocket/state/cache_policy.dart';
 import 'package:zcode_pocket/state/local_cache.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 
-/// 阶段 3 缓存策略与存储单测（docs/phase3-cache-design.md"测试与验收"节）：
+/// 阶段 3 缓存策略与存储单测（"测试与验收"节）：
 /// - 失效协议三分支（水位一致/不一致作废/快照未到先渲）
 /// - 一致水位判定（流式中间态/运行中不落盘）
 /// - 截尾（200 行/会话）

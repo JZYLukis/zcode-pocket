@@ -117,7 +117,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
 
   final Map<String, bool> _optimisticEnabled = {};
 
-  /// B29（parity-fix-1）：列表搜索（官方 SubagentsSection 搜索框对位，
+  /// B29：列表搜索（官方 SubagentsSection 搜索框对位，
   /// 按名称/描述过滤三段全量）。
   String _searchQuery = '';
   bool _searchOpen = false;
@@ -135,7 +135,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
   }
 
   Future<void> _toggle(Map<String, dynamic> agent, bool enabled) async {
-    // 乐观更新（盲审 #6：15s 往返期间受控开关回弹像"点击失败"）
+    // 乐观更新（ #6：15s 往返期间受控开关回弹像"点击失败"）
     setState(() => _optimisticEnabled['${agent['id']}'] = enabled);
     try {
       await _channel('setEnabled', {
@@ -371,7 +371,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
           // M3（审计）：官方 AgentUpdateParams 带 oldFilePath——改名/移动
           // 时缺失会写新文件不删旧文件，留下重复 agent。
           'oldFilePath': agent['path'] ?? '',
-          // A4（parity-fix-1，2026-10-29 审查实证）：官方 updateAgent=
+          // A4（2026-10-29 审查实证）：官方 updateAgent=
           // serialize(config)+整体覆写文件（subagentsService.ts:778-781）。
           // 编辑器只产出 7 字段——不透传既有字段的话，disallowedTools/
           // skills/permissionMode/background/mcpServers 会被抹掉。
@@ -405,7 +405,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
               )
             : const Text('子智能体', style: TextStyle(fontSize: AppType.uiLg)),
         actions: [
-          // B29（parity-fix-1）：列表搜索（官方 SubagentsSection 搜索框
+          // B29：列表搜索（官方 SubagentsSection 搜索框
           // 对位，名称/描述过滤三段）。
           IconButton(
             key: const ValueKey('subagent-search-toggle'),
@@ -1052,7 +1052,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
             children: [
               for (final c in _agentColors)
                 GestureDetector(
-                  // 盲审2#12：点击已选颜色=取消选择。
+                  // 点击已选颜色=取消选择。
                   onTap: () => setState(() => _color = _color == c ? null : c),
                   child: Container(
                     width: 30,
@@ -1074,7 +1074,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
           const SizedBox(height: 10),
           // F13：模型选择（目录=getTaskConfigOptions；空目录=继承默认）。
           DropdownButtonFormField<String?>(
-            // 盲审2#3：目录异步到达前 items 只有"继承默认"——value 必须在
+            // 目录异步到达前 items 只有"继承默认"——value 必须在
             // items 中否则 debug 断言崩溃；不在目录时退回 null（继承）。
             initialValue: _modelCatalog.any((m) => m['value'] == _selectedModel)
                 ? _selectedModel
@@ -1158,7 +1158,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
                     'name': name,
                     'description': desc,
                     'systemPrompt': prompt,
-                    // 全角/半角逗号都认（中文输入法默认全角，盲审 #7）
+                    // 全角/半角逗号都认（中文输入法默认全角， #7）
                     'tools': _tools.text
                         .split(RegExp(r'[,，]'))
                         .map((t) => t.trim())

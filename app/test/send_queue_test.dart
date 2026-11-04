@@ -106,7 +106,7 @@ class _MemorySendQueueStore extends SendQueueStore {
     _data[bucket.key]?.removeWhere((e) => e.id == id);
   }
 
-  // 桶键格式耦合钉子（开源审查 R2 P3-3）：removeSession/removeDevice 按
+  // 桶键格式耦合钉子：removeSession/removeDevice 按
   // jsonEncode 数组的 [0]=deviceSid / [3]=scope 位置解析——这是生产
   // SendQueueStore 的内部约定，此处复制了一份；键格式改动须同步此处
   // （真存储纯逻辑组在同文件，格式漂移会让那边先红，此处旅程组是第二道）。
@@ -175,7 +175,7 @@ class _QueueApp extends AppState {
   final sentCommandIds = <String?>[];
   var failNextSend = false;
 
-  /// 开源审查 A2-P1-2：createSession 闸门——挂起期间可模拟退页
+  /// A2-P1-2：createSession 闸门——挂起期间可模拟退页
   ///（重放建会话的网络往返窗口）。
   Completer<void>? createSessionGate;
 
@@ -332,7 +332,7 @@ void main() {
       expect(entries.map((x) => x.text), ['好条目']);
     });
 
-    // 开源审查 E2-P2-2：close 只置 _closed 不等盘尾——dispose→进程退出
+    // P2-2：close 只置 _closed 不等盘尾——dispose→进程退出
     // 窗口里最后一次 add/remove 的落盘可丢。对齐 DraftStore.close（内部
     // 先 await flush）。
     test('close 先等盘尾写完成再关门（收尾不丢最后一次落盘）', () async {

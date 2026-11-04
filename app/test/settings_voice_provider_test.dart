@@ -8,7 +8,7 @@ import 'package:zcode_pocket/ui/settings_voice_page.dart';
 
 /// 语音整理多提供商（2026-10-19）：设置页 UI 联动 widget 测试——
 /// 提供商切换、key 对话框标题/提示随提供商变化。
-/// 2026-10-20 设置页二级化（ADR 0028）：用例先从一级页点"语音输入"
+/// 2026-10-20 设置页二级化：用例先从一级页点"语音输入"
 /// 入口进子页再断言；新增一级"通知"入口可达 + 审批提醒开关走原
 /// setter 切换的用例。
 /// 存储处理与既有用例同款：测试环境 secure storage 不可用，UiPrefs
@@ -18,7 +18,7 @@ void main() {
     await tester.pumpWidget(
       AppStateScope(app: app, child: const MaterialApp(home: SettingsPage())),
     );
-    // 一级页点"语音输入"入口进语音子页（ADR 0028）。
+    // 一级页点"语音输入"入口进语音子页。
     await tester.tap(find.text('语音输入'));
     await tester.pumpAndSettle();
     // 语音区在列表深处——滚动到目标（revealSetting 同款手法）。

@@ -11,7 +11,7 @@ class SessionCreatedSubscriptionError implements Exception {
 
 /// 会话注册在 demote/close 清场窗口内被作废（注册代际/transport 身份/
 /// `_closing` 任一命中）。ComputerStack 包装层按本类型识别「等清场后
-/// 重试一次」的自愈路径（开源审查 I1 P3-7/I3 P3-2：此前靠错误文案子串
+//重试一次」的自愈路径（/：此前靠错误文案子串
 /// 匹配，文案一旦改动/本地化即静默退化为直接抛给页面）。
 ///
 /// 继承 StateError：注册表既有测试与调用方的 `on StateError` 处置继续

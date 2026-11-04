@@ -1,4 +1,4 @@
-/// 工作区项目树（ADR 0033 工作区列表修复）：官方 IProjectService.readTree
+/// 工作区项目树（ 工作区列表修复）：官方 IProjectService.readTree
 /// 与 workspace-bridge-open project intent 的消费层纯函数。
 ///
 /// 背景：3.16 起 workspace-list 的 workspaces[] 语义="当前窗口 tabs"，
@@ -20,7 +20,7 @@
 library;
 
 /// workspaceKey = workspaceIdentity.trim() || workspacePath
-/// （protocol-notes §2.1，web-remote-control.ts:837-841）。
+/// （web-remote-control.ts:837-841）。
 String? workspaceKeyOf(Map workspace) {
   final identity = workspace['workspaceIdentity'];
   if (identity is String && identity.trim().isNotEmpty) return identity.trim();

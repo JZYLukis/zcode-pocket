@@ -8,7 +8,7 @@ library;
 Duration backoffAfterFailures(int failCount) {
   // failCount<=0 无失败不退避；1,2,4 之后封顶 5。failCount≥63 时 1<<62
   // 起溢出（Dart 64 位 int 位移回绕为负/0，clamp 后错得 1 分钟）——
-  // 先行封顶保证语义恒为 5（开源审查 P1 P3-9；需连续失败 4h+，纯边界）。
+  // 先行封顶保证语义恒为 5（ P1 P3-9；需连续失败 4h+，纯边界）。
   final minutes = failCount <= 0
       ? 0
       : failCount >= 4

@@ -73,7 +73,7 @@ class SearchTargetFrame extends StatelessWidget {
 class CachedContent extends StatefulWidget {
   final List<Object?> cacheKey;
 
-  /// 惰性构建（开源审查 B3-P3-1）：命中时不再热构建 child——AssistantText
+  /// 惰性构建（ B3-P3-1）：命中时不再热构建 child——AssistantText
   /// 的 child 含 parseVisualizeSegments 全文正则与整棵子树，缓存命中期
   /// 的每帧重建是纯浪费。
   final Widget Function() childBuilder;
@@ -108,7 +108,7 @@ List<InlineSpan> buildSearchHighlightSpans(
   required TextStyle base,
   required TextStyle hit,
 }) {
-  // 开源审查 B1-P1-1/B2-P2-4/B3-P1-1：toLowerCase 对 İ（U+0130）等
+  // B1-P1-1/B2-P2-4/B3-P1-1：toLowerCase 对 İ（U+0130）等
   // 扩长字符改变码元长度，折叠串下标切原串会错位/RangeError——改用
   // 长度稳定折叠（foldCaseStable），命中下标恒在原串坐标系。
   final needle = foldCaseStable(query.trim());
@@ -189,11 +189,11 @@ class AssistantText extends StatelessWidget {
           // 稳定行渲染缓存（优化批 #8）：文本/流式态/高亮开关/搜索词
           // 未变时复用上次子树，跳过 MarkdownBody 全文重解析（宽屏约
           // 束在缓存外，尺寸变化经约束传导仍会重排）。
-          // 开源审查 B3-P3-1：键里的 header 由实例身份换成 rowId/
+          // B3-P3-1：键里的 header 由实例身份换成 rowId/
           // entityId 值——turnHeader 每次 upsert（文件变更/轮状态迁移）
           // 都换新实例，同轮全部 AssistantText 缓存被击穿=全文重解析，
           // 而 header 实际只被 VisualizeCard 读这两个值。
-          // 开源审查 B1-P3-9/B2-7/B3-P3-2：亮度掺键——span 里的命中
+          // B1-P3-9/B2-7/B3-P3-2：亮度掺键——span 里的命中
           // 底色/前景色在祖先 build 烘焙，主题切换（浅↔深）时 cacheKey
           // 不含亮度会复用旧主题配色的子树。
           child: CachedContent(
@@ -207,7 +207,7 @@ class AssistantText extends StatelessWidget {
               searchQuery,
               Theme.of(context).brightness,
             ],
-            // 开源审查 B3-P1-2：空关键词按无高亮处理——页面在搜索开启
+            // B3-P1-2：空关键词按无高亮处理——页面在搜索开启
             // 且输入为空时传 ''（非 null），缺非空守卫会让全部助手正文
             // 从 markdown 降级纯文本（与 UserBubble 的 isNotEmpty 守卫
             // 及上方注释契约对齐）。
@@ -278,7 +278,7 @@ class AssistantText extends StatelessWidget {
 }
 
 /// timelineMarker 的「─ 图标 文案 ─」标记行（官方 MarkerDividerRow 对
-/// 位）。开源审查 B2-1（lane 语义）：顶层（轮边界 lane，经
+/// 位）。 B2-1（lane 语义）：顶层（轮边界 lane，经
 /// TimelineMarkerItem）与段内（mid-turn compact，lane=assistantWork 落
 /// 进 TurnWork.work 由 conversation_turn_view 渲染）两处共用同一渲染。
 class TimelineMarkerDivider extends StatelessWidget {
@@ -392,7 +392,7 @@ class TurnTailActionsState extends State<TurnTailActions> {
     SnackBar(content: Text(t), duration: const Duration(seconds: 2)),
   );
 
-  /// B3（parity-fix-1）：conversationRowTargetSchema 的 entityId 必填
+  /// B3：conversationRowTargetSchema 的 entityId 必填
   /// （strict）——缺失时返回 null，调用方降级为纯本地操作（与 H1 的
   /// 行菜单口径一致；此前两处口径相反）。
   Map<String, dynamic>? get _target {
@@ -598,7 +598,7 @@ class UserBubble extends StatelessWidget {
     this.searchQuery,
   });
 
-  /// 盲审 #12：SelectionArea 会吃掉长按（选词），行操作菜单难触达——
+  /// #12：SelectionArea 会吃掉长按（选词），行操作菜单难触达——
   /// 把「编辑重发/更多」注入系统选词菜单，两条路径都通。
   Widget _selectableText(BuildContext context, String data) {
     final menu = onLongPress;
@@ -712,7 +712,7 @@ class UserBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-              // 盲审 #10：纯附件消息（空文本）不渲染空壳气泡。
+              // #10：纯附件消息（空文本）不渲染空壳气泡。
               if (text.trim().isNotEmpty)
                 // V2 审美优化：左缘 3px 品牌蓝竖条——「我的话」成为
                 // 长会话滚动的视觉锚点（评审 2.2#1）。竖条为独立元素

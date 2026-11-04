@@ -402,7 +402,7 @@ class InputBar extends StatelessWidget {
                                       // 长按不与点按冲突（无 onTap 竞技），
                                       // 触觉反馈提示已触发。
                                       child: GestureDetector(
-                                        // 开源审查 D1-P1/D2-P2/D3-P1-1
+                                        // D1-P1/D2-P2/D3-P1-1
                                         //（语音直发静默丢弃）：发送在途
                                         //（_sending=RPC/附件上传/held 等待
                                         // 可达分钟级）时长按拉起语音面板，

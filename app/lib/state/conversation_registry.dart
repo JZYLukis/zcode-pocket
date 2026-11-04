@@ -60,7 +60,7 @@ class ConversationRegistry {
   void _attachCacheWriter(String sessionId, ConversationState state) {
     final store = _cache;
     if (store == null) return;
-    // 覆盖旧条目先 detach（开源审查 I3 P3-1）：「交付即死」重试路径生成
+    // 覆盖旧条目先 detach：「交付即死」重试路径生成
     // 新 writer 覆盖 map 条目时，旧 writer 的 3s 落盘定时器还挂在已
     // dispose 的 state 上无人回收——多写一次陈旧快照+小对象滞留。
     final old = _cacheWriters[sessionId];
@@ -174,7 +174,7 @@ class ConversationRegistry {
     return future;
   }
 
-  /// park 进行中标志（开源审查批B组2 G2 P2-6/G3 P2-2/I1 P2-2，对照 demote
+  //park 进行中标志（ //，对照 demote
   /// 的 `_closing` 同步闸门范式）：suspendForBackground 在任何 await 之前
   /// 同步置位并先行登记驻留集合。旧实现先 await 全部 writer flush 再
   /// addAll——flush 窗口内回前台的 ensureConversation 查不到集合直接返回，
@@ -191,7 +191,7 @@ class ConversationRegistry {
     unawaited(
       conv.resumeParkedConversation(sessionId).then((resumed) {
         if (resumed) {
-          // 只在 resume 确有触发时摘牌（开源审查 G3 P2-2：旧实现先摘牌
+          // 只在 resume 确有触发时摘牌（：旧实现先摘牌
           // 再吞掉 false——park 循环随后把它真正驻留，前台会话帧永久停止）。
           _parkedConversations.remove(sessionId);
           _onLog('[battery] parked conversation resuming: $sessionId');
@@ -205,7 +205,7 @@ class ConversationRegistry {
         // 非 parking 态的 false（如订阅对象换代不在驻留态）：零副作用。
       }, onError: (Object _) {
         // resume 失败：驻留标记保留，transport 3s 重试链自愈；下次进入
-        // 页面 ensure 再触发（开源审查 I3 P3-9"已摘牌但未续订"死态）。
+        // 页面 ensure 再触发（"已摘牌但未续订"死态）。
       }),
     );
   }
@@ -225,7 +225,7 @@ class ConversationRegistry {
     }
     final conv = _transportProvider();
     if (conv != null) await conv.parkConversationSubscriptionsForBackground();
-    // 收尾对账（开源审查 I2 P2-1/G1 P2-1 registry 面）：flush/park 的
+    // 收尾对账（/ registry 面）：flush/park 的
     // await 窗口内新落地的注册既不在驻留集合也不曾被 park——保活分支下
     // 它是后台常驻的全速活订阅（电量红线，本机制要消灭的形态）。补登记
     // +补 park（幂等：已驻留的零副作用）。
@@ -280,7 +280,7 @@ class ConversationRegistry {
   Future<void> demote({bool awaitWrites = true}) {
     final inFlight = _closingFuture;
     if (inFlight != null) {
-      // 在飞合并语义（开源审查 I2 P3-3/I3 P3-8）：清场以先到者的
+      // 在飞合并语义：清场以先到者的
       // awaitWrites 执行——后到者要求等待落盘而先到者没有时（切工作区
       // 的 close(false) 在飞、suspend 路径 demote(true) 到达），追加等待
       // 已抛出的 fire-and-forget flush（_outstandingFlushes），保证

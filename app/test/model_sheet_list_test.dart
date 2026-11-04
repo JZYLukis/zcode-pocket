@@ -82,7 +82,7 @@ class _StartPlanCatalogApp extends _CatalogApp {
   ];
 }
 
-/// 开源审查 D2-01（套餐变体键插值）：同 providerId+同 modelId 的多变体
+/// D2-01（套餐变体键插值）：同 providerId+同 modelId 的多变体
 /// 目录——_dedupModels 归并一行，行内 ⇄ 是触达其余变体的唯一入口
 ///（18077 拍板「⇄ 仅保留同 provider 内多变体场景」）。
 class _VariantCatalogApp extends AppState {
@@ -279,7 +279,7 @@ void main() {
       reason: '选中行底部在屏内',
     );
     // 2026-10-26 验收二轮：再收紧 40（用户拍板；低于 44 触控下限，
-    // design_guard 豁免留痕 ADR 0049→0051）。
+    // design_guard 豁免留痕 →0051）。
     expect(
       box.size.height,
       greaterThanOrEqualTo(40),

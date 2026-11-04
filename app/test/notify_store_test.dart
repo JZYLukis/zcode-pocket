@@ -106,7 +106,7 @@ void main() {
       isFalse,
       reason: 'deduped 行不得被回填（H1-P3-02）',
     );
-    // 盲审9：回填不得新增行（原位替换，不是 append）
+    // 回填不得新增行（原位替换，不是 append）
     expect(s3.recentLedger(), hasLength(3));
     final s4 = newStore();
     await s4.load();

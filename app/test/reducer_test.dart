@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 
 /// ConversationState / SessionsIndexState reducer 单元测试。
-/// 帧结构依据 protocol-notes §2.4/§3.2（v4 规范 apply 三分支：
+/// 帧结构依据 /§3.2（v4 规范 apply 三分支：
 /// snapshot 整体替换 / toSeq<=本地seq 迟到重复丢弃 / fromSeq!=本地seq gap→resync）。
 void main() {
   ConversationState state() => ConversationState();
@@ -285,6 +285,6 @@ void main() {
   });
 }
 
-// （开源审查 R1 P3-4：删除尾部占位空函数 sessionsIndexTests——注释承诺
+// （：删除尾部占位空函数 sessionsIndexTests——注释承诺
 // 的 SessionsIndexState 同构覆盖从未兑现，实际由 task_list/notify 等间接
 // 驱动；占位只会误导读者以为有直测。）

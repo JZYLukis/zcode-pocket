@@ -8,7 +8,7 @@ import 'package:zcode_pocket/transport/relay_v2.dart';
 
 import 'fake_relay_v2.dart';
 
-/// 工作区项目树（ADR 0033 工作区列表修复）：
+/// 工作区项目树（ 工作区列表修复）：
 /// - 纯函数层（project_tree.dart）对照官方契约
 ///   （refs/new-snapshot services/src/project-storage/contract.ts:30-65）；
 /// - openBridge 的 project intent 线上载荷（对照 shared/src/validation.ts

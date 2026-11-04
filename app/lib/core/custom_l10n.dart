@@ -297,7 +297,7 @@ const _customEn = <String, String>{
   '运行在当前会话': 'runs in this conversation',
   '该产物没有可读的文本内容': 'This artifact has no readable text',
   '读取产物失败：': 'Failed to read artifact: ',
-  // review-fix-1（A7）：本周审查实锤的英文泄漏补齐（工作流/compact/
+  // 本周审查实锤的英文泄漏补齐（工作流/compact/
   // goalVerify/语音/子代理分页/任务状态）。
   '排队中': 'Queued',
   '已停止': 'Stopped',
@@ -530,7 +530,7 @@ const _customEn = <String, String>{
   // C/D：任务主页。
   '以前': 'Earlier',
 
-  // ── 开源审查批C组1（51 路审查 l10n 大扫除，2026-11-04）──
+  // ── （51 路审查 l10n 大扫除，2026-11-04）──
   // 各路报告双表 0 命中的漏网串补齐；分组注释标报告来源。
   // L1：任务主页/任务中心/归档。
   '凭据已失效（桌面可能刷新了二维码）':
@@ -588,7 +588,7 @@ const _customEn = <String, String>{
   '任务将从任务列表和归档列表中移除（官方同款语义，不可恢复）。':
       'The task will be removed from both the task list and the archive (same as the desktop; this cannot be undone).',
   '删除全部归档任务': 'Delete all archived tasks',
-  // L1 P3-1：归档语境的「恢复」是 Restore（官方词），不能沿用会话语境
+  // 归档语境的「恢复」是 Restore（官方词），不能沿用会话语境
   // 的 Resume——归档页按钮换独立键。
   '恢复任务': 'Restore task',
   // M3：设置/账号/配对/登录页面族。
@@ -702,7 +702,7 @@ const _customEn = <String, String>{
   '本机 ': 'Local ',
   '桌面端 ': 'Desktop ',
   ' · 桌面端 ': ' · Desktop ',
-  // Q1 P3-7：FGS 常驻通知文案（经 tr 在拼装前本地化）。
+  // FGS 常驻通知文案（经 tr 在拼装前本地化）。
   '未连接': 'Not connected',
   '连接异常': 'Connection error',
   '等待桌面端': 'Waiting for desktop',
@@ -745,7 +745,7 @@ const _customEn = <String, String>{
   '缓存于 ': 'Cached ',
   '加载失败，请稍后重试': 'Failed to load. Try again later',
   '相关消息不在当前已加载范围': 'The message is outside the loaded range',
-  // 回测组4 P2-2：usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
+  // P2-2：usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
   '网络连接不可用，请检查网络': 'Network unavailable. Check your connection',
   '数据为空，请稍后重试': 'No data yet. Try again later',
   // multi-account-ux-1 批2（2026-11-04 拍板）：添加账号语义收敛。
@@ -776,7 +776,7 @@ final _customPatterns = <_L10nPattern>[
   // multi-account-ux-1 批1：设备列表「以 {账号} 拉取」chip。
   _L10nPattern(RegExp(r'^以 ([\s\S]+) 拉取$'), 'Fetch with {account}', {'account': 1}),
 
-  // review-fix-1（A7）：插值成串的泄漏——tr() 只做精确匹配+regex，带
+  // 插值成串的泄漏——tr() 只做精确匹配+regex，带
   // 数值/变量的文案必须走 pattern（此前成组泄漏的根因）。
   // 18077 修复+优化批参数串。
   _L10nPattern(RegExp(r'^归档选中的 (\d+) 个任务？$'), 'Archive {n} selected tasks?', {'n': 1}),
@@ -941,7 +941,7 @@ final _customPatterns = <_L10nPattern>[
     'Deleted {n}; {failed} failed: {names}',
     {'n': 1, 'failed': 2, 'names': 3},
   ),
-  // ── 开源审查批C组1：动态参数串 pattern（2026-11-04）──
+  // ── ：动态参数串 pattern（2026-11-04）──
   // L1：搜索分区头（带括号计数）/归档页/移动到项目/新建切换/任务菜单
   // run() 失败前缀（ASCII 冒号形态：snack('$failPrefix: $e')）。
   _L10nPattern(RegExp(r'^置顶 \((\d+)\)$'), 'Pinned ({n})', {'n': 1}),
@@ -1161,7 +1161,7 @@ final _customPatterns = <_L10nPattern>[
     'Changes to {n} files will be restored to the state before this turn (including “{path}”; undo proceeds file by file, and files past the safety boundary are skipped). Chat history is not affected.',
     {'n': 1, 'path': 2},
   ),
-  // Q1 P3-7：FGS 常驻通知运行中后缀（标题为用户内容保持原文）。
+  // FGS 常驻通知运行中后缀（标题为用户内容保持原文）。
   _L10nPattern(
     RegExp(r'^(\d+) 个任务运行中$'),
     '{count} tasks running',

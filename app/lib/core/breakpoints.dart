@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 响应式断点（docs/ui-references.md §2.1）：
+/// 响应式断点：
 /// compact <600（折叠态单栏） / medium 600-840（展开态图标轨+内容） /
 /// expanded ≥840（三栏，平板/横屏预留）。
 enum AppFormFactor { compact, medium, expanded }
@@ -11,7 +11,7 @@ AppFormFactor formFactorOf(Size size) {
   return AppFormFactor.compact;
 }
 
-/// 折叠屏双形态（docs/PROJECT_PLAN.md 折叠屏适配章节）：
+/// 折叠屏双形态（ 折叠屏适配章节）：
 /// 展开/折叠实时切换时布局连续过渡、状态保持（状态在 provider 层，
 /// 不随 Widget 树重建丢失）。
 class FormFactorBuilder extends StatelessWidget {

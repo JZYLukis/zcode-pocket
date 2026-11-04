@@ -25,7 +25,7 @@ class SettingsAccountsPage extends StatefulWidget {
 }
 
 class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
-  /// 重命名对话框 controller 归 State 托管（回测组3 P2-6：此前取消路径
+  /// 重命名对话框 controller 归 State 托管（ P2-6：此前取消路径
   /// 在退场动画中立即 dispose、保存路径永不 dispose——同 branch_sheet
   /// 批D 教训，统一列表+dispose 清理）。
   final _dialogControllers = <TextEditingController>[];
@@ -62,7 +62,7 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
   Future<void> _addAccount() async {
     final result = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => const LoginPage()));
-    // 开源审查 M1 P3-8/M3 P3-4：await 后先查 mounted 再做 inherited 查找
+    // await 后先查 mounted 再做 inherited 查找
     //（防 defunct element 上的 dependOnInheritedWidget 断言）。
     if (!mounted) return;
     final app = AppStateScope.of(context);
@@ -81,7 +81,7 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
         const SnackBar(content: Text('账号已添加，当前账号未变')),
       );
     } else {
-      // 开源审查 M3 P2-2：登录页在 save 落盘与 pop 之间被用户按返回时
+      // 登录页在 save 落盘与 pop 之间被用户按返回时
       // pop(null)，但账号可能已写进 store——一律按“用户取消”处理会跳过
       // reload/reattach（删号重登场景复现“凭据在、连接全无”死态）。
       // null 也兜底刷新列表；reattach 幂等（活跃栈健在时 no-op 无副作用）。
@@ -132,9 +132,9 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
     // 18079 反馈②：走 AppState 完整编排（先删凭据、拆该账号全部连接
     // 栈+设备数据、活跃指针收尾）。WebView 的 Cookie 不在这里清——
     // 登录页每次进页都会平台级三清（Cookie/localStorage/Cache），在
-    // 这里全局清 Cookie 反而会把同时活着的网页备用入口（ADR 0070）
+    // 这里全局清 Cookie 反而会把同时活着的网页备用入口
     // 静默踢下线（审查 L2）。
-    // 开源审查 M2 P2-3/M3 P3-3：编排内 accountStore 的 secure storage
+    // 编排内 accountStore 的 secure storage
     // 多次读写（华为机型 Keystore 损坏并不罕见）抛出时兜底——人话报错
     // 并刷新列表反映真实状态（此前对话框已关、零反馈、“点了没反应”）。
     try {

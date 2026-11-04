@@ -8,7 +8,7 @@ import 'package:zcode_pocket/state/profile_store.dart';
 import 'package:zcode_pocket/state/send_queue_store.dart';
 import 'package:zcode_pocket/transport/z_transport.dart';
 
-/// 开源审查 E1 P2-2：归档任务必须联动清理草稿与离线排队（ADR 0059:30
+/// ：归档任务必须联动清理草稿与离线排队（:30
 /// 明文"删除任务/归档任务/电脑时清理对应草稿"）——deleteTask 链有清，
 /// archiveTask 三个 UI 入口（会话内/批量/单卡）全漏。不清理的实害：
 /// 断网排队中发给该会话的消息会在重连后被 drain 自动发给已归档会话。

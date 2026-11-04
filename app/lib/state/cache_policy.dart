@@ -1,4 +1,4 @@
-/// 阶段 3 缓存策略（纯函数，docs/phase3-cache-design.md 的代码化）。
+/// 阶段 3 缓存策略（纯函数， 的代码化）。
 ///
 /// 三类本地缓存共用的判定/淘汰/对账规则全部集中在此，存储层
 /// （local_cache.dart）只做 IO，接线层只做调度——策略可在无 IO 环境
@@ -84,7 +84,7 @@ class SessionCacheEntry {
       lastSeq: (m['lastSeq'] as num?)?.toInt() ?? 0,
       firstRowId: (m['firstRowId'] as num?)?.toInt(),
       totalCount: (m['totalCount'] as num?)?.toInt() ?? rows.length,
-      // 开源审查 E3-P3-9：前向兼容方向——旧读取端遇到未来 v3 条目应按
+      // P3-9：前向兼容方向——旧读取端遇到未来 v3 条目应按
       // 不可信处理（版本升级的意义恰是"旧读取端别信新写入端"），判定
       // 此前用 >= 会把 v3 误判 trusted。
       historyTrusted: v == schemaVersion,
@@ -170,7 +170,7 @@ class DeviceCacheEntry {
     List<Map<String, dynamic>> maps(Object? raw) => raw is List
         ? raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList()
         : const [];
-    // 开源审查 E2-P3-5：null 元素 '${null}' 产生的 "null" 死 id 不再混入
+    // P3-5：null 元素 '${null}' 产生的 "null" 死 id 不再混入
     // pinned/archived/deleted 集合（外来文件防御）。
     List<String> strings(Object? raw) => raw is List
         ? raw.whereType<String>().where((e) => e.isNotEmpty).toList()
@@ -227,7 +227,7 @@ List<Map<String, dynamic>> cacheHomeTaskRows(
     for (final t in tasks)
       if ('${t['taskId'] ?? ''}'.isNotEmpty)
         () {
-          // 开源审查 E2-P3-8：displayStatus 空串此前 `??` 不兜（只兜
+          // P3-8：displayStatus 空串此前 `??` 不兜（只兜
           // null）——空串+status=running 时既不命中清洗也不回退 status，
           // 读取预渲会冒充运行态。空串视为缺省回退 status。
           final ds = '${t['displayStatus'] ?? ''}'.trim();
@@ -350,7 +350,7 @@ List<(String, String)> evictSessions(
       doomed.add((m.deviceSid, m.sessionId));
     }
   }
-  // 再解决全局体积：剩余条目按最旧先删直到入预算（开源审查 E2-P3-4：
+  // 再解决全局体积：剩余条目按最旧先删直到入预算（P3-4：
   // remaining 构造时已过滤 doomed，循环内的 contains 恒假死行已删）。
   var remaining = <SessionCacheMeta>[];
   for (final e in entries) {

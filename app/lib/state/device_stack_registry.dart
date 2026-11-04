@@ -99,7 +99,7 @@ class DeviceStackRegistry {
     if (at == null || reason == null) return null;
     if (DateTime.now().difference(at) > const Duration(minutes: 2)) return null;
     final phase = _phaseProvider();
-    // 开源审查批B组2（I2 P1-1）：auth-required 的处置=拆栈，活跃栈没了
+    // auth-required 的处置=拆栈，活跃栈没了
     // phase 必落 offline——相位门若只放行 reconnecting/error，重登引导
     // 文案在它唯一的真实触发场景（服务端 401）里永不可达（横幅只在拆栈
     // 的短暂 await 窗口内闪现）。offline 档对 auth-required 放行。
@@ -147,7 +147,7 @@ class DeviceStackRegistry {
 
   String deviceLabelOf(String deviceSid) => _stacks[deviceSid]?.profile.label ?? '';
 
-  /// 持久活跃指针写入（开源审查 I2 P3-4/I1 P3-9/I3 P3-3）：串行链+陈旧
+  //持久活跃指针写入：串行链+陈旧
   /// 核对+失败留痕。unawaited 裸写有两笔账：①快速 A→B 切换（或删账号
   /// 收尾与并发 activate 交错）时写入与内存 activeSid 的最终一致性无
   /// 守卫，冷启动可能恢复到较旧的一台；②写入抛错是无主异步错误，重启
@@ -183,7 +183,7 @@ class DeviceStackRegistry {
     final old = _stacks.remove(sid);
     if (old != null) {
       old.removeListener(_onStackChanged);
-      // 换账号重连的拆栈收尾（开源审查 I3 P2-4，对齐 disposeStacksFor
+      // 换账号重连的拆栈收尾（对齐 disposeStacksFor
       // Account）：逐栈容错 + coordinator detach + 失败记录/设备缓存
       // 数据同步清——设备缓存按 deviceSid 分桶不带账号维度，不清则新
       // 账号接回同电脑首帧闪上一账号的任务缓存；_failureBySid 残留则
@@ -291,13 +291,13 @@ class DeviceStackRegistry {
     await store.removeProfile(sid);
     await _onRemoveDeviceData?.call(sid);
     _notifyCoordinatorProvider()?.detachStack(sid);
-    // 失败诊断记录同步清（开源审查 I2 P3-5/I3 P3-7）：2 分钟回捞窗内
+    // 失败诊断记录同步清：2 分钟回捞窗内
     // 不闪已删设备的旧横幅。
     _failureBySid.remove(sid);
     if (activeSid == sid) {
       activeSid = null;
       activeProfile = null;
-      // 先 reload 再挑下一台（开源审查 I1 P2-3/I3 P2-3）：早退路径此前
+      // 先 reload 再挑下一台：早退路径此前
       // 跳过 reloadProfiles，内存 profiles 滞留已删档案=幽灵条目（点按
       // 可为已删设备重建栈并持久化 activeDeviceSid）；从删除前的陈旧
       // 列表选 next 还会命中排首的被删档案自身（PF-4 自复活面）。
@@ -307,7 +307,7 @@ class DeviceStackRegistry {
         await activate(next);
         return;
       }
-      // 无其余可用档案：持久指针同步清（开源审查 I1 P3-3，对齐
+      // 无其余可用档案：持久指针同步清（对齐
       // disposeStacksForAccount 收尾）——冷启虽有 profileOf miss 兜底，
       // 对齐欠账清掉防恢复到已删档案。
       unawaited(_persistActiveDeviceSid(null));
@@ -329,7 +329,7 @@ class DeviceStackRegistry {
     _onNotify();
   }
 
-  /// 并发 activate 串行链（开源审查 I2 P3-1）：单次 activate 的指针
+  /// 并发 activate 串行链：单次 activate 的指针
   /// 写入段本就同步原子（两指针间无 await），但尾部 `await prev.demote()`
   /// 与后续 activate 的执行段交错时，多个 demote 的执行序不受控。整链
   /// 排队消灭该类交错；不改变最终归属（后到者仍然后写指针）。链本身
@@ -347,7 +347,7 @@ class DeviceStackRegistry {
 
   Future<void> _doActivate(DeviceProfile profile) async {
     if (profile.invalid) {
-      // 无效档案不建栈；指针二相一致（开源审查 I1 P3-1/I2 P3-2）：旧实
+      // 无效档案不建栈；指针二相一致：旧实
       // 现只写 activeProfile 不动 activeSid——「当前电脑」短暂指向无效
       // 档案而真实活跃栈还是旧电脑（draft 身份读 activeProfile、数据面
       // 读 _active，两相分叉直到下次栈 notify 才被覆盖回去）。就地选中
@@ -432,7 +432,7 @@ class DeviceStackRegistry {
   ///
   /// [lastUsedBefore]：删账号**之前**的 lastUsed（由调用方在读凭据删除
   /// 前捕获传入）——legacy 档案 accountId==null 的凭据取 lastUsed
-  /// （ADR 0051 启动迁移只在唯一账号时绑定），此刻 store 里的 lastUsed
+  /// （ 启动迁移只在唯一账号时绑定），此刻 store 里的 lastUsed
   /// 已被 removeAccount 改写，直接读会漏拆正用该账号凭据的 legacy 栈。
   Future<void> disposeStacksForAccount(
     String accountId, {
@@ -493,7 +493,7 @@ class DeviceStackRegistry {
         unawaited(_persistActiveDeviceSid(null));
       }
     }
-    // 早退不再跳过尾部 reload（开源审查 I1 P3-4）：activate 内部不刷
+    // 早退不再跳过尾部 reload：activate 内部不刷
     // profiles 列表，统一走此处兜底一次。
     await reloadProfiles();
   }
@@ -513,8 +513,8 @@ class DeviceStackRegistry {
     }
     switch (f.reason) {
       case 'auth-required':
-        // 开源审查批B组2（I1 P1-1/I3 P1-1/K1 P2-3 三路）：auth-required
-        // 收窄（ADR 0051「只清失败账号+只拆其名下栈」）此前被 null 旁路
+        // （//K1 P2-3 三路）：auth-required
+        // 收窄（「只清失败账号+只拆其名下栈」）此前被 null 旁路
         // 击穿——accountId==null 的 V2 档案（迁移未绑定的存量形态）凭据
         // 实际取 lastUsed，旧实现把 null 传给 clearAccount 触发全清（一次
         // 401 清光全部账号凭据+拆全部 V2 栈，多账号用户被整体登出）。
@@ -537,7 +537,7 @@ class DeviceStackRegistry {
             (p.accountId == failedAccount ||
                 (p.accountId == null && failedLastUsed == failedAccount));
         // 同步快照+摘表先行（对照 disposeStacksForAccount 已修范式，开源
-        // 审查 I1 P2-1/I2 P2-3：旧实现"先 await dispose 后 removeWhere"的
+        // 审查 /：旧实现"先 await dispose 后 removeWhere"的
         // 窗口内 activate 新建的栈会被尾部谓词摘表成孤儿——连接活着但
         // 注册表查不到且永远拆不掉）。本栈恒拆（兜底失败也拆）。
         final doomed = <String, ComputerStack>{};
@@ -554,14 +554,14 @@ class DeviceStackRegistry {
           try {
             await entry.value.disposeStack();
           } catch (e) {
-            // 逐栈容错（开源审查 I3 P2-2）：单栈 dispose 抛出不得中断其余
+            // 逐栈容错：单栈 dispose 抛出不得中断其余
             // 匹配栈的拆除（否则僵尸栈带着已清凭据继续重连循环）。
             _onLog('dispose stack on auth-required failed (contained): $e');
           }
           _notifyCoordinatorProvider()?.detachStack(doomedSid);
           _failureBySid.remove(doomedSid);
         }
-        // 活跃指针+持久 sid 收尾（开源审查 I3 P2-1，对齐 disposeStacksFor
+        // 活跃指针+持久 sid 收尾（对齐 disposeStacksFor
         // Account 的指针段）：拆的是活跃栈时清指针——防冷启自动激活凭据
         // 已失效的档案（重复"连→401→拆"循环）。失败横幅保留（2 分钟窗），
         // relayDiagnosis 对 auth-required 放行 offline 档（见该 getter），
@@ -581,7 +581,7 @@ class DeviceStackRegistry {
         final updated = profile.copyWith(invalid: true);
         _stacks.remove(sid);
         stack.removeListener(_onStackChanged);
-        // 逐栈容错+收尾对齐（开源审查 I2 P3-5/I3 P2-2）：dispose 抛出
+        // 逐栈容错+收尾对齐：dispose 抛出
         // 此前会中断后续 store/reload 收尾；detachStack/_failureBySid 清
         // 理对齐 removeComputer（残留仅卫生账：协调器侧重挂幂等自愈，
         // _failureBySid 2 分钟自过期）。

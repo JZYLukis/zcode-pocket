@@ -39,7 +39,7 @@ class UsageSnapshotCache<T> {
     _entries[key] = (value, now);
   }
 
-  /// 全量清空（开源审查 N2-7：系统时区变化后缓存键整体失效——按键
+  /// 全量清空（ N2-7：系统时区变化后缓存键整体失效——按键
   /// 隔离的旧时区条目不会再被命中，但清掉省内存且防 peek 兜底取旧时区值）。
   void clear() => _entries.clear();
 }
@@ -108,7 +108,7 @@ class _UsagePageState extends State<UsagePage>
   bool _appLoading = true;
   String? _appError;
 
-  /// 请求代际号（开源审查 N2-2）：_loadPlan/_loadApp 各自单调递增，在途
+  /// 请求代际号（ N2-2）：_loadPlan/_loadApp 各自单调递增，在途
   /// 响应携带的代际落后当前时整体丢弃（防旧档数据落新档缓存/覆盖 UI）。
   int _planGeneration = 0;
   int _appGeneration = 0;
@@ -192,7 +192,7 @@ class _UsagePageState extends State<UsagePage>
         _lastSeenPhase != LinkPhase.online && phase == LinkPhase.online;
     _lastSeenPhase = phase;
     if (!backOnline) return;
-    // 开源审查 N1 P3-8：后台的重连边沿不 force 双拉（每次 4 个 RPC 绕过
+    // N1 P3-8：后台的重连边沿不 force 双拉（每次 4 个 RPC 绕过
     // 两级缓存=无线电唤醒，电量红线同族漏网口）——回前台时 resumed 分支
     // 的常规刷新已兜住错误态重试（失败态不落缓存，非 force 也会真拉）。
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
@@ -221,7 +221,7 @@ class _UsagePageState extends State<UsagePage>
     }
   }
 
-  /// 回前台重读系统时区（开源审查 N2-7）：页面在导航栈长驻时 _timeZone
+  /// 回前台重读系统时区（ N2-7）：页面在导航栈长驻时 _timeZone
   /// 此前终身只读一次——出差改时区后缓存键与请求仍用旧时区（归桶偏移
   /// 与时区隔离修复都被绕过）。变化时清缓存 force 重拉。
   Future<void> _maybeRefreshTimeZone() async {
@@ -240,7 +240,7 @@ class _UsagePageState extends State<UsagePage>
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (!mounted) return;
-      // 开源审查 N2-4：页面被其他路由覆盖时（State 不 dispose、mounted
+      // N2-4：页面被其他路由覆盖时（State 不 dispose、mounted
       // 恒真）不空转双路 RPC——电量红线同族漏网档。
       final route = ModalRoute.of(context);
       if (route != null && !route.isCurrent) return;
@@ -262,7 +262,7 @@ class _UsagePageState extends State<UsagePage>
     WidgetsBinding.instance.removeObserver(this);
     _recoveryAppRef?.removeListener(_onAppChangedForRecovery);
     _refreshTimer?.cancel();
-    // 开源审查 N3 P3-7：ChangeNotifier 处置惯例（监听者随弹层卸载，无
+    // N3 P3-7：ChangeNotifier 处置惯例（监听者随弹层卸载，无
     // 实际泄漏，补齐 dispose 契约）。
     _resetBusy.dispose();
     _tabs.dispose();
@@ -279,7 +279,7 @@ class _UsagePageState extends State<UsagePage>
       _entLoadedAt = null;
       _resetStatus = null;
       _resetLoadedAt = null;
-      // 开源审查 N1 P3-7/N3 P3-8：切换套餐来源复位家族回退标记——否则
+      // N1 P3-7/N3 P3-8：切换套餐来源复位家族回退标记——否则
       // 一次回退后终身置位，换档后应换族重试的场景被拦死成「未开通」。
       _familyFallbackTried = false;
     });
@@ -311,7 +311,7 @@ class _UsagePageState extends State<UsagePage>
           as Map<String, dynamic>;
 
   Future<void> _loadPlan({bool force = false}) async {
-    // 请求代际（开源审查 N2-2）：弱网在途窗口（12s 超时）内切档，旧档
+    // 请求代际（ N2-2）：弱网在途窗口（12s 超时）内切档，旧档
     // 响应按"新档缓存键"落盘会把 7 天数据写进 30 天桶——代际号+缓存键
     // 在 await 前捕获，过期响应整体丢弃。
     final gen = ++_planGeneration;
@@ -356,7 +356,7 @@ class _UsagePageState extends State<UsagePage>
           '[usage] entitlement family=$_family reason=$reason '
           'provider=${ent?['provider']}',
         );
-        // 开源审查 N3 P2-3：entitlement 最长 12s，期间用户可能已退出页面
+        // N3 P2-3：entitlement 最长 12s，期间用户可能已退出页面
         // ——回退递归前先查 mounted（递归入口的 AppStateScope.of 会作用于
         // defunct element）。
         if (!mounted) return;
@@ -380,7 +380,7 @@ class _UsagePageState extends State<UsagePage>
         // 只缓存成功态（问题② 2026-10-25）：失败 null 也落缓存时，一次
         // 瞬时失败（中继超时等）后该档永远空图表，切档也不会重试，只能
         // 手动下拉——个人套餐热力图「不显示」的持久化路径。
-        // put 用捕获键+完成时刻（开源审查 N2-2/N1：避免慢响应按请求时刻
+        // put 用捕获键+完成时刻（ N2-2/N1：避免慢响应按请求时刻
         // 计 TTL 缩短有效新鲜度）。
         if (cp != null && gen == _planGeneration) {
           _cpCache.put(cacheKey, cp, DateTime.now());
@@ -392,7 +392,7 @@ class _UsagePageState extends State<UsagePage>
         if (reason.isEmpty) {
           _ent = ent;
           _entLoadedAt = entCached ? _entLoadedAt : DateTime.now();
-          // 开源审查 N2-10/N3 P3-8：成功态复位家族回退标记——下次失败
+          // N2-10/N3 P3-8：成功态复位家族回退标记——下次失败
           // （换 provider 后猜错家族）允许再回退一次，而非页面终身一次。
           _familyFallbackTried = false;
           // H15-2（2026-10-29 批次）：额度卡成功但图表聚合失败（cp=null，
@@ -427,7 +427,7 @@ class _UsagePageState extends State<UsagePage>
         _cpRefreshing = false;
       });
       // 重置额度礼包与套餐档同源同路（bridge 已在上方非空短路；失败
-      // 静默不扰套餐面）。开源审查 N2-6：礼包是增益面（自带静默失败），
+      // 静默不扰套餐面）。 N2-6：礼包是增益面（自带静默失败），
       // 不再 await 拖住 RefreshIndicator——force 下两段 RPC 各 15s 超时
       // 会让转圈在额度卡就绪后再挂 15-30s。
       unawaited(_loadResetStatus(bridge, force: force));
@@ -437,7 +437,7 @@ class _UsagePageState extends State<UsagePage>
         setState(() {
           // SWR：已有数据保留旧值+顶部指示消失，不整页翻错。
           if (_ent == null) {
-            // 18077 验收#18 +开源审查 N2-12/N3 P3-6：超时/断连/其它异常
+            // 18077 验收#18 + N2-12/N3 P3-6：超时/断连/其它异常
             // 统一人话分类，原始异常只进日志。
             _cpError =
                 '${_friendlyLoadError(e)}\n'
@@ -450,7 +450,7 @@ class _UsagePageState extends State<UsagePage>
     }
   }
 
-  /// 加载异常→人话（开源审查 N2-12/N3 P3-6）：TimeoutException/断连/
+  /// 加载异常→人话（ N2-12/N3 P3-6）：TimeoutException/断连/
   /// ChannelRpcError 分档；原始异常串只进 debugPrint，不上屏。
   String _friendlyLoadError(Object e) {
     if (e is TimeoutException) return tr('网络不佳，加载超时');
@@ -493,7 +493,7 @@ class _UsagePageState extends State<UsagePage>
           ],
           timeout: const Duration(seconds: 15),
         );
-        // 开源审查 N3 P3-10：成功后才吃掉 10min 节流——请求发出前置位时，
+        // N3 P3-10：成功后才吃掉 10min 节流——请求发出前置位时，
         // 瞬时失败（超时/断连）也会错过整个礼品窗；服务端本有 next_try_at
         // 冷却兜底，失败重发无害。
         _opportunityAskedAt = DateTime.now();
@@ -704,7 +704,7 @@ class _UsagePageState extends State<UsagePage>
                 sheetContext,
               )
             : null,
-        // 开源审查 N3 P3-9：40<44dp 触控纪律下限。
+        // N3 P3-9：40<44dp 触控纪律下限。
         style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
         child: const Text('重置'),
       ),
@@ -762,12 +762,12 @@ class _UsagePageState extends State<UsagePage>
   }
 
   Future<void> _loadApp({bool force = false}) async {
-    // 请求代际+缓存键捕获（开源审查 N2-2：在途切档防旧档数据落新档桶）。
+    // 请求代际+缓存键捕获（ N2-2：在途切档防旧档数据落新档桶）。
     final gen = ++_appGeneration;
     final cacheKey = _appCacheKey;
     // ④：60s TTL 内非强制命中直接返回（旧实现永久命中——统计不更新根因）。
     if (!force && _appCache.get(cacheKey, DateTime.now()) != null) {
-      // 开源审查 N1 P3-11：命中早退顺带清残留错误行——错误态下缓存条目
+      // N1 P3-11：命中早退顺带清残留错误行——错误态下缓存条目
       // 仍在 TTL 内时（重试成功过一档），周期 tick 早退会让旧错误行挂到
       // 下一拍。
       if (_appError != null) setState(() => _appError = null);
@@ -779,7 +779,7 @@ class _UsagePageState extends State<UsagePage>
       setState(() {
         // 错误行由 build 内联在旧数据下方（SWR 保旧值，对齐套餐 tab）
         // ——栈被拆时不整段顶掉已在屏的图表。
-        // 开源审查 N1 P2-1：预译（渲染端 '加载失败：{x}' 走 pattern，
+        // N1 P2-1：预译（渲染端 '加载失败：{x}' 走 pattern，
         // 占位不递归——赋值处先 tr 防止捕获段残留中文）。
         _appError = tr('未连接电脑');
         _appLoading = false;
@@ -814,7 +814,7 @@ class _UsagePageState extends State<UsagePage>
         if (data != null) {
           _appCache.put(cacheKey, data, DateTime.now());
         } else if (_appCache.peek(cacheKey) == null) {
-          // 开源审查 N2-11：空体/非 Map 响应不再静默——无旧值可渲染时
+          // N2-11：空体/非 Map 响应不再静默——无旧值可渲染时
           // 给人话错误（此前页面只剩档位 chip 的静默空白）。
           _appError = tr('数据为空，请稍后重试');
         }
@@ -827,7 +827,7 @@ class _UsagePageState extends State<UsagePage>
           // N1/N2/N3（SWR 对齐套餐 tab H15-2）：重验失败不整段顶掉在屏
           // 内容——错误行由 build 内联在 peek 旧值下方，仅首载无旧值时
           // 独占展示。
-          // 18077 验收#18 +开源审查 N2-12/N3 P3-6：异常人话分类。
+          // 18077 验收#18 + N2-12/N3 P3-6：异常人话分类。
           _appError = _friendlyLoadError(e);
           _appLoading = false;
         });
@@ -901,7 +901,7 @@ class _UsagePageState extends State<UsagePage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                // 开源审查 N1 P2-1：去掉 translate:false——五条 reason
+                // N1 P2-1：去掉 translate:false——五条 reason
                 // 人话均已入词典（超时分支赋值处已预译为纯英文，tr 对无
                 // CJK 串原样返回，不受影响）。
                 _cpError!,
@@ -984,7 +984,7 @@ class _UsagePageState extends State<UsagePage>
           if (_resetStatus?.hasAny == true) ...[
             const SizedBox(height: 8),
             Center(
-              // 开源审查 N1 P3-4/N3 P3-1：秒针收进徽标自带 Timer——此前
+              // N1 P3-4/N3 P3-1：秒针收进徽标自带 Timer——此前
               // 页面级 1Hz setState 重建整页（双 tab 全部子树）；多机会/
               // 小时以上档每秒产物相同，30s 一拍足够。
               child: _ResetBadge(status: _resetStatus!, onPressed: _showResetSheet),
@@ -1019,7 +1019,7 @@ class _UsagePageState extends State<UsagePage>
               ),
             ),
           ],
-          // 开源审查 N1 P3-3：section 构建函数只调一次（原 null 检查+
+          // N1 P3-3：section 构建函数只调一次（原 null 检查+
           // 取值各调一次，解析/排序/建序列全部翻倍）。
           if (_activitySection() case final activity?) ...[
             const SizedBox(height: 14),
@@ -1113,11 +1113,11 @@ class _UsagePageState extends State<UsagePage>
   }
 
   String _refreshedAt() {
-    // 数字守卫（开源审查 N2-5）：serverTime/generatedAt 漂移成 ISO 字符串
+    // 数字守卫（ N2-5）：serverTime/generatedAt 漂移成 ISO 字符串
     // 时不再整段抛错，安全退 '-'。
     final ms =
         numOf(_ent?['serverTime']) ?? numOf(_ent?['generatedAt']);
-    // 上界守卫（开源审查 N1 P3-5）：超 Dart epoch 合法域（±8.64e15ms）
+    // 上界守卫（ N1 P3-5）：超 Dart epoch 合法域（±8.64e15ms）
     // 的畸形值在 build 链上抛 ArgumentError——退 '-'。
     if (ms == null || ms < 0 || ms > 8640000000000000) return '-';
     final t = DateTime.fromMillisecondsSinceEpoch(ms.toInt()).toLocal();
@@ -1265,7 +1265,7 @@ class _UsagePageState extends State<UsagePage>
   Widget? _cpTrend() {
     final mu = _cp?['modelUsage'];
     if (mu is! Map) return null;
-    // xTime 守卫（开源审查 N2-5/N3-P2-1）：cast<String>() 是懒转换，
+    // xTime 守卫（ N2-5/N3-P2-1）：cast<String>() 是懒转换，
     // 非 String 元素的异常推迟到 painter 访问处（paint 期崩）——改
     // whereType 即时过滤。
     final xTime =
@@ -1421,7 +1421,7 @@ class _UsagePageState extends State<UsagePage>
                 child: Row(
                   children: [
                     Expanded(
-                      // 开源审查 N1 P2-1：整串交词典走
+                      // N1 P2-1：整串交词典走
                       // `^加载失败：([\s\S]+)$` pattern（裸前缀 tr 不命中
                       // 词条；_appError 赋值处已预译）。
                       child: Text(
@@ -1479,7 +1479,7 @@ class _UsagePageState extends State<UsagePage>
           ),
         ),
       ],
-      // 开源审查 N1 P3-3：section 构建函数只调一次（原双调用翻倍重算）。
+      // N1 P3-3：section 构建函数只调一次（原双调用翻倍重算）。
       if (_appTrend(data) case final trend?) ...[
         const SizedBox(height: 14),
         trend,
@@ -1704,7 +1704,7 @@ class _UsagePageState extends State<UsagePage>
           if (i > 0)
             Divider(height: 1, thickness: 0.5, color: context.colors.border),
           InkWell(
-            // 开源审查 N3 P2-2：键拼入索引——重名切片（modelId 缺失/重复
+            // N3 P2-2：键拼入索引——重名切片（modelId 缺失/重复
             // 统一落「未知」）不再产生兄弟重复 key（debug 断言崩溃）。
             key: ValueKey('donut-legend-$i-${pie.slices[i].name}'),
             onTap: () => pick(i),
@@ -1888,7 +1888,7 @@ class _UsagePageState extends State<UsagePage>
   }
 
   /// 图例：圆点+名称单行横滑（18074 验收，桌面对位）——数值由点选明细
-  /// 行与环形清单承载，不内联。开源审查 N1 P3-1/N2-9/N3 P3-2：退役的
+  /// 行与环形清单承载，不内联。 N1 P3-1/N2-9/N3 P3-2：退役的
   /// unit/decimals/valueFormatter/rangeTotals 参数与调用方的无效实参
   /// （rangeTotals 每帧构建后即被丢弃）一并删除。
   Widget _chartLegend(List<ChartSeries> series) {
@@ -1936,7 +1936,7 @@ class _Metric {
   const _Metric(this.label, this.value);
 }
 
-/// 重置礼包徽标（开源审查 N1 P3-4：自带倒计时 Timer，秒针只重建本行
+/// 重置礼包徽标（ N1 P3-4：自带倒计时 Timer，秒针只重建本行
 /// 而非整页）。多机会/小时以上档倒计时产物每秒相同——降为 30s 一拍；
 /// 分秒档（单机会<1h）才逐秒走表。
 class _ResetBadge extends StatefulWidget {
@@ -2469,7 +2469,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // 开源审查 N2-8：0 级/空格实际渲染 emptyCell（18074 验收
+                // N2-8：0 级/空格实际渲染 emptyCell（18074 验收
                 // 调灰），greens[0] 在图上永不出现——图例首格同步用
                 // emptyCell，色样与图面一致。
                 for (final c in [

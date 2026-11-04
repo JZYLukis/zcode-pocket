@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 /// 断网消息排队（阶段 6.6②，2026-10-29 批次）：断连期（90s 后台断连
 /// 窗口/冷启动未连/切工作区期）发送的消息入队，重连后自动按序发出。
 ///
-/// 安全边界（ADR 0059 结果未知红线）：队列**只装从未发起过发送的消息**
+/// 安全边界（ 结果未知红线）：队列**只装从未发起过发送的消息**
 /// ——入队发生在"无桥前置判定"，不经 RPC；发送在途/半途失败仍走会话页
 /// 既有暂存与「结果未知」机制，永不自动重发已尝试过的发送。
 class SendQueueEntry {
@@ -20,9 +20,9 @@ class SendQueueEntry {
   final Map<String, dynamic>? config;
   final int queuedAt;
 
-  /// review-fix-1（队列双发组）：首次重放前分配并持久化的 commandId——
+  /// ：首次重放前分配并持久化的 commandId——
   /// accepted 后、出队落盘前崩溃的窗口里，重启重放沿用同一 ID（服务端
-  /// 幂等表去重），守住"永不自动重发已尝试发送"红线（ADR 0069）。
+  /// 幂等表去重），守住"永不自动重发已尝试发送"红线。
   final String? commandId;
 
   const SendQueueEntry({
@@ -52,7 +52,7 @@ class SendQueueEntry {
       id: id,
       text: text,
       config: config is Map ? config.cast<String, dynamic>() : null,
-      // 开源审查 E1-P1-1：queuedAt 非 num（损坏/历史版本/外来写入）此前
+      // P1-1：queuedAt 非 num（损坏/历史版本/外来写入）此前
       // `as num?` 直接抛 TypeError——从 _ensureLoaded 一路抛穿致 _loaded
       // 永不置位，整库永久哑弹（entries 恒空、add 静默丢消息）。
       queuedAt: queuedAt is num ? queuedAt.toInt() : 0,
@@ -80,7 +80,7 @@ class SendQueueBucket {
 
 /// 队列存储：单文件原子写+操作串行（对齐 DraftStore 的持久化纪律）；
 /// 单条形态异常跳过不拖垮整库；写盘串行尾巴（多次变更合并为最终态）。
-/// 开源审查 E1-P3-4/E3-P3-8：entriesChanged 回调全库无人接线（UI 实际
+/// P3-4/E3-P3-8：entriesChanged 回调全库无人接线（UI 实际
 /// 经页面手动 refresh），死代码已删。
 class SendQueueStore {
   SendQueueStore(this._file);
@@ -124,7 +124,7 @@ class SendQueueStore {
       if (decoded is! Map || decoded['version'] != 1) {
         throw const FormatException('unsupported send queue store');
       }
-      // 开源审查 E2-P2-3：buckets 缺失/非 Map 此前被当"合法空库"装载
+      // P2-3：buckets 缺失/非 Map 此前被当"合法空库"装载
       // → 下一次 add 全量覆盖原文件=磁盘上待发消息静默清空。对齐
       // DraftStore 的防御 throw，落进下方隔离自愈路径。
       final buckets = decoded['buckets'];
@@ -136,7 +136,7 @@ class SendQueueStore {
         if (list is! List) continue;
         final entries = <SendQueueEntry>[];
         for (final raw in list) {
-          // 开源审查 E1-P1-1：逐条 try/on（对齐 DraftStore）——单条形态
+          // P1-1：逐条 try/on（对齐 DraftStore）——单条形态
           // 异常（类型错乱/畸形）跳过不拖垮整库。
           try {
             if (raw is! Map) continue;
@@ -151,7 +151,7 @@ class SendQueueStore {
         if (entries.isNotEmpty) _buckets['${e.key}'] = entries;
       }
     } on Object catch (error) {
-      // 开源审查 E1-P1-1/E2-P2-1/E3-P1-1（库损坏静默失效三路）：整库级
+      // P1-1/E2-P2-1/E3-P1-1（库损坏静默失效三路）：整库级
       // 失败此前不置 loaded → entries 恒空（已排队消息永不重放）、add 被
       // catchError 静默吞（UI 清了输入框但什么都没发生）、零日志。隔离
       // 自愈：坏文件改名 .corrupt 保留（人工可找回），重建空库继续服务；
@@ -177,7 +177,7 @@ class SendQueueStore {
   )
           .catchError((_) => const <SendQueueEntry>[]);
 
-  /// 每桶条目软上限（开源审查 E1-P3-6：断网期可连发任意多条，队列文件
+  /// 每桶条目软上限（P3-6：断网期可连发任意多条，队列文件
   /// 无界增长且重连后 120ms 间隔连发洪泛——超限丢最旧并留痕）。
   static const maxQueuedEntries = 50;
 
@@ -269,7 +269,7 @@ class SendQueueStore {
     }
   }
 
-  /// review-fix-1（队列双发组）：为条目钉住 commandId（首次重放前调用，
+  /// ：为条目钉住 commandId（首次重放前调用，
   /// 持久化先于发送——崩溃窗口内重启后沿用同一 ID 重放，服务端幂等表
   /// 去重，守住"永不自动重发已尝试发送"红线）。
   Future<void> setCommandId(
@@ -292,7 +292,7 @@ class SendQueueStore {
     _scheduleWrite();
   }).catchError((_) {});
 
-  /// 退后台即时落盘。review-fix-1（队列双发组）：先等操作队列再等盘
+  /// 退后台即时落盘。：先等操作队列再等盘
   /// 尾——此前只等 _diskTail，仍在 _operations 排队的 add 不在盘尾里，
   /// 退后台瞬杀可丢"UI 已显示排队"的消息（对齐 DraftStore 语义）。
   Future<void> flush() async {
@@ -300,7 +300,7 @@ class SendQueueStore {
     await _diskTail;
   }
 
-  /// close 先等已入链的盘尾写完成再关门（开源审查 E2-P2-2：原实现只置
+  /// close 先等已入链的盘尾写完成再关门（P2-2：原实现只置
   /// _closed 不等盘尾——dispose→进程退出的窗口里最后一次 add/remove 的
   /// 落盘可丢；对齐 DraftStore.close 的先 flush 语义）。
   Future<void> close() => _serial<void>(() async {

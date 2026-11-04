@@ -132,7 +132,7 @@ String branchIssuesMessage(List<dynamic> issues) {
     'invalid-branch-name' => '分支名不合法（含空格/特殊字符/中文斜杠等）',
     _ => null,
   };
-  // 开源审查 K1-P3-13：兜底不再渲染空括号（「切换失败（）」——本项目
+  // K1-P3-13：兜底不再渲染空括号（「切换失败」——本项目
   // 曾有专案根除史）。优先级：官方 message（服务端人话，信息量最大）→
   // 未知 code（稳定枚举式码，可回溯）→ 通用文案。
   if (mapped != null) return mapped;

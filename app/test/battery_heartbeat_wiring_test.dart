@@ -9,7 +9,7 @@ import 'package:zcode_pocket/transport/z_transport.dart';
 /// - 优化批 #16/#17（2026-10-31）：退后台档位表重排——
 ///   ①审批提醒开（保活分支）：30s 慢档心跳 + 驻留会话明细订阅
 ///     （suspendConversationSubscriptions——桌面活跃会话持续推流式帧
-///     是保活档后台耗电主因，真机 660mAh/h 实证，docs/battery-measure.md
+/// 是保活档后台耗电主因，真机 660mAh/h 实证，
 ///     2026-10-30 节）；
 ///   ②审批提醒关（90s 断连倒计时窗口）：完全静默（setRelaySilent——
 ///     不发心跳不看门狗，服务器 120s 静默容忍已实证；battery-heartbeat-2

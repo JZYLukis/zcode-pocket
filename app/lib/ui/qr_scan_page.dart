@@ -11,7 +11,7 @@ import '../core/theme.dart';
 /// 扫码添加电脑：对准桌面端远程控制二维码，扫到后 pop 返回 URL 文本。
 /// 相机不可用（未授权/模拟器）时提示改用粘贴链接。
 ///
-/// 18092 扫码黑屏终局方案（ADR 0080 §9）：**不再挂载 MobileScanner 预览
+/// 18092 扫码黑屏终局方案：**不再挂载 MobileScanner 预览
 /// 纹理**——agent 自动复现实证，相机纹理（Flutter texture registry）的
 /// 生命周期在部分华为机型会把渲染管线楔死（窗口黑、进程健康；Skia 回退/
 /// 停流先行/帧看门狗三层防御均不治，帧仍在产但合成器输出黑=检测面之
@@ -60,7 +60,7 @@ class _QrScanPageState extends State<QrScanPage> {
     super.dispose();
   }
 
-  /// 相机错误浮出到页面级（开源审查批B组5，M1 P1-1/M2 P2-1）：
+  //相机错误浮出到页面级：
   /// `_cameraError` 此前是死状态——mobile_scanner 默认 errorBuilder 渲染
   /// 在 0×0 挂载盒内不可见，权限被拒/无相机=静默死页。一次性闩锁
   /// （mobile_scanner 的错误态不随重试自动清除）；错误态只出文字提示+
@@ -83,7 +83,7 @@ class _QrScanPageState extends State<QrScanPage> {
 
   /// 停流后再退出（18091 根治层 2，保留）：检测命中与系统返回统一走
   /// "停相机→等一拍→pop"，彻底避免与路由转场并发。
-  /// 开源审查 M2 P3-9：stop 加 1s 超时——异常设备上 stop 挂起时返回键
+  /// ：stop 加 1s 超时——异常设备上 stop 挂起时返回键
   /// 会被永久吞掉（_handled 已置位+pop 永不到达）。
   Future<void> _stopCameraThenPop([String? result]) async {
     if (_handled) return;

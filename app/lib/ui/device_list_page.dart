@@ -14,7 +14,7 @@ import '../transport/relay_v2.dart';
 import 'login_page.dart';
 import 'settings_accounts_page.dart';
 
-/// 自动落点（官方 resolveAutoConnectSid 简化版，ADR 0032）：
+/// 自动落点（官方 resolveAutoConnectSid 简化版）：
 /// **恰好一台在线** → 直接连它；否则展示列表让用户选。
 /// （官方的"最近 sid/同 mid 唯一在线"完整规则依赖历史偏好持久化——
 /// 装机实测批次再补，先保守。）
@@ -53,11 +53,11 @@ class _DeviceListPageState extends State<DeviceListPage> {
   String? _error;
   bool _connecting = false;
 
-  /// 401（凭据失效）标记（开源审查 M1 P2-2）：错误视图给「重新登录」
+  /// 401（凭据失效）标记：错误视图给「重新登录」
   /// 出口——按 relay 语义 401=清会话回登录，重试永远再 401。
   bool _authRequired = false;
 
-  /// 连接失败的条内错误（开源审查 M1 P3-10/M2 P3-6/M3 P3-2）：不再顶掉
+  //连接失败的条内错误：不再顶掉
   /// 整个设备列表——已加载清单保留，错误以条形提示+人话映射。
   String? _connectError;
 
@@ -75,7 +75,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
   }
 
   Future<void> _load() async {
-    // 开源审查 M2 P2-5：连接进行中不重复拉清单（避免并发第二次直连）。
+    // 连接进行中不重复拉清单（避免并发第二次直连）。
     if (_connecting) return;
     setState(() {
       _error = null;
@@ -83,7 +83,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
       _connectError = null;
     });
     final app = AppStateScope.of(context);
-    // 开源审查 M2 P2-5：自动落点直连仅限首次加载（_devices 尚空）——
+    // 自动落点直连仅限首次加载（_devices 尚空）——
     // 刷新语义=重拉清单确认状态，被自动直连劫持会把页面 pop 掉。
     final firstLoad = _devices == null;
     try {
@@ -129,7 +129,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
     }
   }
 
-  /// 401 后重新登录（开源审查 M1 P2-2）：push 官方登录页，成功后重拉
+  /// 401 后重新登录：push 官方登录页，成功后重拉
   /// 清单（save 落库即切 lastUsed，本页 jwtProvider=null=lastUsed 取新凭据）。
   /// 当前拉取所用账号的显示名（批1）：widget.accountId 为空=lastUsed。
   String? _accountChip;
@@ -154,7 +154,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
     if (!mounted) return;
     final jwt = result?['jwt'];
     if (jwt is String) {
-      // 回测组3 P2-3：重登可能换了账号（lastUsed 变）——chip 重解析。
+      // P2-3：重登可能换了账号（lastUsed 变）——chip 重解析。
       unawaited(_resolveAccountChip());
       unawaited(_load());
     }
@@ -182,7 +182,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('改绑这台电脑的账号？'),
-          // 回测组4 P2-1：整句插值进不了词表（此前 EN 整段中文）——
+          // P2-1：整句插值进不了词表（此前 EN 整段中文）——
           // 拆四段各自 tr 后拼接（词条=前缀/中缀/后缀，见 custom_l10n）。
           content: Text(
             tr('该电脑当前绑定「') +
@@ -205,7 +205,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         ),
       );
       if (ok != true) {
-        // 用户取消（回测组3 P2-1）：仅收起连接态——此前 throw rethrow
+        // 用户取消（ P2-1）：仅收起连接态——此前 throw rethrow
         // 会落入外层 catch 报错或直接 pop 整页（列表页被误关）。
         if (mounted) setState(() => _connecting = false);
         return;
@@ -229,7 +229,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
     } on Object catch (e) {
       debugPrint('[app] [v2-ui] connect failed: $e');
       if (mounted) {
-        // 开源审查 M1 P3-10：连接失败保留列表（条内错误），文案过人话
+        // 连接失败保留列表（条内错误），文案过人话
         // 映射与 _load 同口径（此前裸怼 RelayV2Unavailable 等协议串）。
         setState(() {
           _connecting = false;
@@ -250,7 +250,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         : ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              // 开源审查 M1 P3-10：连接失败条内呈现，设备清单保留。
+              // 连接失败条内呈现，设备清单保留。
               if (_connectError != null) ...[
                 Container(
                   key: const ValueKey('device-connect-error'),
@@ -399,7 +399,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         children: [
           Text('$_error'),
           const SizedBox(height: 12),
-          // 开源审查 M1 P2-2：401=凭据失效（JWT 无本地过期信号，重试
+          // 401=凭据失效（JWT 无本地过期信号，重试
           // 必然再 401）——给「重新登录」出口，对齐 relay「401=清会话回
           // 登录」语义。
           if (_authRequired) ...[

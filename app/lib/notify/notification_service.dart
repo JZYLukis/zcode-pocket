@@ -15,7 +15,7 @@ abstract class NotificationBackend {
   Future<void> show(int id, String title, String body, String channel, String payload);
   Future<void> cancel(int id);
 
-  /// 清全部（冷启动清孤儿通知——进程被杀后通知栏残留，盲审发现12）。
+  /// 清全部（冷启动清孤儿通知——进程被杀后通知栏残留，发现12）。
   Future<void> cancelAll() async {}
 
   /// 冷启动来源（app 由通知点开启动时的 payload；无=null）。
@@ -80,7 +80,7 @@ class NotificationService {
 
   /// 冷启动点击 payload（init 时尚未接线 onTap——由 AppState 挂好
   /// 路由后 consumePendingLaunch 取走，微任务时序吞 payload 的修法，
-  /// 盲审发现2b）。
+  /// 发现2b）。
   NotifyTapPayload? _pendingLaunch;
 
   /// 活跃通知簿（清过时用）：id → (taskId, channel)。
@@ -100,7 +100,7 @@ class NotificationService {
       _ready = false;
     }
     // 热点击接线：后端回调 → handleTap（此前生产后端自己的 onTap 字段
-    // 无人赋值，点击只在通知层空转——盲审发现2a）。
+    // 无人赋值，点击只在通知层空转——发现2a）。
     backend.setTapHandler(handleTap);
     // 上一进程遗留的通知栏孤儿（本进程 _active 为空清不到）一次清掉。
     try {
@@ -128,7 +128,7 @@ class NotificationService {
   int _nextId = 1;
   final Map<String, int> _idsByTask = {};
 
-  /// 开源审查 H1-P3-04-4：截断点避开 UTF-16 代理对（emoji）中间——
+  /// H1-P3-04-4：截断点避开 UTF-16 代理对（emoji）中间——
   /// 孤立代理项经平台通道 UTF-8 编码成 U+FFFD 显示为乱码。
   static String _cutAtCodePoint(String s, int limit) {
     if (limit < s.length && (s.codeUnitAt(limit) & 0xFC00) == 0xDC00) {
@@ -172,7 +172,7 @@ class NotificationService {
     // 敏感 payload）；聚合保持引导点击。
     final String body;
     if (e.kind == NotifyEventKind.awayAggregated) {
-      // 开源审查 H1-P3-05：聚合点击实际直达 sampleTask 会话页（非任务
+      // H1-P3-05：聚合点击实际直达 sampleTask 会话页（非任务
       // 列表）——文案与行为对齐。
       body = tr('点按查看任务');
     } else if (e.kind == NotifyEventKind.approvalPending) {
@@ -232,7 +232,7 @@ class NotificationService {
         await backend.cancel(id);
       } catch (_) {}
       final info = _active.remove(id);
-      // 开源审查 H1-P3-04-1/H2-P3-1：同步回收 id 簿条目——_idsByTask
+      // H1-P3-04-1/H2-P3-1：同步回收 id 簿条目——_idsByTask
       // 此前只增不减（FGS 常驻数周场景纯泄漏型增长）。
       if (info != null) {
         _idsByTask.remove('${info.$2.name}:${info.$1}');
@@ -295,7 +295,7 @@ class FlutterLocalNotificationsBackend implements NotificationBackend {
       importance: channel == 'approvals' ? Importance.max : Importance.defaultImportance,
       priority: channel == 'approvals' ? Priority.high : Priority.defaultPriority,
       autoCancel: true,
-      // 自动过期（ADR 0029 决策 1）：tasks/goals 30 分钟后自动出栏，
+      // 自动过期（ 决策 1）：tasks/goals 30 分钟后自动出栏，
       // approvals 不过期。策略在 notify_core.notificationTtlMs（纯函数，
       // 单测覆盖），此处只接线；字段=毫秒（flutter_local_notifications
       // 22.3.2 AndroidNotificationDetails.timeoutAfter），仅 Android

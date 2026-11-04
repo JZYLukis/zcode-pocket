@@ -5,14 +5,14 @@ import '../core/theme.dart';
 import '../state/app_state_scope.dart';
 import '../transport/channel_client.dart';
 
-/// 对话设置子页（ADR 0028，2026-10-20）：显示工具调用开关 + 运行中收到
+/// 对话设置子页（2026-10-20）：显示工具调用开关 + 运行中收到
 /// 新消息选择器——两项原样自 settings_page 一级页迁入（文案/存储 key/
 /// 控件行为不变）。子页骨架同 notify_ledger_page（AppBar 背景色 + 1px
 /// 底分隔线，返回按钮默认）。
 class SettingsConversationPage extends StatelessWidget {
   const SettingsConversationPage({super.key});
 
-  /// 开源审查 M2 P3-1：快速连点两次产生两条并发 sync RPC，通道层无序
+  /// ：快速连点两次产生两条并发 sync RPC，通道层无序
   /// 保证时后发的最新值可能被先发的旧值覆盖（本地偏好与桌面端漂移到
   /// 下次拨动）。在飞合并：串行化，前一次完成后只发最新捕获值。
   static Future<void> _syncInFlight = Future<void>.value();
@@ -64,7 +64,7 @@ class SettingsConversationPage extends StatelessWidget {
                 style: TextStyle(fontSize: AppType.uiCaption),
               ),
             ),
-            // B28（parity-fix-1）：提问自动采纳开关（官方
+            // B28：提问自动采纳开关（官方
             // askUserQuestionAutoResolutionEnabled 对位，默认开）——经
             // zcode-agent.syncAppRuntimePreferences 下发 CLI；未连接时
             // 只存偏好，下次连接不自动补发（官方语义=设置页改即推）。
@@ -74,12 +74,12 @@ class SettingsConversationPage extends StatelessWidget {
                 await app.uiPrefs.setAskAutoResolutionEnabled(v);
                 final bridge = app.bridge;
                 if (bridge == null) return;
-                // 开源审查 M2 P3-1：串行化在飞 sync（见 _syncInFlight 注释）。
+                // 串行化在飞 sync（见 _syncInFlight 注释）。
                 final pending = _syncInFlight;
                 final task = () async {
                   await pending;
                   try {
-                    // 开源审查 M1/M2/M3 三路同报：payload 只含本端拥有的键。
+                    // /M2/M3 三路同报：payload 只含本端拥有的键。
                     // modelIoFullRetentionEnabled 官方契约为 optional
                     //（refs/snapshot-3171 zcodeAgent.ts:634），官方桌面 UI
                     // 下发的是 setting.json 当前值——本端不拥有该偏好也无从

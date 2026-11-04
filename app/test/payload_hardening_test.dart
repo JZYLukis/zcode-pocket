@@ -1,4 +1,4 @@
-// 载荷守卫红绿矩阵（开源审查批C 组3：build/投影路径裸 as 断言守卫铺满）。
+// 载荷守卫红绿矩阵（批C 组3：build/投影路径裸 as 断言守卫铺满）。
 //
 // 威胁模型：协议 zod 保证 number，但服务端形态漂移（数字字段变 String、
 // List/Map 互换、字段缺失）会让裸 `as num?`/`as Map?`/`as List?`/`used!`

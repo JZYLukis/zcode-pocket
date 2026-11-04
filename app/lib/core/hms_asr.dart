@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 ///
 /// 协议与 SystemAsr 同构：start→（partial…）→final / error；原生事件经
 /// invokeMethod('event') 推送。prepare 一步做 AGConnect 编程式初始化 +
-/// 构建期 API Key 注入（ADR 0022 坑4 双保险）。
+/// 构建期 API Key 注入（ 坑4 双保险）。
 class HmsAsr {
   static const MethodChannel _ch = MethodChannel('companion/hms_asr');
 
@@ -25,7 +25,7 @@ class HmsAsr {
     } on MissingPluginException {
       _availableCache = false;
     } on PlatformException {
-      // 瞬时异常不落缓存（开源审查 P1 P3-4，与 SystemAsr.probe 同款）：
+      // 瞬时异常不落缓存（ P1 P3-4，与 SystemAsr.probe 同款）：
       // 一次性错误只影响本次结果，下次再探。
       return false;
     }
@@ -56,7 +56,7 @@ class HmsAsr {
     return session;
   }
 
-  /// 单槽 handler 会话守卫（开源审查 P1 P3-3，与 SystemAsr._active 同款）：
+  /// 单槽 handler 会话守卫（ P1 P3-3，与 SystemAsr._active 同款）：
   /// cancel 只在槽位仍属于自己时才摘除，迟到 cancel 不误杀后继会话。
   static HmsAsrSession? _active;
 }
@@ -105,7 +105,7 @@ class HmsAsrSession {
     try {
       await _ch.invokeMethod(method, args);
     } on PlatformException catch (e) {
-      // review-fix-1：原生侧 result.error（start_failed 等，如非华为 arm
+      // 原生侧 result.error（start_failed 等，如非华为 arm
       // 机 HMS 引擎缺席）此前穿透成无人接的异步异常——统一并入失败分支。
       if (!_closed) {
         _closed = true;

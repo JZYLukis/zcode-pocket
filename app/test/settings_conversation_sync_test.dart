@@ -8,7 +8,7 @@ import 'package:zcode_pocket/transport/channel_client.dart';
 import 'package:zcode_pocket/transport/companion_client.dart';
 import 'package:zcode_pocket/ui/settings_conversation_page.dart';
 
-/// 「提问自动采纳」开关下发载荷（开源审查 M1-P1-2/M2-P3-2/M3-P2-3 三路
+/// 「提问自动采纳」开关下发载荷（P1-2/M2-P3-2/M3-P2-3 三路
 /// 同报）：官方契约 ZCodeAgentAppRuntimePreferences 的
 /// modelIoFullRetentionEnabled 为 **optional**（refs/snapshot-3171
 /// zcodeAgent.ts:634），官方桌面 UI 下发的是 setting.json 当前值；手机端

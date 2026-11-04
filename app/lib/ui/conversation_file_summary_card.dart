@@ -47,7 +47,7 @@ class FileSummaryCard extends StatefulWidget {
   final Map<String, dynamic>? tailRow;
   final String? tailCopyText;
 
-  /// 页面级状态（盲审 #3）：lazy list 会 dispose 滚出视口的 State——
+  /// 页面级状态（ #3）：lazy list 会 dispose 滚出视口的 State——
   /// 展开态与已载明细按轮 header rowId 存页面级，回滚零延迟。
   final Map<int, bool> openByCard;
   final Map<int, List<Map<String, dynamic>>> itemsByCard;
@@ -85,7 +85,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
   Map<String, dynamic>? get _target {
     final header = widget.header;
     if (header == null) return null;
-    // B3（parity-fix-1）：entityId 必填（strict）——缺失返回 null，明细
+    // B3：entityId 必填（strict）——缺失返回 null，明细
     ///加载与回滚降级为不可用（与 H1 行菜单口径一致）。
     final entityId = '${header['entityId'] ?? ''}'.trim();
     if (entityId.isEmpty) return null;
@@ -248,7 +248,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
 
   @override
   Widget build(BuildContext context) {
-    // 数字守卫（开源审查 C1-P2-1）：同一份 header['fileChanges'] 流入
+    // 数字守卫（ C1-P2-1）：同一份 header['fileChanges'] 流入
     // 本卡后此前仍是裸 as num?——String 形态漂移即 build 期 TypeError。
     final fc = widget.fileChanges ?? const {};
     final files = intOrZero(fc['files']);
@@ -378,7 +378,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
                       const SizedBox(width: 8),
                       if (canRewind)
                         Tooltip(
-                          // 开源审查 C1 P2-3：Tooltip message 需显式 tr()。
+                          // C1 P2-3：Tooltip message 需显式 tr()。
                           message: tr('回滚到本轮前'),
                           child: InkWell(
                             key: ValueKey(

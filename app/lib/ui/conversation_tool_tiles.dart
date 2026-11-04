@@ -237,7 +237,7 @@ class ToolCallTileState extends State<ToolCallTile> {
   void _toggle() {
     final id = _rowId;
     if (id == null) {
-      // 盲审 #9：无 rowId 的旧快照行用本地态兜底（重开页面回默认收起）。
+      // #9：无 rowId 的旧快照行用本地态兜底（重开页面回默认收起）。
       setState(() => _localOpen = !_localOpen);
       return;
     }

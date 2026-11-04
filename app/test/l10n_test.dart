@@ -94,7 +94,7 @@ void main() {
     expect(find.text('Archive management'), findsNothing);
   });
 
-  // ── 开源审查批C组1（51 路审查 l10n 大扫除）回归锚点 ──
+  // ── （51 路审查 l10n 大扫除）回归锚点 ──
   // 每组修复抽代表串钉住，防后续批次再漏登记词表。
   test('批C组1：任务主页/中心/归档（L1）', () {
     L10n.setTestLocale('en-US');
@@ -176,7 +176,7 @@ void main() {
     expect(tr('连接失败：SocketException'), 'Connection failed: SocketException');
   });
 
-  // ── 开源审查 批D组6（core 基础）机制回归锚点 ──
+  // ── （core 基础）机制回归锚点 ──
   test('数字压缩进位边界（P2 P3-6：修复前 999999→"1000K"/999999999→"1000M"）',
       () {
     L10n.setTestLocale('en-US');

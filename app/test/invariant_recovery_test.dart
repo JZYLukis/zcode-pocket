@@ -7,7 +7,7 @@ import 'package:zcode_pocket/ui/turn_model.dart';
 /// release 吞渲染异常（B2 黑屏）——自动化此前只测机制层，此文件固化
 /// 人类视角不变量：快照到达 ⇒ 载入条件必须解除 ⇒ 投影必须可产出。
 void main() {
-  // 与 reducer_test 同款帧构造（protocol-notes §2.4）。
+  // 与 reducer_test 同款帧构造。
   Map<String, dynamic> snapshotFrame(
     List<Map<String, dynamic>> rows, {
     int toSeq = 4200,

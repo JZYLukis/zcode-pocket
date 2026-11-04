@@ -36,7 +36,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
   Map<String, String> _accountLabels = const {};
   bool _labelsFetchInFlight = false;
 
-  /// 开源审查 M2 P3-8/M3 P3-10：徽标映射改为 build 期惰性补拉（在飞
+  //徽标映射改为 build 期惰性补拉（在飞
   /// 去重）——弹层停留期间在别处添加/删除账号时，新绑定档案的徽标
   /// 此前永远显示不出来（只在打开时算一次）。
   void _maybeRefreshLabels(AppState app) {
@@ -54,7 +54,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
         if (!mounted) return;
         final accounts = await app.accountStore.listAccounts();
         if (!mounted) return;
-        // 回测组3 P2-4：已删账号的档案（match==null）此前不写入映射 →
+        // P2-4：已删账号的档案（match==null）此前不写入映射 →
         // needs 条件（!containsKey）每帧重新触发 listAccounts+setState
         // 循环。为全部已知 accountId 写入哨兵（已删 → '账号已删除'）。
         final knownIds = <String>{
@@ -125,7 +125,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
       ),
     );
     // 对话框关闭后释放（批次1 顺手：原泄漏——每 rename 一次漏一个）。
-    // 开源审查 M1 P3-3：showDialog 的 future 在 pop 瞬间完成，退场动画
+    // showDialog 的 future 在 pop 瞬间完成，退场动画
     //（~200ms）里 dialog 树仍存活——延后到动画结束后再 dispose，防
     // 动画期编辑事件触碰已 dispose 的 controller。
     Future.delayed(const Duration(milliseconds: 400), controller.dispose);
@@ -385,7 +385,7 @@ class _ProfileTile extends StatelessWidget {
                   ),
                 ),
           trailing: PopupMenuButton<String>(
-            // 开源审查 M1 P3-12：激活等待期禁用重命名/删除——删除正在
+            // 激活等待期禁用重命名/删除——删除正在
             // 激活的档案会与 _createStack/start 竞态（registry 层有兜底
             // 但不该放行）。
             enabled: !switching,

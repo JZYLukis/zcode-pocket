@@ -25,7 +25,7 @@ void _installForensicProbes() {
     debugPrint('[app] [error-widget] ${details.exception}');
     // 深色模式批1：ErrorWidget 在失败子树原位渲染（仍处于主题树内），
     // 用 Builder 读当前套——builder 签名无 context。
-    // 开源审查 P3 P3-7：MaterialApp 之上的子树（根 builder 等）出错时
+    // P3 P3-7：MaterialApp 之上的子树（根 builder 等）出错时
     // 无 Theme 祖先，Theme.of 抛异常会让红卡自身 build 失败退回框架
     // 灰屏——字面色兜底保证任何层级都能渲染取证红卡（日志已先行落
     // logcat，不受影响）。
@@ -93,8 +93,8 @@ void _installFrameWatchdog() {
     debugPrint('[frame-watchdog] 引擎停帧 ${idleFor}s，重建表面'
         '（第 $recoveries 次）');
     // recreate 恢复的是引擎表面而非根因（cameraX↔合成器楔死在 Flutter/
-    // 厂商侧未根治，ADR 0080 §9）——原生侧有 10 分钟滑窗上限防无限重启
-    // 循环（开源审查 Q1 P2-2）；被拒时在此留痕，交给用户大退/切页。
+    // 厂商侧未根治）——原生侧有 10 分钟滑窗上限防无限重启
+    // 循环；被拒时在此留痕，交给用户大退/切页。
     surface.invokeMethod('recreate').then((ok) {
       if (ok != true) {
         debugPrint('[frame-watchdog] 原生侧拒绝重建（滑窗超额，防无限'
@@ -120,7 +120,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   _installForensicProbes();
   debugPrint('[perf] main_start');
-  // 18091 帧看门狗（扫码黑屏根治层 3，ADR 0080 §9）：相机纹理销毁后
+  // 18091 帧看门狗（扫码黑屏根治层 3）：相机纹理销毁后
   // 引擎偶发停止产帧（Dart 定时器活着=业务日志正常，但零帧输出、语义
   // 树空、窗口黑——agent 实证帧计数冻结）。检测=前台期间主动 schedule
   // -Frame 后连续两个探测周期（16s）无任何帧完成 → 判楔死 → 经
@@ -128,7 +128,7 @@ void main() {
   // 恢复，替代用户大退）。健康应用：静止页也会因主动调帧而完成一帧，
   // 探针续挂；后台（paused）不探测不误杀。
   _installFrameWatchdog();
-  // 18088 黑屏取证（ADR 0080 §8）：帧时序哨兵——任何总耗时>250ms 的
+  // 18088 黑屏取证：帧时序哨兵——任何总耗时>250ms 的
   // 帧打一行（build/raster 分解），用于实测"配对成功瞬间 UI 线程停顿"
   // 是否超厂商应用自愈阈值（理论待验）。零常驻开销（回调仅读时序）。
   WidgetsBinding.instance.addTimingsCallback((timings) {

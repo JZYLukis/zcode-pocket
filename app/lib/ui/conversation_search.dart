@@ -113,7 +113,7 @@ List<ConversationSearchMatch> buildConversationSearchMatches(
   List<ChatItem> items,
   String query,
 ) {
-  // 开源审查 B2-P2-4/D2-08：长度稳定折叠——İ 等扩长字符会使折叠串
+  // B2-P2-4/D2-08：长度稳定折叠——İ 等扩长字符会使折叠串
   // 下标漂移（snippet 切原串错位/极端越界），命中下标必须落在原串
   // 坐标系（与 buildSearchHighlightSpans 同源 foldCaseStable）。
   final needle = foldCaseStable(query.trim());

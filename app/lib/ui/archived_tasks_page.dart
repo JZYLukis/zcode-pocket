@@ -76,7 +76,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
       confirmLabel: '全部删除',
     );
     if (!confirmed) return;
-    // 开源审查 L3 P3-8：确认框 await 期间列表可能变化——按现值取删除集
+    // 确认框 await 期间列表可能变化——按现值取删除集
     // 与计数（服务端 skippedTaskIds 仍兜底“已不在归档态”提示）。
     final current = app.archivedTasks;
     await _run(
@@ -104,7 +104,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: tr('刷新'),
-            // 开源审查 L3 P3-7：任务索引模型未建（工作区从未打开）时
+            // 任务索引模型未建（工作区从未打开）时
             // reloadTaskIndex 静默早退——给可见反馈而非零动作。
             onPressed: _busy
                 ? null
@@ -206,7 +206,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                           style: const TextStyle(fontSize: AppType.uiBase),
                         ),
                         subtitle: Text(
-                          // 开源审查 P1 P2-2：pattern 占位不递归 tr——
+                          // P1 P2-2：pattern 占位不递归 tr——
                           // 相对时间片段在拼接前先 tr（'3 天前'→'3 days
                           // ago'），整串再由 custom pattern 译为
                           // 'Archived 3 days ago'。
@@ -224,7 +224,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                             TextButton(
                               key: ValueKey('archive-restore-${t['taskId']}'),
                               onPressed: _busy ? null : () => _restore(t),
-                              // 开源审查 L1 P3-1：归档语境的「恢复」是
+                              // 归档语境的「恢复」是
                               // Restore（官方词）；沿用通用键会译成会话语
                               // 态的 Resume——换独立键按词典事实修正。
                               child: const Text('恢复任务'),
@@ -253,7 +253,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
   }
 }
 
-// 开源审查 L2 P3-11：相对时间收敛到 task_home 单源（原第二份实现不
+// 相对时间收敛到 task_home 单源（原第二份实现不
 // 支持注入 now，且与任务中心版本细节漂移）。
 String _relative(int millis) => taskHomeRelativeTime(millis);
 

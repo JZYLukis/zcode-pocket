@@ -2,7 +2,7 @@
 //
 // 目的：钉住官方 zai-dark 1:1 搬运值——任何深色值笔误/漂移即挂；批 1
 // 横向校准（智谱蓝/热力图/阴影裁量）调整值时须同步改本文件并留痕
-// ADR 0035 补记（与浅色冻结不同：深色值允许按校准结论调整，但必须显式）。
+// 补记（与浅色冻结不同：深色值允许按校准结论调整，但必须显式）。
 // 来源：refs/ZCode/packages/ui/src/styles.css:638-783（已核 3.16.1 零变化）。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -57,7 +57,7 @@ void main() {
     expectHex(c.interactionConfirmForeground, 0xFF87D9A4, 'interactionConfirmForeground');
     expectHex(c.diffAdded, 0xFF46BF72, 'diffAdded');
     expectHex(c.diffRemoved, 0xFFFF5C5C, 'diffRemoved');
-    // 裁量档（批 1 定稿留痕 ADR 0035）。
+    // 裁量档（批 1 定稿留痕 ）。
     expectHex(c.shadowXs, 0x59000000, 'shadowXs(黑35% 裁量)');
     expectHex(c.shadowMd, 0x80000000, 'shadowMd(黑50% 裁量)');
   });

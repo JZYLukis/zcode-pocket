@@ -36,7 +36,7 @@ void main() {
 
   testWidgets('冷启根组件冒烟：无注入 AppState 也可构建不抛异常', (tester) async {
     // AppState 默认 offline；HomeShell 在无档案时显示配对页——
-    // 这里仅验证根组件可构建不抛异常（开源审查 R1 P3-3：原名"任务中心
+    // 这里仅验证根组件可构建不抛异常（：原名"任务中心
     // 状态横幅"名不副实，横幅行为不在此断言，避免误导后来者以为有回归
     // 保护）。
     await tester.pumpWidget(const ZcodeCompanionApp());

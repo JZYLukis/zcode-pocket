@@ -5,8 +5,8 @@ import 'package:zcode_pocket/transport/companion_client.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 
-/// review-fix-1（测试门组）：本周新增协议调用的 wire 信封钉死——
-/// workflow 四方法（ADR 0078）与 compact 命令信封（ADR 0077）此前只有
+/// ：本周新增协议调用的 wire 信封钉死——
+/// workflow 四方法与 compact 命令信封此前只有
 /// AppState 层 override 测试（夹具不经信封层），参数名/形状 typo 全绿
 /// （审查 D5a/D5b 双向确认）。本组用假通道直钉 method 名+args 形状。
 class _WireChannel extends ChannelClient {

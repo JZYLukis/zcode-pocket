@@ -9,7 +9,7 @@ import 'package:zcode_pocket/transport/z_transport.dart';
 
 import 'profile_store_test.dart' show FakeSecureStorage;
 
-/// ADR 0032：双栈序列化（V1 url 条目 + V2 kind:'v2' 条目同列表共存）
+/// ：双栈序列化（V1 url 条目 + V2 kind:'v2' 条目同列表共存）
 /// + AccountStore 基础行为。
 void main() {
   group('ProfileStore V2 双栈序列化', () {

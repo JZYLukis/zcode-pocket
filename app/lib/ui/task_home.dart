@@ -119,7 +119,7 @@ TaskCardData taskHomeEntry(Map<String, dynamic> task) {
     createdAt: intOrZero(task['createdAt']),
     pinned: task['homePinned'] == true || task['pinned'] == true,
     hasBackgroundWork: task['hasBackgroundWork'] == true,
-    // 守卫（开源审查 L1-P3-7）：本文件其余字段全部插值容错，唯此处
+    // 守卫（P3-7）：本文件其余字段全部插值容错，唯此处
     // 硬 cast——非 String 形态（num/bool/map）直接 TypeError 崩长按菜单。
     goalStatus: task['goalStatus'] is String
         ? task['goalStatus'] as String
@@ -147,7 +147,7 @@ List<Map<String, dynamic>> sanitizeTaskHomePreviewRows(
       t,
 ];
 
-/// 任务行的工作区展示名（开源审查 L2 P3-11/L3 P3-5 收敛单源）：
+//任务行的工作区展示名（/ 收敛单源）：
 /// 显式 label > identity/path 尾段 > 「其他工作区」兜底。
 /// 供任务主页分组、跨工作区/搜索卡副标题共用（此前三份实现细节漂移）。
 String taskRowWorkspaceLabel(Map<String, dynamic> task) {
@@ -164,7 +164,7 @@ String taskRowWorkspaceLabel(Map<String, dynamic> task) {
   return parts.isEmpty ? path : parts.last;
 }
 
-/// 相对时间（开源审查 L2 P3-11 收敛单源）：任务卡/紧凑行/归档行共用
+/// 相对时间（ 收敛单源）：任务卡/紧凑行/归档行共用
 /// （archived 页原第二份实现不支持注入 now，游览钉时钟覆盖不一致）。
 String taskHomeRelativeTime(int millis, {DateTime? now}) {
   if (millis <= 0) return '';
@@ -271,7 +271,7 @@ int _updated(Map<String, dynamic> t) => intOrZero(t['homeUpdatedAt']);
 /// 日期分档顺序（buildTaskHomeItems 消费）。
 /// 18077 验收#9（优化意见 D，用户拍板）：从官方九档简化回四组——
 /// 今天/昨天/本周/以前（用户明确表示不需要上周/本月/上月/更早细分，
-/// 偏离官方口径）。review-fix-1（A2）教训延续：档键必须与
+/// 偏离官方口径）。教训延续：档键必须与
 /// taskHomeTimeBucket 返回值逐字相等。
 const kTaskHomeTimeBuckets = ['今天', '昨天', '本周', '以前'];
 
@@ -327,7 +327,7 @@ List<TaskHomeItem> buildTaskHomeItems({
   Map<String, int> groupVisibleCounts = const {},
   Set<String> fullyExpandedGroups = const {},
 }) {
-  // B7（parity-fix-1，2026-10-29 审查）：官方排序=running-first+updated
+  // B7（2026-10-29 审查）：官方排序=running-first+updated
   // （运行层禁 updated 决胜）——此前纯 updatedAt，运行中任务会被新完成
   // 的旧任务顶下去；taskId 决胜保证推送重放不换位（Dart List.sort 非稳定）。
   int byRecent(a, b) {

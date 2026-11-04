@@ -77,8 +77,8 @@ class AppState extends ChangeNotifier {
 
   final ProfileStore store;
 
-  /// V2 账号凭据（ADR 0032；2026-10-25 多账号批起支持多账号并存，
-  /// 档案按 accountId 绑定——详 docs/multi-account-plan.md）。
+  /// V2 账号凭据（；2026-10-25 多账号批起支持多账号并存，
+  /// 档案按 accountId 绑定——详 ）。
   /// （实测无 exp，401=唯一失效信号——见 _onStackFailure auth-required）。
   final AccountStore accountStore;
   Future<bool> get hasAccount => accountStore.hasAccount;
@@ -112,7 +112,7 @@ class AppState extends ChangeNotifier {
   /// （origin 覆盖与凭据注入全拒、配对域白名单放行）。
   Future<Map<String, String?>?> Function()? testLaunchArgsReader;
 
-  /// 正式包测试缝闸门（2026-10-25 审查 H01，ADR 0046）：release 构建不
+  /// 正式包测试缝闸门（2026-10-25 审查 H01）：release 构建不
   /// 接受 intent extra 注入的连接地址覆盖与账号凭据——MainActivity 为
   /// exported 启动入口，本机恶意应用可用显式启动参数把携带 Bearer 账号
   /// 令牌的中继请求引向自建服务器（账号令牌外发的唯一通路，静态调用链
@@ -124,7 +124,7 @@ class AppState extends ChangeNotifier {
   static bool get _seamBlocked => kReleaseMode || releaseSeamForTest;
 
   /// release 下配对链接仅放行官方中继域：release 冷启动/持久化验证依赖
-  /// am start 配对（testing-debug-principles §5），不能一刀切关闭注入；
+  /// am start 配对，不能一刀切关闭注入；
   /// 非官方公网域一律拒绝（伪桌面对话内容外发面）。
   @visibleForTesting
   static bool releasePairingHostAllowed(String url) {
@@ -246,7 +246,7 @@ class AppState extends ChangeNotifier {
 
   List<Map<String, dynamic>> get workspaces => _active?.workspaces ?? const [];
 
-  /// 项目全集（ADR 0033 工作区列表修复）：侧栏数据源。空=未加载/桌面
+  /// 项目全集（ 工作区列表修复）：侧栏数据源。空=未加载/桌面
   /// 不支持——UI 退回 workspaces（当前 tabs）渲染。
   List<Map<String, dynamic>> get projects => _active?.projects ?? const [];
 
@@ -257,7 +257,7 @@ class AppState extends ChangeNotifier {
   List<Map<String, dynamic>> get sidebarProjects {
     final sid = _activeSid;
     // sid==null 时 _active 必为 null（active getter 由 activeSid 查表而来）
-    // ——恒空列表（开源审查 I1 P3-8/I2 P3-6/I3 P3-5：原 `_active?.`
+    // ——恒空列表（//：原 `_active?.`
     // 分支是死代码，误导读者以为存在"无 sid 但有活跃栈"的状态）。
     if (sid == null) return const [];
     return applyProjectOrder(
@@ -431,7 +431,7 @@ class AppState extends ChangeNotifier {
     if (active != null) {
       activeProfile = active.profile;
     }
-    // 回测组3 P1-2：顶栏账号名缓存此前只在 AppState.activate 后刷新——
+    // P1-2：顶栏账号名缓存此前只在 AppState.activate 后刷新——
     // registry 内部自动 activate（removeComputer 换机/删号收尾/换账号
     // 重连）全不经过它。栈变化是活跃档案翻转的统一汇合点，在这里按
     // sid 变化检测刷新（refreshActiveAccountLabel 幂等：sid 未变直返）。
@@ -443,7 +443,7 @@ class AppState extends ChangeNotifier {
   // ------------------------------------------------------ 电量日志（第三段后补）
 
   /// 包内常驻电量统计（无 UI，只落 battery-journal.jsonl；见
-  /// lib/state/battery_journal.dart 头注释与 docs/battery-measure.md）。
+  /// lib/state/battery_journal.dart 头注释与 ）。
   BatteryJournal? batteryJournal;
 
   /// 测试/排障读数：已落盘行数。
@@ -462,7 +462,7 @@ class AppState extends ChangeNotifier {
       if (kDebugMode && _injectedNotifyStore != null) return;
       final backend = FlutterLocalNotificationsBackend();
       final created = NotificationService(backend: backend);
-      // init 整体容错（开源审查 I3 P3-6）：init 内部的 setTapHandler/
+      // init 整体容错：init 内部的 setTapHandler/
       // launchPayload 平台通道异常（插件缺失/异构设备）此前会炸穿
       // load()——loaded 永假、UI 停在启动态，与"失败=通知禁用"承诺
       // 相悖。失败置 null（无通知服务，onTap 无处可挂）。
@@ -476,7 +476,7 @@ class AppState extends ChangeNotifier {
     } else {
       notifyService = service;
     }
-    // 通知点击回调不依赖台账（开源审查 I1 P3-5）：存储降级环境（store
+    // 通知点击回调不依赖台账：存储降级环境（store
     // 创建失败）下 onTap 也要挂上——否则该次会话所有通知点击（含冷启
     // 动点击直达）失效，只剩无导航的通知。
     notifyService!.onTap = (payload) => openTaskFromNotification(
@@ -484,7 +484,7 @@ class AppState extends ChangeNotifier {
           payload.taskId,
           atMs: payload.atMs,
         );
-    // 冷启动点击路由（盲审发现2b）：挂好回调后取走 init 暂存的 payload。
+    // 冷启动点击路由（发现2b）：挂好回调后取走 init 暂存的 payload。
     final fromLaunch = notifyService!.consumePendingLaunch();
     if (fromLaunch != null) {
       Future.microtask(
@@ -547,7 +547,7 @@ class AppState extends ChangeNotifier {
       if (uiPrefs.muteTasks) NotifyChannel.tasks,
       if (uiPrefs.muteGoals) NotifyChannel.goals,
     };
-    // 开源审查 Q1 P3-11：原此处调用空实现钩子 _fgRequestRestart（"保留
+    // 原此处调用空实现钩子 _fgRequestRestart（"保留
     // 给未来文本语义变化"）——静音集合走 update 通道即可，钩子删除。
   }
 
@@ -557,7 +557,7 @@ class AppState extends ChangeNotifier {
       {int atMs = 0}) {
     final profile = profileOf(deviceSid);
     if (profile != null && !profile.invalid && _activeSid != deviceSid) {
-      // 错误 containment（开源审查 I1 P3-6，对齐 reattachAfterAccountLogin
+      // 错误 containment（对齐 reattachAfterAccountLogin
       // 同场景）：activate 若抛（demote 链异常）此前成为未处理异步错误。
       unawaited(
         activate(profile).then((_) {}, onError: (Object e) {
@@ -598,7 +598,7 @@ class AppState extends ChangeNotifier {
   /// 据此弹「定位到相关消息？」浮层并滚动。
   int? pendingDeepLinkAt;
 
-  /// 深链目标的会话归属（回测组2 P2-3）：pendingDeepLinkAt 配对目标
+  /// 深链目标的会话归属（ P2-3）：pendingDeepLinkAt 配对目标
   /// taskId——页面校验归属后才弹浮层，防残留被无关会话误消费。
   ({String taskId, int atMs})? get pendingDeepLinkTarget {
     final at = pendingDeepLinkAt;
@@ -619,7 +619,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 长按图标快捷入口（6.6①，ADR 0061）：'new_task'（新建任务弹层）/
+  /// 长按图标快捷入口（6.6①）：'new_task'（新建任务弹层）/
   /// 'last_session'（最近更新的会话）——任务中心消费后清空；冷启动随
   /// launchArgs 进来，热启动由原生→Dart 推送 [handleShortcutAction]。
   String? pendingShortcutAction;
@@ -742,7 +742,7 @@ class AppState extends ChangeNotifier {
     }
     uiPrefs.addListener(_syncNotifyPrefs);
     // 重启后恢复"审批提醒"前台服务（开关持久化，服务不随进程存活）。
-    // review-fix-1：启动失败与手动开关同款回弹——此前开关显示开但
+    // 启动失败与手动开关同款回弹——此前开关显示开但
     // FGS 不在，整夜通知丢失且无任何重试/提示。
     if (uiPrefs.alertsEnabled) {
       final started = await _fgStart();
@@ -787,7 +787,7 @@ class AppState extends ChangeNotifier {
     // 自动化配对（intent extra 优先于档案恢复）
     final launchArgs = await testLaunchArgsReader?.call();
     _consumeShortcutFromLaunch(launchArgs);
-    // V2 测试缝（ADR 0032）：origin 覆盖（连本机 Dart fake relay）+
+    // V2 测试缝：origin 覆盖（连本机 Dart fake relay）+
     // 账号凭据注入（人工登录一次取出 JWT 后 --es account_jwt 注入，
     // E2E/冒烟免 OAuth——官方 fake-relay-v2 测试 JWT 同款范式）。
     // release 构建全部忽略（H01 闸门，见 testLaunchArgsReader 注释）。
@@ -903,7 +903,7 @@ class AppState extends ChangeNotifier {
   Future<void> switchWorkspace(Map<String, dynamic> workspace) async =>
       _active?.switchWorkspace(workspace);
 
-  /// 切换项目（ADR 0033：project intent 桥——项目全集不再受"当前窗口
+  /// 切换项目（：project intent 桥——项目全集不再受"当前窗口
   /// tabs"限制）。
   Future<void> switchToProject(Map<String, dynamic> project) async =>
       _active?.switchToProject(project);
@@ -933,7 +933,7 @@ class AppState extends ChangeNotifier {
   /// readTree 加载状态（H13，2026-10-25 批①）：内联任务视图三态判据。
   String get readTreeStatus => _active?.readTreeStatus ?? 'loading';
 
-  /// 任务移动归属（docs/move-task-plan.md）：成功后 readTree 已重拉
+  /// 任务移动归属：成功后 readTree 已重拉
   /// （归属消费面全靠它）；`project.root-confirmation-required` 异常
   /// 原样抛给调用方做二段确认（addMissingRoot 重发）。
   Future<void> moveTask(
@@ -999,7 +999,7 @@ class AppState extends ChangeNotifier {
       stack.reloadTaskIndex();
       return res;
     } catch (e) {
-      // RPC 失败回滚乐观置顶（开源审查 J2 P3-7/J3 P3-2）：togglePinLocally
+      // RPC 失败回滚乐观置顶（ J2 P3-7/J3 P3-2）：togglePinLocally
       // 先翻集合而重拉在校正前被跳过——不回滚则本地置顶态与桌面相反，
       // 滞留到下一次无关重拉。
       taskList?.togglePinLocally(taskId);
@@ -1042,7 +1042,7 @@ class AppState extends ChangeNotifier {
     final stack = _active;
     if (stack == null) throw StateError('no active computer');
     final res = await stack.deleteArchivedTasks(taskIds);
-    // 批量清理并行化（开源审查 I2 P3-7）：逐条串行 await 双 store=2N 次
+    // 批量清理并行化：逐条串行 await 双 store=2N 次
     // 串行 IO（批量 50 即 100 次）；各 removeSession 操作不同会话键，
     // Future.wait 并行安全（两 store 内部均为内存变更+合并防抖落盘）。
     final sid = stack.profile.deviceSid;
@@ -1061,7 +1061,7 @@ class AppState extends ChangeNotifier {
     if (stack == null) throw StateError('no active computer');
     _activeTaskList?.markRemovedLocally(taskId);
     final res = await stack.archiveTask(taskId);
-    // 归档联动清理（开源审查 E1 P2-2，ADR 0059:30"删除任务/归档任务/电脑
+    // 归档联动清理（:30"删除任务/归档任务/电脑
     // 时清理对应草稿"）：对齐 deleteTask——不清理则断网排队中的消息会在
     // 重连后被 drain 自动发给已归档会话。
     await draftStore?.removeSession(stack.profile.deviceSid, taskId);
@@ -1185,11 +1185,11 @@ class AppState extends ChangeNotifier {
   }
 
   /// A3：本进程内是否有该会话的发送命令记录（重启后为空——页面据此
-  /// 区分"查无可查"与"查询失败"，review-fix-1 死键修复）。
+  /// 区分"查无可查"与"查询失败"， 死键修复）。
   bool hasLastCommandRecord(String sessionId) =>
       _conv?.lastCommandIdOf(sessionId) != null;
 
-  /// A3（parity-fix-1）：查询某会话最后一条已发出命令的确权结果
+  /// A3：查询某会话最后一条已发出命令的确权结果
   /// （官方 queryConversationCommandsV4 对位）。返回 ack Map=权威结论；
   /// 'unknown'=查不到；null=无记录/未连接。
   Future<dynamic> queryLastSentCommand(String sessionId) async {
@@ -1206,13 +1206,13 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// A5（parity-fix-1）：查看态上报——打开任务带 activeTaskId；null=回
+  /// A5：查看态上报——打开任务带 activeTaskId；null=回
   /// 主页/退后台（官方 Home/后台立即取消对位）。
   void reportTaskView(String? taskId) {
     _active?.reportViewState(taskId: taskId);
   }
 
-  /// A2（parity-fix-1）：提问自动采纳 snooze（官方 interactionAutoResolution
+  /// A2：提问自动采纳 snooze（官方 interactionAutoResolution
   /// Command 对位）——见 ConversationTransport.snoozeInteractionAutoResolution。
   Future<dynamic> snoozeInteractionAutoResolution(
     String sessionId,
@@ -1408,7 +1408,7 @@ class AppState extends ChangeNotifier {
     return conv.prepareWorkspace(refresh: refresh);
   }
 
-  /// 加载更早的历史（rowsRange，protocol-notes §3.2）。
+  /// 加载更早的历史（rowsRange）。
   Future<void> loadOlder(String sessionId) async {
     final conv = _conv;
     if (conv == null) return;
@@ -1488,7 +1488,7 @@ class AppState extends ChangeNotifier {
   bool get suspendedAll => _suspendedAll;
 
   /// 生命周期代际号：回前台/再次退后台都自增——断连定时器回调执行中
-  /// 用户回前台时，靠它中止后续栈的 suspend（盲审发现8：否则 app 在
+  /// 用户回前台时，靠它中止后续栈的 suspend（发现8：否则 app 在
   /// 前台却被断成全离线且无自愈）。
   int _lifecycleGen = 0;
 
@@ -1595,7 +1595,7 @@ class AppState extends ChangeNotifier {
     final stopwatch = Stopwatch()..start();
     // 活跃栈立即恢复；其余栈保持悬挂（activate 切换时再连——省电），
     // 但对账水位全栈保留：非活跃栈重连（activate）时 si 重放自然对账
-    // （盲审发现4：限制在活跃栈=断连窗口内其他电脑的事件全丢）。
+    // （发现4：限制在活跃栈=断连窗口内其他电脑的事件全丢）。
     final active = _active;
     if (active != null) {
       // D4（2026-10-26 断线批）：统一走 pokeOrResume——resume 可能落在
@@ -1636,7 +1636,7 @@ class AppState extends ChangeNotifier {
       await notifyService?.ensurePermission();
       final started = await _fgStart();
       if (!started) {
-        // 启动失败回弹开关（盲审发现7）：否则开关显示"开"实际走 90s
+        // 启动失败回弹开关（发现7）：否则开关显示"开"实际走 90s
         // 断连档，过夜等审批通知全丢且用户无感知。
         await uiPrefs.setAlertsEnabled(false);
         _log(
@@ -1654,7 +1654,7 @@ class AppState extends ChangeNotifier {
 
   Future<bool> _fgStart() async {
     try {
-      // 开源审查 Q1 P3-7：初始常驻通知文案由 Dart 侧按当前语言传入
+      // 初始常驻通知文案由 Dart 侧按当前语言传入
       // （原生侧仅留中文兜底；启动后 _updateForegroundText 立即覆写）。
       await _fgChannel.invokeMethod('startForeground', {
         'text': tr('已连接 · 保持后台实时通知'),
@@ -1686,7 +1686,7 @@ class AppState extends ChangeNotifier {
     for (final stack in _stacks.values) {
       final list = stack.taskList;
       running += list?.running.length ?? 0;
-      // B37（parity-fix-1）：带上最新运行任务名（锁屏可见具体在跑什么；
+      // B37：带上最新运行任务名（锁屏可见具体在跑什么；
       // 防噪拍板不变——仍只有一条常驻文本，不逐事件发通知）。
       for (final c in list?.running ?? const <TaskCardData>[]) {
         final at = c.lastActivityAt;
@@ -1696,7 +1696,7 @@ class AppState extends ChangeNotifier {
         }
       }
     }
-    // 开源审查 Q1 P3-7：常驻通知文案经词表走 tr()（参数在拼接前本地
+    // 常驻通知文案经词表走 tr()（参数在拼接前本地
     // 化；任务标题为用户内容保持原文——由 pattern 捕获段透传）。
     final runningSuffix = running == 0
         ? tr('无任务运行')
@@ -1705,7 +1705,7 @@ class AppState extends ChangeNotifier {
               : tr('「${topRunningTitle.trim()}」等 $running 个任务运行中'));
     String paren(String inner) =>
         L10n.resolvedLocale == 'en-US' ? '($inner)' : '（$inner）';
-    // 口径对齐（开源审查 I3 P3-4）：任务数聚合全栈而连接档此前只看活跃
+    // 口径对齐：任务数聚合全栈而连接档此前只看活跃
     // 栈——后台栈在线跑任务而活跃栈离线时拼出"未连接 · N 个任务运行中"
     // 的自相矛盾文案。FGS 的语义是"app 保持连接以接收通知"：只要有任一
     // 栈在线即按在线档呈现（不新增文案，复用既有词表）。

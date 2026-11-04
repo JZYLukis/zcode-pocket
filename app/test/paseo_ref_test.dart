@@ -79,7 +79,7 @@ void main() {
       ),
     ));
     await tester.pump();
-    // 圈定 +d 行的祖先容器再断言（开源审查 R1 P3-6）：原先对整棵树的
+    // 圈定 +d 行的祖先容器再断言：原先对整棵树的
     // Container 颜色集合做 contains——任何无关容器恰好复用同主题色都会
     // 假绿（目标行未渲染时照样通过）。
     final addedRowColors = tester
@@ -219,7 +219,7 @@ void main() {
     // 2026-10-23 diff 语法高亮批起行底走 BoxDecoration（叠加语法 token
     // 色+行首 3px 竖条，官方 lightweight-diff-preview.ts:73-111 对位）；
     // Paseo 批"整行底色染色"语义保留。
-    // 圈定目标行祖先容器再断言（开源审查 R1 P3-6）：整树颜色集合 contains
+    // 圈定目标行祖先容器再断言：整树颜色集合 contains
     // 会被无关同色容器假绿。
     Set<Color?> rowColors(String text) => tester
         .widgetList<Container>(

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 /// 官方 `packages/shared/test/fixtures/fake-relay-v2.ts` 的 Dart 移植
-/// （RelayV2Client 离线测试专用，ADR 0032）。语义对齐点：
+/// （RelayV2Client 离线测试专用）。语义对齐点：
 /// - HTTP：Bearer JWT → `users` 精确映射 userId（无签名校验）；token 60s
 ///   一次性、WS Upgrade 前原子消费；设备按 userId 隔离；删他人设备
 ///   code=1006。
@@ -23,7 +23,7 @@ class FakeRelayV2 {
   /// 看门狗重连）。
   bool terminalAcksEnabled = true;
 
-  /// WS Upgrade 黑洞开关（开源审查传输层批，F1-P1-3/F2-P1-1）：接受
+  /// WS Upgrade 黑洞开关（传输层批，F1-P1-3/F2-P1-1）：接受
   /// TCP/HTTP 但永不回 101、也不关连接——复现 VPN 断隧道/防火墙 DROP
   /// 的"连接悬挂"（Upgrade 永不落定，socket.ready 永不完成）。
   bool wsUpgradeBlackHole = false;

@@ -24,7 +24,7 @@ String _encodeSegment(String s) => s.replaceAllMapped(_localLinkRe, (m) {
     });
 
 String _encodeLocalLinks(String data) {
-  // 盲审3#6：围栏代码块与行内码内的路径不做改写（内容保真）。
+  // 围栏代码块与行内码内的路径不做改写（内容保真）。
   final blocks = data.split('```');
   final out = <String>[];
   for (var i = 0; i < blocks.length; i++) {
@@ -96,7 +96,7 @@ class MarkdownView extends StatelessWidget {
       // - 网络链接：保持可点（提示+复制）。
       onTapLink: (text, href, title) {
         if (href == null || href.isEmpty) return;
-        // 盲审3#5：非 ASCII/非法 %xx 会让 decodeFull 抛 ArgumentError——
+        // 非 ASCII/非法 %xx 会让 decodeFull 抛 ArgumentError——
         // 守卫解码，失败用原样。
         String decoded;
         try {

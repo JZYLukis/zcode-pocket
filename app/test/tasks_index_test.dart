@@ -10,7 +10,7 @@ import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/core/theme.dart';
 import 'package:zcode_pocket/ui/status_badge.dart';
 
-/// controller/tasks-index（ADR 0031）：帧状态机 + 行映射 + 模型接线单测。
+/// controller/tasks-index：帧状态机 + 行映射 + 模型接线单测。
 /// 帧契约 = 官方 windowHostControllerTaskFrameSchema（refs controller.ts:
 /// 189-252），语义对齐 windowControllerTaskListRegistry.ts:145-218。
 void main() {

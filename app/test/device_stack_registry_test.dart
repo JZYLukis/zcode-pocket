@@ -86,7 +86,7 @@ class _FrozenStack extends ComputerStack {
   int demoteCalls = 0;
   int disposeCalls = 0;
 
-  /// 可选闸门/错误（制造 dispose await 窗口/单栈抛出，开源审查批B组2）。
+  //可选闸门/错误（制造 dispose await 窗口/单栈抛出）。
   Completer<void>? disposeGate;
   Object? disposeError;
 

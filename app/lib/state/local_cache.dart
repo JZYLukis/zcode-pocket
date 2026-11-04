@@ -29,7 +29,7 @@ class LocalCacheStore {
     return LocalCacheStore(root);
   }
 
-  /// 开源审查 E1-P3-1/E2-P3-1/E3-P3-4：崩溃残留 .tmp（write 与 rename
+  /// P3-1/E2-P3-1/E3-P3-4：崩溃残留 .tmp（write 与 rename
   /// 之间进程死亡，唯一后缀会逐次累积且不被 _evict/removeDevice 覆盖）
   /// 启动时顺手清扫；失败不阻塞启动。
   static Future<void> _sweepTmp(Directory root) async {
@@ -60,7 +60,7 @@ class LocalCacheStore {
   );
 
   /// 跨设备目录安全名：sid 含非法路径字符时做哈希（正常 sid 是
-  /// hex/uuid，这里只是防御）。开源审查 E2-P3-3/E3-P3-5：String.hashCode
+  /// hex/uuid，这里只是防御）。P3-3/E3-P3-5：String.hashCode
   /// 跨执行稳定性无语言保证且碰撞无防护——换确定性 fnv1a-64 + 长度
   /// 前缀（消除短串拼接碰撞维度）。存量目录漂移面≈0（防御路径，真实
   /// sid 全过正则）。
@@ -104,7 +104,7 @@ class LocalCacheStore {
   Future<void> writeSession(SessionCacheEntry entry) async {
     if (_closed) return;
     try {
-      // 开源审查 E1-P2-1：序列化全部在首个 await 之前完成——rows 与
+      // P2-1：序列化全部在首个 await 之前完成——rows 与
       // snapshotControl 若是调用方的活引用（capRows ≤上限时返回原列表、
       // 控制块浅拷贝），await（dir.create）窗口内到达的新回合会把
       // seq=N+1 的行混进"lastSeq=N"的一致水位条目（恢复种子重复行），
@@ -137,7 +137,7 @@ class LocalCacheStore {
     }
   }
 
-  /// 写设备条目（原子替换）。返回是否写成功——review-fix-1（A8）：
+  /// 写设备条目（原子替换）。返回是否写成功——：
   /// 内部仍容错不抛（缓存永不阻塞主流程），但调用方需要真实结果来
   /// 决定指纹记账（写失败时同内容必须能在下轮重试，而非被去重锁死）。
   Future<bool> writeDevice(DeviceCacheEntry entry) async {
@@ -293,7 +293,7 @@ class SessionCacheWriter {
     _writing = true;
     try {
       final (capFirstRowId, rows) = capRows(state.rows);
-      // 开源审查 E3-P3-3：水位未动（logEpoch/seq/条数/游标一致）则免写
+      // P3-3：水位未动（logEpoch/seq/条数/游标一致）则免写
       // ——重开已完成会话时 attach 排的 3s 定时器会把与盘上相同的快照
       // 原样重写一遍（设备缓存有内容指纹去重，会话缓存此前没有）。
       // 水位一致即内容一致（delta 必推 seq；快照重放同 seq 同形状），

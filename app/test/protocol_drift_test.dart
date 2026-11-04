@@ -1,5 +1,5 @@
-// 协议漂移哨兵纯函数测试（开源审查 R1 P3-1/R2 P3-4）：noteProtocolDrift
-// 是 ADR 0033"桌面协议变化从静默坏变 logcat 可见"的防线，此前零测试——
+// 协议漂移哨兵纯函数测试：noteProtocolDrift
+// 是 "桌面协议变化从静默坏变 logcat 可见"的防线，此前零测试——
 // 哨兵自身失效模式恰是静默（只打日志不拦截），用 onLog 缝钉三分支。
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/transport/protocol_drift.dart';

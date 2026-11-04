@@ -10,7 +10,7 @@ import 'package:zcode_pocket/ui/interaction_banner.dart' as banner;
 import 'package:zcode_pocket/ui/task_home.dart';
 import 'package:zcode_pocket/ui/turn_model.dart';
 
-/// parity-fix-1（2026-10-29 差异审查修复批）纯逻辑回归：
+/// （2026-10-29 差异审查修复批）纯逻辑回归：
 /// B7 运行优先排序/B10 复制带计划/B11 时间线四类标记/B4 artifact 兜底/
 /// B30 八档时间分桶/B2 自定义答案合并/A6 edit 档/A3 查询确权载荷。
 
@@ -205,7 +205,7 @@ void main() {
       expect(markers[3].label, contains('模型已切换'));
     });
 
-    // 开源审查 B2-1（lane 语义，官方 product-projection.ts:4943-4945/
+    // B2-1（lane 语义，官方 product-projection.ts:4943-4945/
     // 5015）：compact=assistantWork——marker 归属事件到达时的行尾。
     // auto-compact mid-turn 插入时落在当前回合内部，此前一律 closeTurn
     // 会把运行中轮劈成两半（文件卡提前投出、后续工作行成无头段假

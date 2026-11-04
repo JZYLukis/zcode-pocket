@@ -29,7 +29,7 @@ class CompanionConnectionParams {
   }
 
   static CompanionConnectionParams? parse(String raw) {
-    // 全程 try（开源审查 F2-P2-4/F3-P2-2/M3-P1-1 三路同报）：Uri.parse
+    // 全程 try（P2-4/F3-P2-2/M3-P1-1 三路同报）：Uri.parse
     // 宽容接受畸形百分号转义，异常延迟到 queryParameters 惰性解码才抛
     // ——此前 try 只包 Uri.parse，粘贴框每键击的 _syncName/连接按钮会
     // 收到未捕获异常。契约=无效一律返回 null。
@@ -62,7 +62,7 @@ class CompanionConnectionParams {
   /// Relay websocket URL. Mirrors `Jc()` / `pen.connect()`:
   /// `wss://<host>/ws` plus `?mid=` when present.
   ///
-  /// 开源审查 F3-P3-10：旧实现为非安全 scheme 准备了 `ws://` 分支——
+  /// P3-10：旧实现为非安全 scheme 准备了 `ws://` 分支——
   /// 但 [parse] 硬性要求 https/wss（生产唯一构造路径），该分支永不可达，
   /// 属自相矛盾的死代码，已删（早期实现，已移除）。
   Uri get relayWsUri {
@@ -77,7 +77,7 @@ class CompanionConnectionParams {
   }
 }
 
-/// V2 二维码/深链参数（ADR 0032）。官方 3.16 起 URL 只带路由提示
+/// V2 二维码/深链参数。官方 3.16 起 URL 只带路由提示
 /// （sid/mid/name/app_version），凭据核心=账号登录；V1 的 hash/t 被清除。
 ///
 /// 解析语义对齐官方 parseWebRemoteControlExternalQrParams
@@ -102,7 +102,7 @@ class CompanionV2Params {
 
 CompanionV2Params? parseCompanionV2Params(String raw) {
   // 同 CompanionConnectionParams.parse：queryParameters 惰性解码对畸形
-  // 百分号转义抛异常——全程 try，无效一律 null（开源审查三路同报）。
+  // 百分号转义抛异常——全程 try，无效一律 null（三路同报）。
   try {
     final uri = Uri.parse(raw.trim());
     if ((uri.scheme != 'https' && uri.scheme != 'wss') ||

@@ -143,7 +143,7 @@ class ComposerPanels extends StatelessWidget {
 
 /// 从输入文本解析当前激活的补全 token。
 /// 返回 (type, query)：slash=起始 / 未带空格；file=光标前的 @token。
-/// [cursor]=光标偏移（null/越界=按文尾）；开源审查 D2-17/D3-P3-13：
+/// [cursor]=光标偏移（null/越界=按文尾）； D2-17/D3-P3-13：
 /// 只认光标前的末 token——中段编辑不弹文尾 token 的面板；分隔符同时
 /// 认空格与换行（多行输入里 "@文件" 前是 \n 时也出补全）。
 ({String type, String token})? activeCompletionToken(String text,
@@ -489,7 +489,7 @@ class _ModelSheetLoaderState extends State<_ModelSheetLoader> {
 class _ModelSheet extends StatefulWidget {
   final WorkspacePrep? prep;
   final ConversationState state;
-  // 盲审3#1：draft 真源=页面 pending（sheet 关闭不失忆）——sheet 只做
+  // draft 真源=页面 pending（sheet 关闭不失忆）——sheet 只做
   // 即时编辑视图，初值由页面播种。
   final String? pendingModelProvider;
   final String? pendingModelId;
@@ -628,7 +628,7 @@ class _ModelSheetState extends State<_ModelSheet> {
       final id = option.id.toLowerCase();
       final isModel = id.contains('model');
       final isThought = id.contains('thought');
-      // 盲审3#4：'model'.contains('mode')==true——不排除 model 会让
+      // 'model'.contains('mode')==true——不排除 model 会让
       // 静态模式兜底被误杀（模式切换能力整段蒸发）。
       final isMode =
           !isModel && (id.contains('mode') || id.contains('collaboration'));
@@ -657,7 +657,7 @@ class _ModelSheetState extends State<_ModelSheet> {
         );
         continue;
       }
-      // 选中态=挂起草稿优先，其次当前值（盲审2#8：统一 modelId 比较）。
+      // 选中态=挂起草稿优先，其次当前值（：统一 modelId 比较）。
       var current = _draftModel ?? currentModel;
       if (current.contains('/')) {
         current = current.substring(current.indexOf('/') + 1);
@@ -676,7 +676,7 @@ class _ModelSheetState extends State<_ModelSheet> {
           onPick: (v) {
             setState(() {
               {
-                // 盲审3#8：providerId 只认 id 形态（目录 id 或值前缀）——
+                // providerId 只认 id 形态（目录 id 或值前缀）——
                 // 显示名/空值会被服务端解析失配。
                 final prov =
                     v.modelProviderId ??
@@ -744,7 +744,7 @@ class _ModelSheetState extends State<_ModelSheet> {
                 ),
               ),
             ),
-            // 盲审3#1：唯一取消挂起的入口（模型+思考档一并清除）。
+            // 唯一取消挂起的入口（模型+思考档一并清除）。
             TextButton(
               onPressed: () => setState(() {
                 _draftProvider = null;
@@ -838,7 +838,7 @@ class _ModelListState extends State<_ModelList> {
       selected: selected,
       onPick: widget.onPick,
       alternates:
-          // 开源审查 D2-01（主会话亲验）：$_shortModelOf(v.value) 无花
+          // D2-01（主会话亲验）：$_shortModelOf(v.value) 无花
           // 括号=插值函数对象+字面文本，拼出的 key 永远 miss _dedupModels
           // 写入的 '<pid>|<modelId>'——同 provider 多变体的 ⇄ 切换不可
           // 达。必须 ${...} 调用取值。
@@ -995,7 +995,7 @@ class _ModelListRow extends StatelessWidget {
     // 不占位导致名字左缘不齐（真机实锤"乱"）：18 位恒留（无标时中性小
     // 圆点占位），名字全部对齐同一 x。行高 44→40/内距 v6→4 h12→10/
     // logo 20→18/字 uiBase→uiCaption/图标距 8→6。40 低于 44 触控下限
-    // ——design_guard 豁免留痕（ADR 0049→0051 更新）。
+    // ——design_guard 豁免留痕（→0051 更新）。
     // 2026-10-26 选中行对齐桌面风格（用户拍板：风格/排版对齐，尺寸按
     // 手机优化）——桌面源码 ModelConfigSelect.tsx:394-415 + Radix
     // RadioItem：选中=右侧细勾（foreground-subtle 灰，非彩色），无

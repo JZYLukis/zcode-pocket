@@ -22,7 +22,7 @@ class UiPrefs extends ChangeNotifier {
   static const _keyVoiceRefine = 'ui.voiceRefine';
   static const _keyVoiceApiProvider = 'ui.voiceApiProvider';
 
-  /// 深色模式批 2（ADR 0035 拍板③）：主题档位 system|light|dark，
+  /// 深色模式批 2（ 拍板③）：主题档位 system|light|dark，
   /// 默认跟随系统；设置页三档开关为唯一出口，重启保持、切换即时生效。
   static const _keyThemeMode = 'ui.themeMode';
   static const _keyLocalePreference = 'ui.localePreference';
@@ -41,12 +41,12 @@ class UiPrefs extends ChangeNotifier {
   /// 界面偏好不同步）：值=JSON {deviceSid: [projectId…]}——按电脑分开记。
   static const _keyProjectOrders = 'ui.projectOrders';
 
-  /// B28（parity-fix-1）：提问自动采纳（官方
+  /// B28：提问自动采纳（官方
   /// askUserQuestionAutoResolutionEnabled 同款默认开）——经
   /// zcode-agent.syncAppRuntimePreferences 下发 CLI。
   static const _keyAskAutoResolution = 'ui.askAutoResolution';
 
-  /// B30（parity-fix-1）：任务主页折叠组（官方 localStorage 每项目
+  /// B30：任务主页折叠组（官方 localStorage 每项目
   /// expanded 对位；JSON 数组，全局集合）。
   static const _keyHomeCollapsedGroups = 'ui.homeCollapsedGroups';
 
@@ -72,7 +72,7 @@ class UiPrefs extends ChangeNotifier {
   /// 用户事实源，SessionPane.tsx:4173-4190 同款：改设置即推送到活跃会话）。
   String _followupMode = 'queue';
 
-  /// 语音输入（ADR 0018 决策 5；2026-10-19 扩展多提供商）：整理开关
+  /// 语音输入（ 决策 5；2026-10-19 扩展多提供商）：整理开关
   /// （默认开）+ 用户自己的 API key + 提供商（zhipu/deepseek/kimi，
   /// 默认 zhipu 兼容老配置；无 key/失败退回原文）。
   bool _voiceRefineEnabled = true;
@@ -130,7 +130,7 @@ class UiPrefs extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      // 开源审查 K1-P3-9/K2-P3-3：16 个键此前串行 await（每键一次平台
+      // K1-P3-9/K2-P3-3：16 个键此前串行 await（每键一次平台
       // 通道+Keystore 解密往返）阻塞启动链——Future.wait 并行读（键间
       // 无顺序依赖），解码与默认值语义不变。
       final reads = await Future.wait<String?>([
@@ -283,7 +283,7 @@ class UiPrefs extends ChangeNotifier {
   }
 
   Future<void> setChannelMute(String channel, bool muted) async {
-    // 开源审查 K1-P3-12/K2-P3-4：双 switch 冗余（第一个只算 key，第二
+    // K1-P3-12/K2-P3-4：双 switch 冗余（第一个只算 key，第二
     // 个 default: return 后 `if (key == null) return` 不可达）——合并
     // 单 switch：case 内同时落内存字段与持久化键。
     final String key;
@@ -415,7 +415,7 @@ class UiPrefs extends ChangeNotifier {
     );
   }
 
-  /// 项目排序（按电脑 sid 分桶；null=未自定义）。开源审查 K1-P3-10：
+  /// 项目排序（按电脑 sid 分桶；null=未自定义）。 K1-P3-10：
   /// 返回不可变视图（对齐同文件 homeCollapsedGroups 惯例，防内部列表
   /// 被调用方原地变更绕过持久化）。
   List<String>? projectOrder(String deviceSid) {

@@ -34,7 +34,7 @@ class UserItem extends ChatItem {
   final String text;
 
   /// 源行引用（行级操作 target 的唯一可靠来源——文本反查会在重复
-  /// 文本时命中错误行，盲审 2026-10-15 抓出的真实 bug）。
+  /// 文本时命中错误行， 2026-10-15 抓出的真实 bug）。
   final Map<String, dynamic> row;
   const UserItem(this.text, this.row);
 }
@@ -80,7 +80,7 @@ class TurnWork {
   }
 
   /// 生产渲染的运行态判定统一走 [stateLabel]（含 phaseRunning 承接、
-  /// guided 前段语义）；本 getter 仅测试消费（开源审查 B3-P3-5 钉语义，
+  /// guided 前段语义）；本 getter 仅测试消费（ B3-P3-5 钉语义，
   /// 防误用——两者对 guided 前段/空 header 行为不同）。
   bool get running {
     final state = header?['state'];
@@ -122,7 +122,7 @@ class TurnWork {
   /// join("\n\n")，ConversationTurnGroup.tsx:1336——此前只复制最后一段，
   /// 多段轮丢前段；prefixText=切段继承的前序段正文）。
   String get allTextJoined {
-    // B10（parity-fix-1，2026-10-29 审查）：官方轮尾复制追加
+    // B10（2026-10-29 审查）：官方轮尾复制追加
     // ExitPlanMode 的计划 markdown（ConversationTurnRow.tsx:86-110
     // + planToolCall.ts readStringField[plan,text,content]）——计划
     // 正文来自结构化 tool 行，不混入普通工具输出；已在正文段中的
@@ -221,7 +221,7 @@ class TurnWork {
 
   /// 折叠覆盖键（回合快捷菜单/段头开关共用）：有头按 header rowId；
   /// 无头半截回合按尾行 rowId——与 chatItemKey 的 turn-tail 同源
-  /// （开源审查 B1-P3-4：多个 -1 哨兵键会让折叠状态跨回合串扰）。
+  /// （ B1-P3-4：多个 -1 哨兵键会让折叠状态跨回合串扰）。
   ///
   /// guided 多段（2026-11-04 用户拍板「按段独立折叠」）：同一轮的多个
   /// 工作段共享 header rowId，直接当键会让展开/收起一段连带所有段——
@@ -309,14 +309,14 @@ class TimelineMarkerItem extends ChatItem {
 }
 
 /// timelineMarker 行 → (label, running)；null=不渲染（畸形 marker）。
-/// 开源审查 B2-1：顶层（轮边界 lane，经 TimelineMarkerItem）与段内
+/// B2-1：顶层（轮边界 lane，经 TimelineMarkerItem）与段内
 /// （mid-turn assistantWork lane，经 TurnWork.work）两处渲染共用单源
 /// 解析——文案/running 语义不得两份漂移。
 (String, bool)? timelineMarkerLabelOf(Map<String, dynamic> row) {
   final marker = row['marker'];
   if (marker is! Map) return null;
   final type = '${marker['type'] ?? ''}';
-  // B11（parity-fix-1，2026-10-29 审查）：官方渲染 compact /
+  // B11（2026-10-29 审查）：官方渲染 compact /
   // forkNotice / goalVerify / modelChange 四类分隔线
   // （ConversationRowView.tsx:1926-2035）——此前只解析 modelChange，
   // 压缩/分支来源/目标校验标记静默丢弃。
@@ -353,7 +353,7 @@ class TimelineMarkerItem extends ChatItem {
   } else if (type == 'goalVerify') {
     final n = intOrZero(marker['iteration']);
     final outcome = '${marker['outcome'] ?? ''}';
-    // review-fix-1（A7+B11 措辞对齐）：官方 zh-CN 原文两句；n 缺省
+    // 官方 zh-CN 原文两句；n 缺省
     //（<=0）不再拼「第 0 次迭代」。
     final status = outcome == 'running'
         ? '目标校验中'
@@ -387,7 +387,7 @@ int migrateAnchorIndexAfterPrepend(String key, List<ChatItem> items) {
   return -1;
 }
 
-/// 条目 key（列表锚定+搜索定位共用——ADR 0057/0059）。
+/// 条目 key（列表锚定+搜索定位共用——/0059）。
 ///
 /// 稳定性铁律（2026-10-29 真机"上滑跳转/入页闪动"根因修复）：
 /// - TurnBarItem 此前用 `header ?? index`+`work.first`——窗口起点的
@@ -398,7 +398,7 @@ int migrateAnchorIndexAfterPrepend(String key, List<ChatItem> items) {
 ///   半截回合按**尾行** rowId（只存在于窗口老边、只向上生长——prepend
 ///   不改尾行；新回合必带头行故不与流式 append 相互作用）。index 兜底
 ///   全部移除（index 参与 key=前插必变）。
-/// - 开源审查 A1-P3-14/B1-P3-6：协议保证 rowId 在场，但防御路径一旦
+/// - A1-P3-14/B1-P3-6：协议保证 rowId 在场，但防御路径一旦
 ///   走到（畸形帧缺 rowId），'row-null' 类兜底会产出重复键（debug 抛
 ///   Duplicate keys、release 元素错配）——异常分支掺入 index 保唯一
 ///   （正常行零变化，前插稳定性不受影响）。
@@ -411,7 +411,7 @@ String chatItemKey(ChatItem item, int index) => switch (item) {
   TurnBarItem() => () {
     final headerRowId = item.work.header?['rowId'];
     if (headerRowId != null) {
-      // review-fix-1（A3）：guided 多段回合共享同轮 header rowId——键只
+      // guided 多段回合共享同轮 header rowId——键只
       // 用 header 会碰撞（debug 抛 Duplicate keys、release 元素错配）。
       // 段序轮内单调且不随前插漂移（a78941e 键稳定语义保持）。
       final seg = item.work.segmentIndex;
@@ -431,7 +431,7 @@ String _rowKeyOf(Map<String, dynamic> row, int index) {
   return id is num ? 'row-$id' : 'row-null-$index';
 }
 
-/// 按码元截断并避开代理对劈开（开源审查 B2-14：72/60 字截断下刀在
+/// 按码元截断并避开代理对劈开（ B2-14：72/60 字截断下刀在
 /// emoji/生僻字中间会渲染 replacement 字形——截点落在前导代理上时
 /// 回退一位）。
 String clipTailSafe(String s, int max) {
@@ -454,11 +454,11 @@ bool _isLeadSurrogate(int cu) => cu >= 0xD800 && cu <= 0xDBFF;
 bool _isTrailSurrogate(int cu) => cu >= 0xDC00 && cu <= 0xDFFF;
 
 /// 行序列 → 渲染条目序列（纯函数）。
-/// 数字/Map 字段守卫读取统一走 core/payload_guard（开源审查批C 组3
+/// 数字/Map 字段守卫读取统一走 core/payload_guard（批C 组3
 /// 铺满：zod 保证 number，但服务端形态漂移（String 数字）会打断整页
 /// build（release=灰屏）——畸形形态安全兜底，正常路径零变化）。
 
-/// 长度稳定的大小写折叠（开源审查 B1-P1-1/B2-P2-4/B3-P1-1 三路）：
+/// 长度稳定的大小写折叠（ B1-P1-1/B2-P2-4/B3-P1-1 三路）：
 /// Dart 的 toLowerCase() 遵循 Unicode 全映射，U+0130（İ）等字符会
 /// 扩长（1 码元 → 'i'+U+0307 共 2 个码元）——折叠串下标无法映射回
 /// 原串，用它切片原串会错位甚至 RangeError（搜索高亮在 build 期崩
@@ -492,7 +492,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
   Map<String, dynamic>? guidedTriggerRow;
   int guidedSegmentIndex = 0;
 
-  /// 轮级子代理计数（开源审查 B3-P3-6：旧实现只数 closeTurn 时刻
+  /// 轮级子代理计数（ B3-P3-6：旧实现只数 closeTurn 时刻
   /// open 里的末段——guided 多段轮的前段子代理行漏计，「N 个子代理」
   /// 胶囊偏小；配对聚合本就按轮，计数同口径）。
   var turnSubagentCount = 0;
@@ -502,7 +502,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
     final subagents = turnSubagentCount;
     open = null;
     // 轮结束：轮尾文件变更卡（桌面=最终正文之后的内联折叠卡）。
-    // 数字守卫（对抗审查 B2 首立，开源审查批C 组3 铺满）：fileChanges
+    // 数字守卫（对抗审查 B2 首立，批C 组3 铺满）：fileChanges
     // 自身与 files 计数都过守卫——String/非 Map 形态漂移不再打断 build。
     final files = intOrZero(mapOf(turnHeader?['fileChanges'])?['files']);
     final hasEntity = '${turnHeader?['entityId'] ?? ''}'.trim().isNotEmpty;
@@ -539,7 +539,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
         final parsed = timelineMarkerLabelOf(row);
         if (parsed == null) break;
         final (label, running) = parsed;
-        // 开源审查 B2-1（lane 语义，官方 product-projection.ts:4943-4945/
+        // B2-1（lane 语义，官方 product-projection.ts:4943-4945/
         // 5015）：compact=assistantWork——「归属：marker 落在事件到达时的
         // 行尾，客户端零归属逻辑」。auto-compact 在回合进行中插入时，
         // marker 行按 row.appended 落在 turnHeader 与后续工作行之间——
@@ -590,7 +590,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
       case 'reasoning':
       case 'toolCall':
       case 'subagent':
-      // B4（parity-fix-1）：artifact 行（动态工作流产物，rows.ts:250-261）
+      // B4：artifact 行（动态工作流产物，rows.ts:250-261）
       // 此前落 default 静默丢弃——进工作段按通用行渲染（displayName
       // 由渲染层映射），不再不可见。
       case 'artifact':
@@ -759,7 +759,7 @@ String workBarLabel(TurnWork work, {int? nowMs}) {
       if (started == null) return '工作中';
       final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
       final elapsed = now - started;
-      // 开源审查 B2（pattern 占位不递归 tr 同根因）：时长片段拼接前先
+      // B2（pattern 占位不递归 tr 同根因）：时长片段拼接前先
       // tr（'3 分 20 秒'→'3m 20s'），整串再由官方 pattern 译出
       // 'Working for 3m 20s'。
       return '工作中 ${elapsed > 0 ? tr(formatWorkDuration(elapsed)) : tr('1 秒')}';
@@ -807,7 +807,7 @@ String reasoningLabel({
     final elapsed = firstSeen == null
         ? null
         : n.difference(firstSeen).inMilliseconds;
-    // 开源审查 B2-6：时长片段拼接前先 tr（'思考 · ' 前缀无整键无
+    // B2-6：时长片段拼接前先 tr（'思考 · ' 前缀无整键无
     // pattern，占位也不递归——预译片段后整串走 custom pattern）。
     return '思考 · 持续了 '
         '${elapsed != null && elapsed > 0 ? tr(formatWorkDuration(elapsed)) : tr('几秒')}';
@@ -958,7 +958,7 @@ String toolPreview(Map<String, dynamic> row) {
     return args == null ? '' : (_previewFromArgs(args, row) ?? '');
   }
   final firstLine = input.split('\n').first.trim();
-  // 开源审查 B1-P3-8：pretty-printed JSON（含换行的工具入参）首行是
+  // B1-P3-8：pretty-printed JSON（含换行的工具入参）首行是
   // 孤立 "{"——首行解析失败时对全文再试一次，仍非 JSON 才按纯文本。
   String? previewOf(String candidate) {
     try {
@@ -983,7 +983,7 @@ String? _previewFromArgs(
   Map<String, dynamic> row, {
   String Function(String)? clipFn,
 }) {
-  // 开源审查 B2-14：默认截断走代理对安全版（劈开 emoji=replacement 字形）。
+  // B2-14：默认截断走代理对安全版（劈开 emoji=replacement 字形）。
   String clip(String s) => clipFn?.call(s) ?? clipTailSafe(s, 72);
   String? pick(List<String> keys) {
     for (final k in keys) {

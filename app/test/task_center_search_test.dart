@@ -194,7 +194,7 @@ void main() {
   });
 }
 
-/// L2/L3 P1 归档护栏用：记录 switchWorkspace/archiveTask 的触发顺序。
+//L2/ 归档护栏用：记录 switchWorkspace/archiveTask 的触发顺序。
 class _ArchiveOrderApp extends _SearchApp {
   _ArchiveOrderApp(super.onSearch);
 

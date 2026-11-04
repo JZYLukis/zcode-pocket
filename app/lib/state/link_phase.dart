@@ -8,7 +8,7 @@ enum LinkPhase {
   online,
   reconnecting,
 
-  /// 被其他手机页接管（协议每桌面会话仅一个 terminal，protocol-notes §1.4）。
+  /// 被其他手机页接管（协议每桌面会话仅一个 terminal）。
   kicked,
 
   /// 凭据失效（桌面刷新了二维码，旧 URL 作废）→ 引导重扫。

@@ -6,7 +6,7 @@ import '../core/theme.dart';
 import '../core/voice_refine.dart';
 import '../state/app_state_scope.dart';
 
-/// 语音输入子页（ADR 0028，2026-10-20）：口语自动整理开关 + 整理服务
+/// 语音输入子页（2026-10-20）：口语自动整理开关 + 整理服务
 /// 提供商选择 + API key 对话框——三项原样自 settings_page 一级页迁入
 /// （文案/存储 key/控件行为不变）。子页骨架同 notify_ledger_page。
 class SettingsVoicePage extends StatelessWidget {
@@ -84,7 +84,7 @@ class SettingsVoicePage extends StatelessWidget {
                 if (picked != null) {
                   final oldKey = (app.uiPrefs.voiceApiKey ?? '').trim();
                   await app.uiPrefs.setVoiceApiProvider(picked);
-                  // 开源审查 M1 P3-9：key 是全局单键（ui.voiceApiKey）跨
+                  // key 是全局单键（ui.voiceApiKey）跨
                   // 提供商共用——切换后旧 key 会被提交给新端点（401→整理
                   // 静默回退原文，开关看起来像坏了）。提醒更新；不自动清
                   // 空防误触切换丢 key。
@@ -142,7 +142,7 @@ class SettingsVoicePage extends StatelessWidget {
                     ],
                   ),
                 );
-                // 开源审查 M1 P3-3：延迟到退场动画后释放（pop 瞬间 dispose
+                // 延迟到退场动画后释放（pop 瞬间 dispose
                 // 会在动画期编辑事件触发写断言）。
                 Future.delayed(
                   const Duration(milliseconds: 400),

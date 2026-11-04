@@ -189,7 +189,7 @@ void main() {
         isNull,
       );
       expect(assembleNewFileText([]), isNull);
-      // review-fix-1（A10）：纯插入编辑（无删除行但带 jsdiff 默认 4 行
+      // 纯插入编辑（无删除行但带 jsdiff 默认 4 行
       // 上下文）→ 不是新建全文，宁进 diff。
       expect(
         assembleNewFileText([

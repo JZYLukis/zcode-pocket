@@ -291,7 +291,7 @@ void main() {
     },
   );
 
-  // 开源审查 J3-P2-2（批C 组3 守卫铺满）：tasks-index 行映射排序对
+  // J3-P2-2（批C 组3 守卫铺满）：tasks-index 行映射排序对
   // updatedAt 硬转换 `as num?`——单条畸形行抛 TypeError 落进
   // _acceptLogicalFrame 的 catch 触发 resync，快照重放再抛=无界循环。
   // 修复=安全读取（payload_guard.intOf，String 数字容忍解析、非数字

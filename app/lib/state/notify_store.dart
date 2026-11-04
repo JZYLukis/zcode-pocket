@@ -12,7 +12,7 @@ import 'notify_core.dart';
 ///   重连后历史状态不丢，才能正确差分"这个完成是新完成"（官方同款）。
 /// - `notifiedInteractions` 已通知审批 id 环形集合（语义去重第二道闸，
 ///   防基线清理/异常丢失后的重放重发；窗口 7 天容量 500）。
-/// - `notify-ledger.jsonl` 通知台账（零漏发以台账核对判定，ADR 0018）。
+/// - `notify-ledger.jsonl` 通知台账（零漏发以台账核对判定）。
 ///
 /// 全 IO 容错（读失败=空态，写失败=丢弃——通知状态永远不阻塞主流程）；
 /// 基线写入 debounce 2s（si 流式期间 cards 频繁刷新）。目录注入以便单测。
@@ -137,7 +137,7 @@ class NotifyStore {
 
   Future<void> _writeBaselines() async {
     final now = DateTime.now().millisecondsSinceEpoch;
-    // 开源审查 H1-P3-08：任意写入口统一刷新基准——10s 强写判定此前
+    // H1-P3-08：任意写入口统一刷新基准——10s 强写判定此前
     // 只认 _writeBaselinesNow/flush，防抖写刚落盘又立刻强写一次同内容。
     _lastBaselineWriteAt = now;
     _pruneInteractions(now);
@@ -217,10 +217,10 @@ class NotifyStore {
 
   /// 点击回填（通知被点开后标记，供真用期数据参考）。低频事件，
   /// 原位改内存 + 全量重写文件——不经 appendLedger（它会再 add 一行，
-  /// 同事件重复两行，盲审发现9）。
+  /// 同事件重复两行，发现9）。
   Future<void> markClicked(String taskId, int atMs) async {
     for (final e in _recentLedger.reversed) {
-      // 开源审查 H1-P3-02：只回填 posted 行——同任务先 muted/deduped
+      // H1-P3-02：只回填 posted 行——同任务先 muted/deduped
       // 后又 posted 时（noChannel→posted 重试成对出现），不按 outcome
       // 过滤会标在最近一条非 posted 行上，真实 posted 行 clicked 恒 false。
       if (e.taskId == taskId && !e.clicked && e.outcome == 'posted') {

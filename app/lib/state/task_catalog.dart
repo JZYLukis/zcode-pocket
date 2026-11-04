@@ -9,7 +9,7 @@ import '../transport/protocol_drift.dart';
 import 'cache_policy.dart';
 import 'task_list.dart';
 
-/// 工作区 scope 构造（唯一真源——开源审查 J2 P3-9/J3 P3-4 轻量合并）：
+/// 工作区 scope 构造（唯一真源—— J2 P3-9/J3 P3-4 轻量合并）：
 /// TaskCatalog 与 WorkspaceController 此前各持一份逐字重复，TaskCatalog
 /// 内部另有 _taskScope 与 deleteArchivedTasks 的手写内联共三份，协议
 /// scope 字段演进时漏改面 ×3。
@@ -89,7 +89,7 @@ class TaskCatalog {
       onLog: _onLog,
     );
     model.applyChannelLists(
-      // channelActive 预渲 running 清洗（开源审查 J3 P3-6）：tasks-index
+      // channelActive 预渲 running 清洗（ J3 P3-6）：tasks-index
       // 合并把 liveStatus='running' 写进通道行 status——workspaceTasks 路
       // 已在读取侧 sanitize，本路原样落 dormant 模型会把已结束回合渲染
       // 成运行中。白名单裁剪覆盖合并层消费的全部键。
@@ -136,7 +136,7 @@ class TaskCatalog {
 
   void _onBridgeRecoveredReloadTasks() {
     if (_taskList != null) unawaited(loadTaskIndex());
-    // 恢复边沿两类数据收敛对称（开源审查 J1-7）：桥短暂断链期间
+    // 恢复边沿两类数据收敛对称（ J1-7）：桥短暂断链期间
     // loadProjects 失败会置 readTreeStatus='failed'——桥恢复后任务三列表
     // 自动重拉而项目树不会，侧栏停留 tabs 兜底+失败提示直到手动刷新。
     // 仅失败态重拉（ok/loading 态无需）。
@@ -198,7 +198,7 @@ class TaskCatalog {
   Future<void> loadProjects() async {
     final bridge = _bridgeProvider();
     if (bridge == null) return;
-    // 代际计数（开源审查 J3 P3-8）：多入口并发（openActiveWorkspace/
+    // 代际计数（ J3 P3-8）：多入口并发（openActiveWorkspace/
     // refreshWorkspaces/moveTask/bridge recovered）只校验 bridge 身份不
     // 校验"更新鲜"——15s 超时窗口内慢的旧请求后到覆盖新树（瞬时错树，
     // 下一次拉取才自愈）。旧代际结果整体丢弃。
@@ -299,7 +299,7 @@ class TaskCatalog {
       _tasksIndexSnapshotLogged = true;
       _onLog('[tasks-index] snapshot: ${state.rows.length} rows');
     }
-    // 守卫（开源审查 J3-P2-2）：updatedAt 硬转换抛 TypeError 会落在
+    // 守卫（ J3-P2-2）：updatedAt 硬转换抛 TypeError 会落在
     // _acceptLogicalFrame 的 catch 里触发 _resync——同一快照重放再抛，
     // 形成 resync 无界循环；改安全读取按 0 兜底。
     final mapped =
@@ -369,7 +369,7 @@ class TaskCatalog {
     final deleted = parseDeletedTaskIds(results[3]);
     // 桥抖动窗口内 RPC 失败会拿到全空三列表——直接应用会把已剔除的
     // 归档任务复活、清掉置顶。全空且已有数据时跳过（bridge 恢复会重拉）。
-    // 守卫必须纳入 deleted（开源审查 J1-4/J3 P1-2/L2/L3 四路）：官方
+    // 守卫必须纳入 deleted（ J1-4/J3 P1-2/L2/L3 四路）：官方
     // listTasks 契约=所有已持久化任务（含软删墓碑行，refs
     // zcodeTaskService.ts:428-432），"三列表全空+deleted 非空"是删光最后
     // 一个任务的合法终态——照旧跳过会把 deletedIds 负向 join 一起冻结，
@@ -400,7 +400,7 @@ class TaskCatalog {
     final q = query.trim();
     if (bridge == null || q.isEmpty) return null;
     // scopes = 全部已知工作区：workspace-list（当前 tabs）+ 项目任务聚合
-    // （ADR 0033：3.16 workspace-list 只剩 1 tab，项目全集补全搜索覆盖）
+    // （：3.16 workspace-list 只剩 1 tab，项目全集补全搜索覆盖）
     // + controller/tasks-index 当前窗口任务（B 首页同源补齐：避免 readTree
     // 未就绪时"首页看得到、正文搜不到"）。
     final scopesByKey = <String, Map<String, dynamic>>{};
@@ -531,7 +531,7 @@ class TaskCatalog {
     _taskIndexReloadTimer?.cancel();
     _taskIndexReloadTimer = null;
     _tasksIndexSnapshotLogged = false;
-    // 切工作区清残留（开源审查 J2 P3-2）：workspaceTasks/archivedTasks 是
+    // 切工作区清残留（ J2 P3-2）：workspaceTasks/archivedTasks 是
     // 上一工作区的现场——不清则开桥窗口内首页/跨区搜索继续消费旧行，
     // 点旧行会以新工作区的 conv/作用域去开旧任务（服务端找不到/开错
     // 目录）。projects/projectTasks 按设计保留（同电脑切换数据仍有效，

@@ -59,7 +59,7 @@ class _BranchSheet extends StatefulWidget {
 }
 
 class _BranchSheetState extends State<_BranchSheet> {
-  /// 新建分支对话框的输入控制器（开源审查 M1 P3-1：不漏释放）。
+  /// 新建分支对话框的输入控制器（：不漏释放）。
   /// 由 State 托管而非延迟 Timer——退场动画期间的 TextField 仍可用，
   /// 页面销毁时统一 dispose（FakeAsync 下无悬挂 Timer）。
   final _dialogControllers = <TextEditingController>[];
@@ -143,7 +143,7 @@ class _BranchSheetState extends State<_BranchSheet> {
   Future<void> _switchTo(GitBranch branch) async {
     if (_switching || branch.isCurrent) return;
     // 全局生效守卫：工作区有运行中任务时二次确认（官方无此守卫）。
-    // 注：runningTaskCount 是弹层打开时刻的快照（开源审查 M2 P3-7 注明
+    // 注：runningTaskCount 是弹层打开时刻的快照（ 注明
     // 取舍）——弹层短命且确认框紧随点按，窗口内计数翻转概率极低。
     if (widget.runningTaskCount > 0) {
       final ok = await showDialog<bool>(

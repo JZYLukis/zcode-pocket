@@ -209,7 +209,7 @@ void main() {
       expect(app.calls.first['content'], isNull);
     });
 
-    // 开源审查批B组5（O1 P1-1/O2 P1-1/O3 P1-2 三路同根）：作答判定只看
+    // （O1 P1-1/O2 P1-1/O3 P1-2 三路同根）：作答判定只看
     // _qSelected 漏 _qCustom——官方 customAnswer 是合法作答，多选题仅填
     // 自定义时提交/翻页双锁死，唯一出路是跳过丢答案。修复后使能/计数/
     // 翻页统一按「选中或非空自定义」。

@@ -1,11 +1,11 @@
 import '../transport/connection_params.dart';
 
-/// 连接档案：一条远控凭据 = 一台桌面（docs/ui-references.md §4）。
+/// 连接档案：一条远控凭据 = 一台桌面。
 sealed class ConnectionProfile {
   const ConnectionProfile();
 }
 
-/// 设备档案公共面（ADR 0032 双栈）：V1（扫码 URL）与 V2（账号+设备 sid）
+/// 设备档案公共面（ 双栈）：V1（扫码 URL）与 V2（账号+设备 sid）
 /// 共用 deviceSid 唯一键、标签/失效标记/工作区恢复字段——栈注册表
 /// （deviceSid→ComputerStack）与 UI 列表对栈版本无感。
 abstract class DeviceProfile extends ConnectionProfile {
@@ -66,7 +66,7 @@ class RelayProfile extends DeviceProfile {
   );
 }
 
-/// V2 账号档案（ADR 0032）：凭据核心=账号登录（多账号批 2026-10-25 起
+/// V2 账号档案：凭据核心=账号登录（多账号批 2026-10-25 起
 /// AccountStore 支持多账号并存，档案经 [accountId] 绑定所属账号；null=
 /// 尚未迁移/新建未绑定——连接时退最近使用账号）。档案只记目标桌面设备
 /// （sid/mid/name）——官方 3.16 二维码形态。
@@ -131,7 +131,7 @@ class LanProfile extends ConnectionProfile {
   const LanProfile({required this.baseUrl, this.token});
 }
 
-// 开源审查 G1-P3-4/G2-P3-9/G3-P3-1：阶段 0 骨架遗存的
+// P3-4/G2-P3-9/G3-P3-1：阶段 0 骨架遗存的
 // TransportPhase/ZTransport/RelayTransport 全仓库零引用（且内含未经
 // 检验的缺陷——attachWorkspace 的监听订阅不保存、_bridge 覆盖不
 // dispose），已删除。本文件仅保留连接/设备

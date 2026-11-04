@@ -14,7 +14,7 @@ import '../transport/relay_client.dart' show BatteryNetCounters;
 /// **临时探针（用户拍板）**：电量优化完成后本文件可整体删除（连同
 /// AppState 启动接线 / relay_client 的 BatteryNetCounters /
 /// MainActivity 的 companion/battery 通道 / 对应测试）——拆除清单见
-/// docs/battery-measure.md 生命周期节。
+/// 生命周期节。
 ///
 /// 记录轴（一行一个样本，battery-journal.jsonl 追加）：
 /// - lvl/chg：电量百分比与充电态（充电段在分析时剔除）
@@ -28,7 +28,7 @@ import '../transport/relay_client.dart' show BatteryNetCounters;
 /// 否则每 10 个 tick（约 10 分钟）心跳一行。文件 >512KB 从头截半（整行）。
 /// 配套分析：tools/battery-journal-analyze.py（按状态桶出 耗电%/时、
 /// CPU 秒/时、流量 KB/时）。进程被杀后日志自然停写——那段窗口归
-/// batterystats（adb 层）管，见 docs/battery-measure.md。
+/// batterystats（adb 层）管，见 。
 class BatteryJournal with WidgetsBindingObserver {
   static const _channel = MethodChannel('companion/battery');
   static const _fgTickInterval = Duration(seconds: 60);
@@ -47,11 +47,11 @@ class BatteryJournal with WidgetsBindingObserver {
   _BatterySample? _prev;
   bool _channelBroken = false;
 
-  /// 通道破坏后的采样计数（开源审查 E2-P3-7：重试判据此前用 _tick，
+  /// 通道破坏后的采样计数（P3-7：重试判据此前用 _tick，
   /// 而 lifecycle 强制采样路径不递增 _tick——重试窗口漂移）。
   int _brokenSamples = 0;
 
-  /// 开源审查 E3-P3-6：start 幂等门（重复调用=双定时器+双观察者+双 sink）。
+  /// P3-6：start 幂等门（重复调用=双定时器+双观察者+双 sink）。
   bool _started = false;
   File? _file;
   IOSink? _sink;
@@ -91,7 +91,7 @@ class BatteryJournal with WidgetsBindingObserver {
     _timer?.cancel();
     _timer = null;
     WidgetsBinding.instance.removeObserver(this);
-    // 开源审查 E2-P3-7：flush 完成后再 close、错误面收口（两个裸
+    // P3-7：flush 完成后再 close、错误面收口（两个裸
     // unawaited 的任一失败都会成未处理异步错误）。
     final sink = _sink;
     _sink = null;
@@ -177,7 +177,7 @@ class BatteryJournal with WidgetsBindingObserver {
       _writtenBytes += line.length + 1;
       // 低频落地（flush 策略：每次写即 flush——量极小，换数据安全）。
       unawaited(sink.flush());
-      // 开源审查 E2-P3-6：轮转不再只在 start() 执行（长驻进程无界增长）
+      // P3-6：轮转不再只在 start() 执行（长驻进程无界增长）
       // ——写入路径按累计字节触发截半轮转（tmp+rename 原子替换）。
       if (_writtenBytes > _maxFileBytes) {
         unawaited(_rotateNow());
@@ -198,7 +198,7 @@ class BatteryJournal with WidgetsBindingObserver {
       _brokenSamples = 0;
     }
     try {
-      // 开源审查 E1-P3-8：平台通道无超时——native 挂死会让
+      // P3-8：平台通道无超时——native 挂死会让
       // _sampleAndMaybeWrite 永不返回、tick 链永久停摆、journal 静默
       // 停写。10s 超时兜底（超时按无样本跳过本轮）。
       final res = await _channel
@@ -223,7 +223,7 @@ class BatteryJournal with WidgetsBindingObserver {
     }
   }
 
-  /// 写入路径触发的截半轮转（开源审查 E2-P3-6）：flush+close 当前 sink →
+  /// 写入路径触发的截半轮转（P3-6）：flush+close 当前 sink →
   /// tmp+rename 原子替换（轮转重写中途被杀不截断日志）→ 重开 append。
   /// 轮转期间新写入用旧 sink 抛错被上层 catch 吞（探针丢 1-2 行可接受）。
   Future<void> _rotateNow() async {

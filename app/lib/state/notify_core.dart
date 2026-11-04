@@ -1,4 +1,4 @@
-/// 通知核心（阶段 3 第二段，快照差分架构——docs/phase3-notify-design.md）。
+/// 通知核心（阶段 3 第二段，快照差分架构——）。
 ///
 /// 分层：本文件是**纯数据+纯函数**（无 IO、无插件依赖，单测主战场）；
 /// 落盘在 notify_store.dart；安卓通道与点击路由在 notify/；
@@ -11,13 +11,13 @@ library;
 /// 通知通道（官方四通道裁剪为三，各自可静音——设置页三开关）。
 enum NotifyChannel { approvals, tasks, goals }
 
-/// 时效性通知存活时长：30 分钟（ADR 0029 决策 1——完成/落定类信息
+/// 时效性通知存活时长：30 分钟（ 决策 1——完成/落定类信息
 /// 30 分钟后已无即时提醒价值；过期只影响通知栏，台账全量留档可找回）。
 const _timeSensitiveTtlMs = 30 * 60 * 1000;
 
 /// 通道 → 通知自动过期时长（毫秒；null=不过期）。
 ///
-/// ADR 0029 决策 1：tasks/goals 带超时——通知只增不清是通知栏堆积
+/// 决策 1：tasks/goals 带超时——通知只增不清是通知栏堆积
 /// （"更多通知"折叠区）主因之一，清理原本只有冷启动 cancelAll 与
 /// 回前台 clearStale 两时机，companion 场景用户常年不打开 app；
 /// approvals 可操作性强不超时，保留到用户处理或回前台对账清理。
@@ -180,7 +180,7 @@ class NotifyEvent {
   });
 }
 
-/// 台账条目（"零漏发"以台账核对判定，不靠记忆——ADR 0018 决策 2/6）。
+/// 台账条目（"零漏发"以台账核对判定，不靠记忆—— 决策 2/6）。
 class LedgerEntry {
   final int ts;
   final String kind;
@@ -190,7 +190,7 @@ class LedgerEntry {
 
   /// posted=已发通知；firstSeen=首见建基线不通知；deduped=语义去重；
   /// muted=通道静音吞并；aggregated=并入离线聚合；noChannel=服务不可用；
-  /// converged=补发收敛吞并（超阈值只发聚合，ADR 0029 决策 2）。
+  /// converged=补发收敛吞并（超阈值只发聚合， 决策 2）。
   final String outcome;
   final bool clicked;
 
@@ -284,7 +284,7 @@ List<NotifyEvent> diffTask(
         _isTerminal(now.phase) &&
         sinceMs != null &&
         now.lastActivityAt > sinceMs) {
-      // 开源审查 H1-P2-03/H2-P3-5：首见分支按当前终态分派（与主分支
+      // H1-P2-03/H2-P3-5：首见分支按当前终态分派（与主分支
       // 同口径）——completedSuccess 计入聚合，error/completedInterrupted
       // 归 singles 单发（失败高优先级本就不聚合）。此前只认
       // completedSuccess，断连/死亡窗口内"新建即失败"的任务零通知零
@@ -328,7 +328,7 @@ List<NotifyEvent> diffTask(
     // 对账兜底（介入点2自证轮实锤 2026-10-19）：基线可能陈旧（写盘
     // 防抖饿死/异常丢失），"终态→终态"但完成时间在水位之后=我们不在
     // 时又完整跑过一轮——计一次该轮终态，否则该轮次对死亡窗口不可见。
-    // 开源审查批B组5（H1 P2-02/H2 P1-1）：kind 按当前终态分派（与上方
+    // （H1 P2-02/H2 P1-1）：kind 按当前终态分派（与上方
     // 主分支同口径）——error→error（复活轮再失败）恒报"任务完成"是
     // 方向性误导，比不发更糟。
     events.add(
@@ -435,7 +435,7 @@ class DiffResult {
   const DiffResult({required this.events, required this.nextBaselines});
 }
 
-/// 基线合并（开源审查 H2-P2-1）：当前快照（=当前工作区 cards）缺席的
+/// 基线合并（ H2-P2-1）：当前快照（=当前工作区 cards）缺席的
 /// 条目保留——栈同一时刻只挂当前工作区的 TaskListModel，整体替换会
 /// 清零其他工作区全部任务基线，切回后 si 快照对已清基线的任务是
 /// "首见"，完成/审批事件被首见抑制结构性吞掉。merge 后切工作区不再
@@ -448,9 +448,9 @@ Map<String, PhaseSnapshot> mergeBaselines(
 
 /// 回前台对账：完成事件合并为一条聚合（各任务不再单发——设计文档
 /// "断连窗口聚合"）；失败/审批/Goal 照常单发。
-/// 跨设备聚合（多电脑同时完成聚合成一条，ADR 0018 决策 6）：
+/// 跨设备聚合（多电脑同时完成聚合成一条， 决策 6）：
 /// [eventsByDevice] 汇总各栈对账结果。
-/// （开源审查 H1-P3-01：deviceLabelOf 参数从未被读、_defaultLabel 仅为
+/// （ H1-P3-01：deviceLabelOf 参数从未被读、_defaultLabel 仅为
 /// 它存在——死参数已删；设备标签在 onPost 闭包自行拼接。）
 ReconcilePlan planReconcile(Map<String, List<NotifyEvent>> eventsByDevice, {
   required int atMs,
@@ -493,7 +493,7 @@ ReconcilePlan planReconcile(Map<String, List<NotifyEvent>> eventsByDevice, {
   );
 }
 
-/// 对账补发单条收敛阈值（ADR 0029 决策 2）：singles 超过此数时只发
+/// 对账补发单条收敛阈值（ 决策 2）：singles 超过此数时只发
 /// 一条聚合，不再逐条 post——消灭"重连一次爆一屏"（批量进栏时除最高
 /// 排名几条外全部即时落入系统"更多通知"折叠区）。台账不受收敛影响，
 /// 照常全量记录（outcome=converged）。

@@ -34,7 +34,7 @@ bool isWebFallbackNavAllowed(Uri? uri) {
   if (uri == null) return false;
   final scheme = uri.scheme.toLowerCase();
   if (scheme == 'about' || scheme == 'data' || scheme == 'blob') return true;
-  // review-fix-1（安全组）：官方域强制 https——http 明文承载钓鱼面且
+  // 官方域强制 https——http 明文承载钓鱼面且
   // cookie 可被 MITM 注入。
   if (scheme != 'https') return false;
   final host = uri.host.toLowerCase();

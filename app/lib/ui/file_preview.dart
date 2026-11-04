@@ -31,7 +31,7 @@ String? assembleNewFileText(List<Map<String, dynamic>> patches) {
     if (raw is! List) return null;
     for (final line in raw) {
       if (line is! String) return null;
-      // review-fix-1（A10）：官方 jsdiff 默认 4 行上下文——纯插入编辑
+      // 官方 jsdiff 默认 4 行上下文——纯插入编辑
       // 无删除行但含上下文行，旧判据会当全文渲染成拼盘；收紧为逐行
       // 必须 `+` 前缀（上下文/删除一律 null）。
       // C2：jsdiff 无尾换行标记行（`\ No newline at end of file`，
@@ -249,7 +249,7 @@ class _VisualizeCardState extends State<VisualizeCard> {
 /// 律拦截**（渲染页不是浏览入口，连官方域也不放行——比 web_fallback 的
 /// 官方域白名单更严）。多文件站点引用的本地 css/js/图片协议拿不到，
 /// 只有单文件页面能完整渲染。
-/// review-fix-1（安全组）：预览页 CSP——agent/artifact 生成的 html 在
+/// ：预览页 CSP——agent/artifact 生成的 html 在
 /// unrestricted JS 下可 fetch/XHR 外发任意域（导航拦不住子资源请求）。
 /// connect-src 'none' 关死外发回传；脚本/样式/图片放行 https CDN（官方
 /// visualize 页同款资源域面）。

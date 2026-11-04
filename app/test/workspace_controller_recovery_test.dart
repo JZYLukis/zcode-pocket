@@ -14,11 +14,11 @@ import 'package:zcode_pocket/transport/z_transport.dart';
 
 import 'fake_relay_v2.dart';
 
-/// 开源审查修复批 B 组3（workspace_controller）红绿：
+/// 修复批 B 组3（workspace_controller）红绿：
 /// - ①startBootstrapWhenPaired：bootstrap 失败此前 _lastOpenAction 从未
 ///   设置 + unawaited 无 catch——redrive 自愈链在该路径不存在（J3 P1-3）；
 /// - ②openActiveWorkspace 三处 isGone 早退把 workspaceOpening 永久留
-///   true：redrive 闸被短路 + spinner 卡死（I2 P2-2）；
+//true：redrive 闸被短路 + spinner 卡死；
 /// - ③bootstrap 收尾 switchWorkspace(target) 无新近性守卫：await 窗口内
 ///   用户手切被反向拆掉（J1-3/J3 P2-1）；
 /// - close() 参与 epoch 纪律：外部 close（suspend/disposeStack）的 await

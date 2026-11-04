@@ -80,7 +80,7 @@ class _PairingPageState extends State<PairingPage> {
     if (_connecting) return;
     final params = CompanionConnectionParams.parse(_url.text);
     if (params == null) {
-      // V2 链接路由（ADR 0032）：官方 origin 且带 V2 参数的链接 → 账号
+      // V2 链接路由：官方 origin 且带 V2 参数的链接 → 账号
       // 流程（isV2PairingUrl 谓词见 connection_params.dart）。
       if (isV2PairingUrl(_url.text)) {
         await _connectV2(app, parseCompanionV2Params(_url.text)!);
@@ -90,7 +90,7 @@ class _PairingPageState extends State<PairingPage> {
         '[app] pairing url parse failed '
         '(len=${_url.text.length})',
       );
-      // 开源审查 M2 P3-10：V2 形态（含 sid 参数）但 host 非官方的链接，
+      // V2 形态（含 sid 参数）但 host 非官方的链接，
       // 报“缺 sid/hash/t 参数”指错方向——分叉提示真实缺失项（官方 origin）。
       final uri = Uri.tryParse(_url.text.trim());
       final hasV2Shape =
@@ -113,7 +113,7 @@ class _PairingPageState extends State<PairingPage> {
     try {
       await app.addComputer(_url.text.trim(), label: _name.text);
       if (!mounted) return;
-      // 开源审查 M2 P2-2：V1 路径同接“扫码后重建 Activity”防线（相机
+      // V1 路径同接“扫码后重建 Activity”防线（相机
       // 会话开合即触发面，与协议版本无关）；纯粘贴路径零打扰。
       if (_usedScanner) {
         debugPrint('[pairing-perf] scanner used (v1), recreating activity');
@@ -136,7 +136,7 @@ class _PairingPageState extends State<PairingPage> {
   /// V2 连接流程（新版桌面 3.16+）：未登录先走官方 OAuth（WebView）；
   /// 带 sid → 直接建档案连该桌面（扫码场景）；无 sid → 设备列表选电脑。
   Future<void> _connectV2(AppState app, CompanionV2Params params) async {
-    // 开源审查 M3 P2-1：入口即置闸门——hasAccount 读取（secure storage
+    // 入口即置闸门——hasAccount 读取（secure storage
     // 异步窗口）+ LoginPage 路由 barrier 挂载前的一帧可被双击，双推
     // 登录页、成功后双 pop 弹穿底层页。V1 路径同款闸门早已有之。
     if (_connecting) return;
@@ -163,7 +163,7 @@ class _PairingPageState extends State<PairingPage> {
       if (params.deviceSid == null) {
         await Navigator.of(context).push(
           // accountId=null=lastUsed：登录页 save() 落库即切 lastUsed，
-          // 此刻 null 恰为刚登录账号（开源审查 M1 P3-11 显式化——
+          // 此刻 null 恰为刚登录账号（ 显式化——
           // multi-account-ux-1 实施后须改为显式传登录返回的账号 id）。
           MaterialPageRoute(
             builder: (_) => const DeviceListPage(accountId: null),
@@ -175,7 +175,7 @@ class _PairingPageState extends State<PairingPage> {
       await _addProfileResolvingRebind(app, params);
       debugPrint('[pairing-perf] addV2Profile done');
       if (!mounted) return;
-      // 18093 扫码黑屏终局（ADR 0080 §9）：相机会话开合（cameraX，与
+      // 18093 扫码黑屏终局：相机会话开合（cameraX，与
       // 预览纹理无关）在部分华为机型把渲染管线楔死（agent 实证 2/4，
       // 三层防御+去纹理均不治）。用过扫码→配对成功后重建 Activity
       // 换新表面，确定性消除；纯粘贴路径零打扰。
@@ -244,7 +244,7 @@ class _PairingPageState extends State<PairingPage> {
               label: const Text('扫码添加'),
             ),
             const SizedBox(height: 8),
-            // V2 账号登录（ADR 0032）：新版桌面（3.16+）凭据核心=同账号
+            // V2 账号登录：新版桌面（3.16+）凭据核心=同账号
             // 登录，扫码只是快捷方式——登录后可直接从设备列表选电脑。
             if (L10n.resolvedLocale == 'en-US')
               OutlinedButton(
@@ -359,7 +359,7 @@ class _PairingPageState extends State<PairingPage> {
       ),
     );
   }
-  /// 回测组3 P2-2：配对路径同设备列表——同一台电脑改绑账号（当前
+  /// P2-2：配对路径同设备列表——同一台电脑改绑账号（当前
   /// lastUsed 与既有绑定不同）属破坏性操作，弹确认后 forceRebind。
   Future<void> _addProfileResolvingRebind(
     AppState app,

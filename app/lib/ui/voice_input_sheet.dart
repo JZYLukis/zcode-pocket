@@ -33,7 +33,7 @@ bool get voiceRecognitionAvailable =>
     debugVoiceRecognitionAvailable ??
     (hmsVoiceConfigured || SystemAsr.available);
 
-/// 语音输入面板（阶段 3 第三段，ADR 0018 决策 5 / ADR 0022 四坑照单）。
+/// 语音输入面板（阶段 3 第三段， 决策 5 / 四坑照单）。
 ///
 /// 交互定稿（2026-10-20 用户真机反馈三轮打磨）：
 /// 说话 →（可选）口语整理 → **预览可编辑** → 用户点「发送」直接发出。
@@ -112,7 +112,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     super.dispose();
   }
 
-  /// 识别语言跟随 app 界面语言（开源审查 Q1 P3-8）：英文界面用户不再
+  /// 识别语言跟随 app 界面语言：英文界面用户不再
   /// 被塞进中文识别引擎（英文口音进 zh-CN 引擎=识别质量差/ERROR_NO_MATCH）。
   String get _asrLanguage =>
       L10n.resolvedLocale == 'en-US' ? 'en-US' : 'zh-CN';
@@ -129,11 +129,11 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
       return;
     }
     // 通道分派：默认系统 SpeechRecognizer（通用适配）；私有包打开
-    // VOICE_HMS 时走 HMS（仅维护者自用构建，ADR 0065）。
-    // review-fix-1（语音组）：错配自愈——Dart 开关开了但原生插件缺席
+    // VOICE_HMS 时走 HMS（仅维护者自用构建）。
+    // 错配自愈——Dart 开关开了但原生插件缺席
     // （构建参数错配，如 18075 形态）时 probe=false，回退系统通道。
     final hmsReady = hmsVoiceConfigured && await HmsAsr.probe();
-    // await 恢复点守卫（开源审查 P3 P2-3）：面板在探测/权限悬挂期间被
+    // await 恢复点守卫（ P3 P2-3）：面板在探测/权限悬挂期间被
     // 关闭时不得继续拉起识别（release 下 assert 被剥掉，原生侧会开拾音
     // 且无人 cancel=麦克风常驻）。
     if (!mounted || _closed) return;
@@ -170,7 +170,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     }
     // HMS 结构性剥离（2026-10-29 批次）：huawei_ml_language 插件退役，
     // 识别经自写 companion/hms_asr 通道（原生=条件源集 HmsAsrPlugin，
-    // 与系统通道同构）。API Key 构建期注入（ADR 0022 补记§五）在通道
+    // 与系统通道同构）。API Key 构建期注入（ 补记§五）在通道
     // prepare 一步完成（原生 AGConnect 编程式初始化为真机主路径，
     // setApiKey 是双保险另一半）。默认构建误开 VOICE_HMS 时（原生插件
     // 缺席）走统一失败分支，不悬挂。
@@ -185,7 +185,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
         onPartial: (partial) {
           if (!mounted || _closed) return;
           _engineAlive();
-          // review-fix-1：迟到 partial 不得把 failed/recognizing 拉回
+          // 迟到 partial 不得把 failed/recognizing 拉回
           // 拾音态（看门狗判死后引擎复活的 UI 漂移）。
           if (_phase != _VoicePhase.listening && _phase != _VoicePhase.starting) {
             return;
@@ -237,7 +237,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
       onPartial: (text) {
         if (!mounted || _closed) return;
         _engineAlive();
-        // review-fix-1：同 HMS——迟到 partial 不复活 failed/recognizing。
+        // 同 HMS——迟到 partial 不复活 failed/recognizing。
         if (_phase != _VoicePhase.listening && _phase != _VoicePhase.starting) {
           return;
         }
@@ -279,7 +279,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     _engineWatchdog = Timer(duration, () {
       if (_closed || _finalCompleter.isCompleted) return;
       _log('engine watchdog: ${duration.inSeconds}s 零回调（识别服务无响应）');
-      // review-fix-1：判死即回收引擎——失败态不得继续拾音（隐私），
+      // 判死即回收引擎——失败态不得继续拾音（隐私），
       // 且防迟到 partial 把 failed 拉回 listening。
       unawaited(_hmsSession?.cancel() ?? Future<void>.value());
       _systemSession?.cancel();
@@ -309,7 +309,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
   }
 
   /// 不等终稿直接以当前部分结果进预览。
-  /// review-fix-1（A6）：修复前非空分支只 complete 无人监听的 completer
+  /// ：修复前非空分支只 complete 无人监听的 completer
   /// ——UI 纹丝不动、引擎继续拾音（审查 D4b 实锤"按钮无操作"）。修=与
   /// _finish 同构：先挂监听、停引擎、立即以部分结果收尾进预览。
   void _finishWithPartial() {
@@ -326,7 +326,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     }
   }
 
-  /// final/error 一到达即驱动 UI（review-fix-1：修复前监听只在
+  /// final/error 一到达即驱动 UI（：修复前监听只在
   /// 「说完了」才挂——listening 期引擎报错/自动终稿时 UI 悬挂在拾音态
   /// 且 completer 错误无人接=unhandled async error）。幂等防双挂接
   /// （双挂=同一结果两次进预览、整理请求双发）。
@@ -399,7 +399,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
   }
 
   void _send() {
-    // review-fix-1：防抖——pop 动画窗口内二次点击=onSend 双发两条消息。
+    // 防抖——pop 动画窗口内二次点击=onSend 双发两条消息。
     if (_closed) return;
     final text = _draft.text.trim();
     if (text.isEmpty) return;

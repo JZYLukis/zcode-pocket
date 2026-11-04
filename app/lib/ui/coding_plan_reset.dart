@@ -83,7 +83,7 @@ String resetBadgeLabel(CodingPlanResetStatus status, DateTime now) {
   if (count > 1) return '获得$count次重置额度';
   final soonest = status.soonestExpireAt!;
   final remaining = (soonest - now.millisecondsSinceEpoch) ~/ 1000;
-  // 开源审查 N1 P2-2：倒计时片段拼接前先 tr（pattern 锚点夹在串中间、
+  // N1 P2-2：倒计时片段拼接前先 tr（pattern 锚点夹在串中间、
   // 占位不递归——预译后整串由 custom pattern 译出）。
   return '$count 次重置额度 · 剩余 ${tr(formatResetCountdown(remaining))}';
 }

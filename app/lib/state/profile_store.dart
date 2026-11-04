@@ -9,10 +9,10 @@ import '../transport/connection_params.dart';
 import '../transport/z_transport.dart';
 
 /// 凭据存储：远控 URL = 电脑钥匙，必须落 Android Keystore 加密存储
-/// （docs/PROJECT_PLAN.md 风险表：凭据安全）。
+/// （ 风险表：凭据安全）。
 ///
 /// 档案唯一键 = deviceSid（同一桌面刷新二维码后 sid 会变，视为新档案）。
-/// 双栈（ADR 0032）：同一列表存 V1（{url,…}，无 kind 字段=向后兼容）与
+/// 双栈：同一列表存 V1（{url,…}，无 kind 字段=向后兼容）与
 /// V2 账号档案（{kind:'v2', sid, mid, name,…}）。
 ///
 /// 批次 2（2026-10-19 审查）加固：
@@ -77,7 +77,7 @@ class ProfileStore {
       try {
         result = decodeProfileList(json);
       } catch (e) {
-        // 顶层 JSON 畸形（存储截断/加密层损坏出非 JSON 串，开源审查
+        // 顶层 JSON 畸形（存储截断/加密层损坏出非 JSON 串，
         // K1 P2-4/K2 P2-1）：此前 jsonDecode 抛出直接冲出 _readRaw，
         // 18088 明文备份自救层被整体短路——合法备份就在旁边却不参与
         // 回补。按空列表落位，让 rescue 用空 known 集走正常回补路径
@@ -109,7 +109,7 @@ class ProfileStore {
 
   /// V2 档案描述符写明文备份（flush=true 直达页缓存，进程击杀不丢；
   /// V1 含 hash 凭据绝不含入）。备份层不可用视为成功（跳过）。
-  /// 返回是否落定（开源审查 K1-P3-5/K2-P2-3：删除路径需要真实结果来
+  /// 返回是否落定（ K1-P3-5/K2-P2-3：删除路径需要真实结果来
   /// 决定是否继续——备份写失败时继续删加密列表会让已删档案被陈旧
   /// 备份"自救复活"）。
   Future<bool> _writeBackup(List<DeviceProfile> profiles) async {
@@ -129,7 +129,7 @@ class ProfileStore {
     }
   }
 
-  /// 备份文件缺失探测缓存（开源审查 K2-P3-5：常态缺失时每次档案读取
+  /// 备份文件缺失探测缓存（ K2-P3-5：常态缺失时每次档案读取
   /// 都 exists()+readAsString 白付 IO；写入成功后复位）。
   bool _backupKnownAbsent = false;
 
@@ -201,7 +201,7 @@ class ProfileStore {
         .profiles
         .where((p) => p.deviceSid != deviceSid)
         .toList();
-    // 开源审查 K1-P3-5/K2-P2-3：删除路径备份先行（关键态先行原则）——
+    // K1-P3-5/K2-P2-3：删除路径备份先行（关键态先行原则）——
     // 备份写失败（磁盘满/IO 异常）时中止删除：加密列表保持原样，用户
     // 重试即可；反之先删加密列表、备份刷新失败会让已删档案被陈旧备份
     // "自救复活"（删掉的电脑自己回来）。
@@ -268,7 +268,7 @@ class ProfileStore {
             ? null
             : m['accountId'] as String?,
         label: m['label'] as String? ?? m['name'] as String? ?? sid,
-        // 开源审查 K1-P3-14：字段缺失回退固定 0（排序垫底、稳定）——
+        // K1-P3-14：字段缺失回退固定 0（排序垫底、稳定）——
         // now() 使"纯函数"解码不确定且排序展示抖动。
         addedAt: DateTime.fromMillisecondsSinceEpoch(
           (m['addedAt'] as num?)?.toInt() ?? 0,

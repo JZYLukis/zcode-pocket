@@ -1,10 +1,10 @@
 /// 设计 token 单源（官方 zai-light/zai-dark design tokens，refs/ZCode
 /// packages/ui/src/styles.css:492-636 / 638-783）。
-/// 深色模式批 1（ADR 0035）：色板从「单套静态常量」重构为「浅/深双套
+/// 深色模式批 1：色板从「单套静态常量」重构为「浅/深双套
 /// 实例 + ThemeExtension 挂载 + 上下文读取」——切换全 app 自动刷新，
 /// 未来色盲模式/皮肤=加数据实例零改消费代码。
 /// 浅色值=回归红线（test/theme_freeze_test.dart 冻结，改动须显式解锁）。
-/// chrome 材质规范见 docs/ui-references.md §1.3（V1 审美优化 2026-10-22：
+/// chrome 材质规范见 （V1 审美优化 2026-10-22：
 /// chrome 统一实体白，GlassChrome 退役）。
 library;
 
@@ -75,13 +75,13 @@ class AppColors {
   final Color borderHover;
 
   /// 主按钮色：浅=黑底白字，深=黑白反转（官方 dark --color-primary 做法
-  /// ——纯黑按钮在近黑底 #161616 上隐形，ADR 0035 拍板④）。
+  /// ——纯黑按钮在近黑底 #161616 上隐形， 拍板④）。
   final Color brand;
   final Color onBrand;
 
   /// 品牌强调色=智谱蓝。浅=#134CFF（开放平台主蓝，白字 6.0:1 过 AA），
   /// 只做点睛位（FAB/发送键按下态/空态插图/扫码框线/配对页主视觉点缀）。
-  /// 深=官方深蓝基准 #4099FF（批 1 横向校准定稿，ADR 0035 拍板⑤）。
+  /// 深=官方深蓝基准 #4099FF（批 1 横向校准定稿， 拍板⑤）。
   final Color brandAccent;
   final Color onBrandAccent;
   final Color secondary;
@@ -213,7 +213,7 @@ class AppChartPalette {
 
   /// 热力图 5 级（level 0-4）。浅=绿阶（历史语义，官方浅色实为蓝阶的
   /// 已知偏差）；深=裁量「绿阶深色版」——保持跨模式同语义（绿色=活跃
-  /// 量），阶值批 1 定稿留痕 ADR 0035。
+  /// 量），阶值批 1 定稿留痕 。
   final List<Color> heatmapGreens;
 
   /// 上下文来源 7 色（会话页来源圆点，对应 _sourceLabels 7 类）。
@@ -365,7 +365,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   );
 
   /// 深色套（官方 zai-dark 1:1 搬运，styles.css:638-783；裁量项留痕
-  /// dark-mode-plan §3 + ADR 0035 批 1 补记）。
+  /// dark-mode-plan §3 + 批 1 补记）。
   static final AppThemeSpec dark = AppThemeSpec(
     colors: const AppColors(
       background: Color(0xFF161616),
@@ -384,7 +384,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       // 智谱蓝深色基准 #4099FF（官方深蓝/terminal-blue，拍板⑤；批 1
       // 横向校准后如偏离须回填此处+ADR 留痕）。
       brandAccent: Color(0xFF4099FF),
-      // 批1-5 横向校准定稿（ADR 0035 补记）：#4099FF 实底配白图标仅
+      // 批1-5 横向校准定稿（ 补记）：#4099FF 实底配白图标仅
       // 2.91:1（低于 3:1 非文本线）；改深蓝前景 #001D3D=5.81:1（GitHub
       // accent.emphasis 压暗路线的镜像——亮底深前景，paseo zinc 同构）。
       onBrandAccent: Color(0xFF001D3D),
@@ -536,7 +536,7 @@ abstract final class AppType {
   static const mobileInputSafe = 16.0;
 }
 
-/// 圆角语言（docs/ui-references.md §1.2）。两主题通用，不拆分。
+/// 圆角语言。两主题通用，不拆分。
 abstract final class AppRadius {
   static const sm = 8.0; // 小控件
   static const bubble = 12.0; // 气泡（右上 2px 指向）
@@ -575,7 +575,7 @@ const LinearGradient kBottomFadeMask = LinearGradient(
   stops: [0, 0.7, 1.0],
 );
 
-/// 基座 ThemeData 模块级单例（开源审查 P1 P3-7/P2 P3-10）：基座构造是
+/// 基座 ThemeData 模块级单例（ P1 P3-7/P2 P3-10）：基座构造是
 /// 全量组件默认计算（M3 出厂全套），原先深色分支单次 buildAppTheme 要
 /// 构造 3 个完整 ThemeData（base + textTheme.apply 底 + primaryTextTheme
 /// .apply 底），MaterialApp 每次重建 theme/darkTheme 各调一次=最多 6 个。
