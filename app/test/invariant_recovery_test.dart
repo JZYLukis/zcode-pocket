@@ -28,7 +28,7 @@ void main() {
     },
   };
 
-  /// 真实长会话（sess_demo"阶段2"，seq 4200）的行形态抽样：
+  /// 真实长会话（超长会话，seq 4200）的行形态抽样：
   /// 图片附件 userInput / 各态 toolCall / reasoning / subagent / 空文本。
   List<Map<String, dynamic>> richRows() {
     final rows = <Map<String, dynamic>>[

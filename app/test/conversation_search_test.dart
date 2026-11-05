@@ -46,7 +46,8 @@ class _SearchApp extends AppState {
   int loadOlderCalls = 0;
 
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     if (!sub.state.ready) {
       final fullHistory = olderPages.isEmpty;
       sub.state.applySeed(
@@ -507,9 +508,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 18077 验收#11（Bug H）：提问内容同享词级高亮——搜索激活时提问
-  // 气泡走 user-search-highlight 渲染路径（修前仅 assistant 有高亮，
-  // 提问命中只有行级定位效果）。
+ // 验收#11（Bug H）：提问内容同享词级高亮——搜索激活时提问
+ // 气泡走 user-search-highlight 渲染路径（修前仅 assistant 有高亮，
+ // 提问命中只有行级定位效果）。
   testWidgets('提问气泡搜索高亮：命中词走词级高亮渲染', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
@@ -517,7 +518,7 @@ void main() {
     final app = _SearchApp(_conversation(), [], 's-search-userhl');
     await tester.pumpWidget(_host(app));
     await _pump(tester);
-    // 未激活搜索：普通 Text 渲染。
+ // 未激活搜索：普通 Text 渲染。
     expect(
       find.byKey(const ValueKey('user-search-highlight')),
       findsNothing,
@@ -534,7 +535,7 @@ void main() {
       findsAtLeastNWidgets(1),
       reason: '搜索激活后提问气泡必须走词级高亮 Text.rich（Bug H）',
     );
-    // 关闭搜索恢复普通渲染（高亮不残留）。
+ // 关闭搜索恢复普通渲染（高亮不残留）。
     await tester.tap(find.byKey(const ValueKey('conversation-search-close')));
     await _pump(tester, 6);
     expect(

@@ -25,8 +25,8 @@ void main() {
     expectHex(c.header, 0xFF202020, 'header');
     expectHex(c.sidebar, 0xFF161616, 'sidebar');
     expectHex(c.card, 0xFF2B2B2B, 'card');
-    // Paseo 参考批（2026-10-23 用户拍板）：输入卡深色降一档（不连坐
-    // popover/menu/toast）。
+ // Paseo 参考批（2026-10-23 用户拍板）：输入卡深色降一档（不连坐
+ // popover/menu/toast）。
     expectHex(c.inputSurface, 0xFF232322, 'inputSurface');
     expectHex(c.surface, 0x0DFFFFFF, 'surface(白5%)');
     expectHex(c.surfaceHover, 0x1AFFFFFF, 'surfaceHover(白10%)');
@@ -41,9 +41,9 @@ void main() {
     expectHex(c.secondary, 0xFF363636, 'secondary');
     expectHex(c.accent, 0xFF001D3D, 'accent');
     expectHex(c.foreground, 0xFFD4D4D4, 'foreground(neutral-300)');
-    // ⚠ 官方值起步（60%/30%）；批 2 对比度单测不过线则提亮并改此处留痕。
+ // ⚠ 官方值起步（60%/30%）；批 2 对比度单测不过线则提亮并改此处留痕。
     expectHex(c.foregroundSubtle, 0x99D4D4D4, 'foregroundSubtle(60%)');
-    expectHex(c.foregroundSubtlest, 0x78D4D4D4, 'foregroundSubtlest(47% 等效果修正)');
+    expectHex(c.foregroundSubtlest, 0x5CD4D4D4, 'foregroundSubtlest(36% 等效果随浅色回撤)');
     expectHex(c.success, 0xFF46BF72, 'success');
     expectHex(c.destructive, 0xFFFF5C5C, 'destructive');
     expectHex(c.warning, 0xFFFF8A30, 'warning');
@@ -57,7 +57,7 @@ void main() {
     expectHex(c.interactionConfirmForeground, 0xFF87D9A4, 'interactionConfirmForeground');
     expectHex(c.diffAdded, 0xFF46BF72, 'diffAdded');
     expectHex(c.diffRemoved, 0xFFFF5C5C, 'diffRemoved');
-    // 裁量档（批 1 定稿留痕 ）。
+ // 裁量档。
     expectHex(c.shadowXs, 0x59000000, 'shadowXs(黑35% 裁量)');
     expectHex(c.shadowMd, 0x80000000, 'shadowMd(黑50% 裁量)');
   });
@@ -108,10 +108,10 @@ void main() {
       hex(const Color(0xFF7B5CE5)),
       hex(const Color(0xFFFF5C5C)),
       hex(const Color(0xFFFF8A30)),
-      // 2026-10-26 对齐轮：补官方第 6 色（原 5 色循环少一档）。
+ // 2026-10-26 对齐轮：补官方第 6 色（原 5 色循环少一档）。
       hex(const Color(0xFF42C8C8)),
     ], reason: 'series=官方 usage-chart 深色 6 色');
-    // 裁量：绿阶深色版（批 1 定稿留痕；官方深色为蓝阶，浅色侧同型偏差）。
+ // 裁量：绿阶深色版。
     expect(ch.heatmapGreens.map(hex).toList(), [
       hex(const Color(0xFF252B28)),
       hex(const Color(0xFF1B4531)),
@@ -119,7 +119,7 @@ void main() {
       hex(const Color(0xFF46BF72)),
       hex(const Color(0xFF6FD98A)),
     ], reason: '热力图绿阶深色版（批1-5 校准：顶档提亮 GitHub 同构）');
-    // 裁量：来源 7 色提亮版。
+ // 裁量：来源 7 色提亮版。
     expect(ch.sourceColors.map(hex).toList(), [
       hex(const Color(0xFF4099FF)),
       hex(const Color(0xFF46BF72)),
@@ -141,7 +141,7 @@ void main() {
     expect(hex(md.color), hex(const Color(0x80000000)));
     expect(md.blurRadius, 12);
     expect(md.offset, const Offset(0, 4));
-    // 单源断言：shadows 必须派生自 colors（改 colors 即生效）。
+ // 单源断言：shadows 必须派生自 colors（改 colors 即生效）。
     expect(identical(d.shadows.xs.single.color, d.colors.shadowXs), isTrue);
     expect(identical(d.shadows.md.single.color, d.colors.shadowMd), isTrue);
     expect(identical(
@@ -168,15 +168,15 @@ void main() {
     expectHex(t.textTheme.bodyMedium!.color!, 0xFFD4D4D4,
         'textTheme.bodyMedium=foreground（烤色收口）');
     expectHex(t.textTheme.bodySmall!.color!, 0xFFD4D4D4, 'textTheme.bodySmall');
-    // 浅色侧对应槽必须保持出厂（null 直通语义抽验：非空即错）。
+ // 浅色侧对应槽必须保持出厂（null 直通语义抽验：非空即错）。
     final lt = buildAppTheme();
     expect(lt.dialogTheme.backgroundColor, isNull, reason: '浅色 dialogTheme 直通');
     expect(lt.canvasColor, isNot(equals(0xFF2B2B2B)), reason: '浅色 canvasColor 出厂');
-    // 浅色 textTheme 出厂即烤 #1D1B20（M3 light onSurface——A3 审查 B2
-    // 记录在案的既有浅色行为）；钉住该值防漂移（改动须解锁）。
+ // 浅色 textTheme 出厂即烤 #1D1B20（M3 light onSurface——A3 审查 B2
+ // 记录在案的既有浅色行为）；钉住该值防漂移（改动须解锁）。
     expectHex(lt.textTheme.bodyMedium!.color!, 0xFF1D1B20,
         '浅色 textTheme 出厂烤色');
-    // 引用一致性：槽位与色板同源。
+ // 引用一致性：槽位与色板同源。
     expect(identical(t.colorScheme.onSurface, c.foreground), isTrue);
     expect(identical(t.canvasColor, c.card), isTrue);
   });

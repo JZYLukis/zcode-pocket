@@ -145,8 +145,8 @@ class _SendTestBridge implements BridgeSession {
 }
 
 class _DraftApp extends AppState {
-  // 断网排队批（2026-10-29）：无桥发送会改道入队——这些用例的语义是
-  // 「已连接但发送失败/在途」，补桥保持原路径。
+ // 断网排队批（2026-10-29）：无桥发送会改道入队——这些用例的语义是
+ // 「已连接但发送失败/在途」，补桥保持原路径。
   @override
   BridgeSession? get bridge => _SendTestBridge();
 
@@ -213,7 +213,8 @@ class _DraftApp extends AppState {
   }
 
   @override
-  Future<ConversationSubscription> ensureConversation(String sessionId) async {
+  Future<ConversationSubscription> ensureConversation(String sessionId,
+      {Object? seedCacheEntry}) async {
     sub.state.applySeed(
       ConversationSeed(
         rows: const [],
@@ -791,7 +792,7 @@ void main() {
     final app = _DraftApp(store, attachmentBytes: base64Decode(png));
     await tester.pumpWidget(_host(app, 's1'));
     await _pump(tester);
-    // 取回字节后入口出现（恢复图无字节时不出现）。
+ // 取回字节后入口出现（恢复图无字节时不出现）。
     final entry = find.byKey(
       const ValueKey('pending-attachment-annotate-restored-1-0'),
     );
@@ -800,10 +801,10 @@ void main() {
     await tester.runAsync(() async {
       AttachmentAnnotatePage.debugImage = await _decodePng(base64Decode(png));
     });
-    // 静态缝复位：与 attachment_annotate_test/游览
-    // S28 两处既有写法对齐——此前未复位且恰因本用例是文件最后一个 test
-    // 被位置掩盖，其后新增用例会继承预置底图/笔迹，出现"只在加测试后
-    // 出现"的诡异失败。
+ // 静态缝复位：与 attachment_annotate_test/游览
+ // S28 两处既有写法对齐——此前未复位且恰因本用例是文件最后一个 test
+ // 被位置掩盖，其后新增用例会继承预置底图/笔迹，出现"只在加测试后
+ // 出现"的诡异失败。
     addTearDown(() {
       AttachmentAnnotatePage.debugImage = null;
       AttachmentAnnotatePage.debugInitialStrokes = null;

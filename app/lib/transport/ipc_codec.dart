@@ -29,7 +29,7 @@ class ValueReader {
   static const maxContainerItems = 100000;
 
   /// 单值字节上限=64MiB，与 [RpcFrameTransport.maxMessageBytes] 单一真源
-  //绑定（ /：旧值 16MiB 与 rpc-frame 重组
+  //绑定（旧值 16MiB 与 rpc-frame 重组
   /// 层的 64MiB 跨层不一致——16-64MiB 的逻辑消息在重组成功后被解码层
   /// 静默丢弃，历史回归"大快照静默丢=永久 spinner"在上一层复活；真源
   /// 在本层，rpc_frame_transport 引用此值）。

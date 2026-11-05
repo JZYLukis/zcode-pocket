@@ -13,33 +13,33 @@ import 'turn_model.dart';
 import 'workflow_runs_page.dart';
 
 class TurnBar extends StatefulWidget {
-  /// 会话 id（轮尾操作行的反馈/分支命令用；null=协议按钮禁用）。
+ /// 会话 id（轮尾操作行的反馈/分支命令用；null=协议按钮禁用）。
   final String? sessionId;
   final TurnWork work;
   final bool showTools;
   final DateTime? Function(Map<String, dynamic> row) firstSeenOf;
   final Map<int, bool> toolOpen;
 
-  /// 思考条完成态实测时长（页面级定格，见 _reasoningElapsedMs）。
+ /// 思考条完成态实测时长（页面级定格，见 _reasoningElapsedMs）。
   final int? Function(Map<String, dynamic> row) elapsedMsOf;
 
-  /// 段内正文行的长按行操作（编辑重发等——正文移入段内后由段条转交）。
+ /// 段内正文行的长按行操作（编辑重发等——正文移入段内后由段条转交）。
   final void Function(Map<String, dynamic> row)? onRowActions;
 
-  /// 是否会话末轮。语义注（2026-10-26 用户澄清，拨回 拍板②）：
-  /// 末轮不再默认展开——语义=运行中展开、完成后收起只剩最后回复；
-  /// 当时报的"冻结重进整页收起"由 [phaseRunning] 承接。字段保留（轮尾
-  /// 操作行等仍按末轮定位，且后续或有用）。
+ /// 是否会话末轮。语义注（2026-10-26 用户澄清，拨回 拍板②）：
+ /// 末轮不再默认展开——语义=运行中展开、完成后收起只剩最后回复；
+ /// 当时报的"冻结重进整页收起"由 [phaseRunning] 承接。字段保留（轮尾
+ /// 操作行等仍按末轮定位，且后续或有用）。
   final bool isLastTurn;
 
-  /// 会话控制块 phase==running 且本轮是末轮（2026-10-26 用户澄清修复）：
-  /// 窗口仍在运行时（含后台冻结很久回 app 的缓存预渲期——缓存 header
-  /// 可能还停在上一轮的完成态）末轮必须以展开态呈现，不显示为收起。
-  /// 显示层等价于 running；live 快照到达/轮真正完成后恢复完成语义。
+ /// 会话控制块 phase==running 且本轮是末轮（2026-10-26 用户澄清修复）：
+ /// 窗口仍在运行时（含后台冻结很久回 app 的缓存预渲期——缓存 header
+ /// 可能还停在上一轮的完成态）末轮必须以展开态呈现，不显示为收起。
+ /// 显示层等价于 running；live 快照到达/轮真正完成后恢复完成语义。
   final bool phaseRunning;
 
-  /// 运行中实时折叠的外部覆盖（回合快捷菜单）——按 header rowId 读写。
-  /// null=未覆盖，沿用 tile 内部 _liveCollapsed/_open。
+ /// 运行中实时折叠的外部覆盖（回合快捷菜单）——按 header rowId 读写。
+ /// null=未覆盖，沿用 tile 内部 _liveCollapsed/_open。
   final Map<int, bool>? liveCollapsedByRow;
   final int? searchTargetRowId;
   final GlobalKey? searchTargetKey;
@@ -47,8 +47,8 @@ class TurnBar extends StatefulWidget {
   final String? searchSourceText;
   final String? searchSnippet;
 
-  /// 搜索命中词级高亮（优化批 #25）：非空=搜索激活，段内正文切换为
-  /// 纯文本预览+命中词底色（见 AssistantText.searchQuery）。
+ /// 搜索命中词级高亮（优化批 #25）：非空=搜索激活，段内正文切换为
+ /// 纯文本预览+命中词底色（见 AssistantText.searchQuery）。
   final String? searchQuery;
   final ConversationSessionOpener openSession;
   final void Function(bool collapsed)? onLiveCollapsedChanged;
@@ -79,16 +79,16 @@ class TurnBar extends StatefulWidget {
 }
 
 class TurnBarState extends State<TurnBar> {
-  /// 默认展开档（对抗审查收敛 2026-10-22，官方三条件手机化）：
-  /// ①异常终态（completedInterrupted/failed 官方强制展开——不展会把
-  /// 我方"失败工具自动展开"整个吞进收起区）；②无可见正文轮（收起=
-  /// 光杆空条，官方同样默认展开）。
-  /// ③末轮默认展开（2026-10-25 拍板）**已拨回**（2026-10-26 用户澄清：
-  /// 语义=运行中展开、完成后收起只剩最后回复；当时报的"冻结重进整页
-  /// 收起"其实是运行中会话被显示为收起——由 phaseRunning 修复，见
-  /// [widget.phaseRunning] 注释）。正常完成轮（含末轮）默认收起。
-  /// 手机化偏离保留：允许手动收起（官方钉死不可收，失败长回合在手机
-  /// 上会永久占屏）。
+ /// 默认展开档（收敛 2026-10-22，官方三条件手机化）：
+ /// ①异常终态（completedInterrupted/failed 官方强制展开——不展会把
+ /// 我方"失败工具自动展开"整个吞进收起区）；②无可见正文轮（收起=
+ /// 光杆空条，官方同样默认展开）。
+ /// ③末轮默认展开（2026-10-25 拍板）**已拨回**（2026-10-26 用户澄清：
+ /// 语义=运行中展开、完成后收起只剩最后回复；当时报的"冻结重进整页
+ /// 收起"其实是运行中会话被显示为收起——由 phaseRunning 修复，见
+ /// [widget.phaseRunning] 注释）。正常完成轮（含末轮）默认收起。
+ /// 手机化偏离保留：允许手动收起（官方钉死不可收，失败长回合在手机
+ /// 上会永久占屏）。
   static bool _defaultOpen(TurnWork w) =>
       const [
         'completedInterrupted',
@@ -98,15 +98,15 @@ class TurnBarState extends State<TurnBar> {
 
   late bool _open = _defaultOpen(widget.work);
 
-  /// 运行中的历史区被用户手动折叠（ #5：不可折叠会顶满屏）。
-  /// ③（2026-10-20）：工具显示关=运行中默认收起（免打扰只看进度条）；
-  /// 用户点开仍见全部步骤（桌面三层折叠语义）。
+ /// 运行中的历史区被用户手动折叠（#5：不可折叠会顶满屏）。
+ /// ③（2026-10-20）：工具显示关=运行中默认收起（免打扰只看进度条）；
+ /// 用户点开仍见全部步骤（桌面三层折叠语义）。
   late bool _liveCollapsed = !widget.showTools;
 
-  /// H11 窄修（2026-10-25 批①，用户拍板"只修手动收起"）：运行中被用户
-  /// 收起=显式选择，完成边沿不得按末轮默认档强行展开覆盖（
-  /// "手动收起不变"承诺的补落地；重新点开则回到自动档）。上轮失去末轮
-  /// 身份的自动收起不在本修范围（用户拍板接受现状）。
+ /// H11 窄修（2026-10-25 ，用户拍板"只修手动收起"）：运行中被用户
+ /// 收起=显式选择，完成边沿不得按末轮默认档强行展开覆盖
+ /// "手动收起不变"承诺的补落地；重新点开则回到自动档）。上轮失去末轮
+ /// 身份的自动收起不在本修范围（用户拍板接受现状）。
   bool _manuallyCollapsedWhileRunning = false;
   bool _wasRunning = false;
   Timer? _ticker;
@@ -114,9 +114,9 @@ class TurnBarState extends State<TurnBar> {
   @override
   void initState() {
     super.initState();
-    // B1-P3-2/B2-3：挂载即运行的轮（搜索跳转/懒列表重挂进
-    // running 但桌面静默的回合）没有 didUpdateWidget 驱动——秒表冻在
-    // 挂载瞬间值。与 ReasoningTile 的 initState→_startTicker 同构。
+ // /：挂载即运行的轮（搜索跳转/懒列表重挂进
+ // running 但桌面静默的回合）没有 didUpdateWidget 驱动——秒表冻在
+ // 挂载瞬间值。与 ReasoningTile 的 initState→_startTicker 同构。
     _wasRunning = _effectiveRunning;
     _ensureTicker(_wasRunning);
   }
@@ -133,8 +133,8 @@ class TurnBarState extends State<TurnBar> {
         if (mounted) setState(() {});
       });
     } else if (!running && _ticker != null) {
-      // #7：build 期间不可 setState（running→completed 边沿会踩
-      // 断言）——停 ticker 即可，didUpdateWidget 已触发重建。
+ // #7：build 期间不可 setState（running→completed 边沿会踩
+ // 断言）——停 ticker 即可，didUpdateWidget 已触发重建。
       _ticker?.cancel();
       _ticker = null;
     }
@@ -145,10 +145,10 @@ class TurnBarState extends State<TurnBar> {
     super.didUpdateWidget(oldWidget);
     final running = _effectiveRunning;
     if (_wasRunning && !running) {
-      // 官方语义：defaultOpen 翻转时 effect 重置展开态——正常轮收起
-      // （含运行完成/phaseRunning 解除，"完成后收起只剩最后回复"），
-      // 异常/无正文按默认档展开。例外（H11）：运行中被手动收起=用户
-      // 选择优先，保持收起。
+ // 官方语义：defaultOpen 翻转时 effect 重置展开态——正常轮收起
+ // （含运行完成/phaseRunning 解除，"完成后收起只剩最后回复"），
+ // 异常/无正文按默认档展开。例外（H11）：运行中被手动收起=用户
+ // 选择优先，保持收起。
       _open = _manuallyCollapsedWhileRunning
           ? false
           : _defaultOpen(widget.work);
@@ -160,20 +160,20 @@ class TurnBarState extends State<TurnBar> {
     _ensureTicker(running);
   }
 
-  /// 有效运行态：轮自身 running，或"窗口运行中"的末轮承接（phaseRunning，
-  /// 2026-10-26 用户澄清修复——冻结重进缓存预渲期窗口仍运行时不得收起）。
+ /// 有效运行态：轮自身 running，或"窗口运行中"的末轮承接（phaseRunning，
+ /// 2026-10-26 用户澄清修复——冻结重进缓存预渲期窗口仍运行时不得收起）。
   bool get _effectiveRunning =>
       widget.work.stateLabel == 'running' || widget.phaseRunning;
 
-  /// B1-P3-4：折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
-  /// 按 header rowId、无头半截回合按尾行 rowId）——多个 -1 哨兵键会让
-  /// 折叠状态跨回合串扰；页面侧写入同源。
+ /// 折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
+ /// 按 header rowId、无头半截回合按尾行 rowId）——多个 -1 哨兵键会让
+ /// 折叠状态跨回合串扰；页面侧写入同源。
   int get _turnId => widget.work.collapseKeyId;
 
   String _durationLabel() => workBarLabel(widget.work);
 
-  /// 回合结束时刻（HH:mm；Paseo 参考 2026-10-23）。endedAt 缺失时用
-  /// startedAt+activeMs 推（协议权威字段优先）。
+ /// 回合结束时刻（HH:mm；Paseo 参考 2026-10-23）。endedAt 缺失时用
+ /// startedAt+activeMs 推（协议权威字段优先）。
   String? get _endedClock {
     final header = widget.work.header;
     final ended = intOf(header?['endedAt']);
@@ -191,11 +191,11 @@ class TurnBarState extends State<TurnBar> {
   Widget build(BuildContext context) {
     final work = widget.work;
     final running = _effectiveRunning;
-    // controlOnly 轮（官方 executionKind 门控）：不出工作条，内容直出。
+ // controlOnly 轮（官方 executionKind 门控）：不出工作条，内容直出。
     final controlOnly = work.isControlOnly;
-    // 完成边沿的收敛/ticker 启停在 didUpdateWidget（ #7）。
-    // 搜索命中只临时展开目标，不写 _open/liveCollapsedByRow；关闭搜索
-    // 或切换命中后恢复用户原有折叠选择。
+ // 完成边沿的收敛/ticker 启停在 didUpdateWidget（#7）。
+ // 搜索命中只临时展开目标，不写 _open/liveCollapsedByRow；关闭搜索
+ // 或切换命中后恢复用户原有折叠选择。
     final searchReveal = work.work.any(
       (row) => intOf(row['rowId']) == widget.searchTargetRowId,
     );
@@ -208,18 +208,18 @@ class TurnBarState extends State<TurnBar> {
                   : (widget.liveCollapsedByRow?[_turnId] == null
                         ? _open
                         : !widget.liveCollapsedByRow![_turnId]!)));
-    // ③（2026-10-20 二轮澄清）：展开=用户显式想看步骤列表，不受工具
-    // 显示开关限制（开关只管运行中的实时展示）；仅无工作行才不可展开。
-    // B1-P3-3：controlOnly 不再钉死收起分支——旧实现把设置轮
-    // 钉进收起态（只显最后一段正文，轮内更早正文/工具行永不渲染、
-    // 搜索命中也无法展开）；「不出工作条」语义由下方 header 隐藏承接，
-    // 有工作行的 controlOnly 轮照走展开分支（内容直出）。
+ // ③（2026-10-20 二轮澄清）：展开=用户显式想看步骤列表，不受工具
+ // 显示开关限制（开关只管运行中的实时展示）；仅无工作行才不可展开。
+ // controlOnly 不再钉死收起分支——旧实现把设置轮
+ // 钉进收起态（只显最后一段正文，轮内更早正文/工具行永不渲染、
+ // 搜索命中也无法展开）；「不出工作条」语义由下方 header 隐藏承接，
+ // 有工作行的 controlOnly 轮照走展开分支（内容直出）。
     final expandable = turnWorkExpandable(work.work);
 
     final headerRow = Container(
       padding: const EdgeInsets.only(bottom: 8),
-      // 对抗审查收敛：底分隔线官方为 border 的 50%（border-b
-      // border-[var(--color-border)]/50）——降浓不再抢正文。
+ // 收敛：底分隔线官方为 border 的 50%（border-b
+ // border-[var(--color-border)]/50）——降浓不再抢正文。
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -232,9 +232,9 @@ class TurnBarState extends State<TurnBar> {
           Expanded(
             child: Text(
               _durationLabel(),
-              // 对抗审查收敛：工作区行族 13→14（官方 text-ui-base，
-              // ConversationTurnGroup.tsx:683）；完成态退到最淡档（官方
-              // foreground-subtlest，让工作行整体退后于正文）。
+ // 收敛：工作区行族 13→14（官方 text-ui-base，
+ // ConversationTurnGroup.tsx:683）；完成态退到最淡档（官方
+ // foreground-subtlest，让工作行整体退后于正文）。
               style: TextStyle(
                 fontSize: AppType.uiBase,
                 color: running
@@ -243,9 +243,9 @@ class TurnBarState extends State<TurnBar> {
               ),
             ),
           ),
-          // Paseo 参考（2026-10-23）：完成态附回合结束绝对时刻（HH:mm）
-          // ——运行中已有实时时长，完成后"何时结束"比"干了多久"更常被
-          // 回看；endedAt 缺失（中断兜底等）不显示。
+ // Paseo 参考（2026-10-23）：完成态附回合结束绝对时刻（HH:mm）
+ // ——运行中已有实时时长，完成后"何时结束"比"干了多久"更常被
+ // 回看；endedAt 缺失（中断兜底等）不显示。
           if (!running && _endedClock != null)
             Padding(
               padding: const EdgeInsets.only(left: 8),
@@ -257,9 +257,9 @@ class TurnBarState extends State<TurnBar> {
                 ),
               ),
             ),
-          // 对抗审查勘误（2026-10-22）：官方仅“默认展开态”（运行中/
-          // 强开）隐藏 chevron，手动展开完成轮时保留旋转箭头；我方全
-          // 态允许收起，箭头常驻并随展开翻转。
+ // 勘误（2026-10-22）：官方仅“默认展开态”（运行中/
+ // 强开）隐藏 chevron，手动展开完成轮时保留旋转箭头；我方全
+ // 态允许收起，箭头常驻并随展开翻转。
           if (expandable)
             Icon(
               expanded ? Icons.expand_less : Icons.expand_more,
@@ -277,7 +277,7 @@ class TurnBarState extends State<TurnBar> {
             onTap: () => setState(() {
               if (running) {
                 _liveCollapsed = !_liveCollapsed;
-                // H11：运行中的收起是显式选择（重开=回到自动档）。
+ // H11：运行中的收起是显式选择（重开=回到自动档）。
                 _manuallyCollapsedWhileRunning = _liveCollapsed;
                 widget.onLiveCollapsedChanged?.call(_liveCollapsed);
               } else {
@@ -288,17 +288,17 @@ class TurnBarState extends State<TurnBar> {
             child: headerRow,
           );
 
-    // ②折叠动画（官方 300ms 高度过渡对位，用户拍板 2026-10-22）：
-    // 收起态内容（外置正文）与展开态内容（整段时间序）统一进
-    // AnimatedSize——展开/收起平滑过渡；运行中流式增高也平滑跟随。
+ // ②折叠动画（官方 300ms 高度过渡对位，用户拍板 2026-10-22）：
+ // 收起态内容（外置正文）与展开态内容（整段时间序）统一进
+ // AnimatedSize——展开/收起平滑过渡；运行中流式增高也平滑跟随。
     final Widget content;
     if (!expanded || !expandable) {
-      // 收起态：外置「可见正文」（官方语义：折叠区收起后最终正文
-      // 仍可见，位于状态条之外）。
+ // 收起态：外置「可见正文」（官方语义：折叠区收起后最终正文
+ // 仍可见，位于状态条之外）。
       final vt = work.visibleTextRow;
-      // 对抗审查 3-5 折中（2026-10-22）：官方运行中即渲染文件卡
-      // （in-flight 缓存档）；手机先给收起态「已更改 N 个文件」计数
-      // 提示，完整文件卡仍随轮关闭投出。
+ // 3-5 折中（2026-10-22）：官方运行中即渲染文件卡
+ // （in-flight 缓存档）；手机先给收起态「已更改 N 个文件」计数
+ // 提示，完整文件卡仍随轮关闭投出。
       final runningFiles = running ? intOrZero(work.fileChanges?['files']) : 0;
       content = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -306,9 +306,9 @@ class TurnBarState extends State<TurnBar> {
           if (vt != null) ...[
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              // 底边距清零（间距堆栈整改六轮定稿，用户验收 18051
-              // 拍板"差不多了"——收起态正文统一无底边距，卡侧空隙
-              // 由卡自身表达）。
+ // 底边距清零（间距堆栈整改六轮定稿，用户验收 18051
+ // 拍板"差不多了"——收起态正文统一无底边距，卡侧空隙
+ // 由卡自身表达）。
               child: SearchTargetFrame(
                 rowId: intOf(vt['rowId']),
                 activeRowId: widget.searchTargetRowId,
@@ -323,13 +323,13 @@ class TurnBarState extends State<TurnBar> {
                 ),
               ),
             ),
-            // 轮尾操作行（2026-10-23 用户反馈批，桌面 ConversationRowView
-            // :1580-1649 对位）：复制/点赞/点踩/分支 ghost 一排。
-            // 对抗审查 B2/B3：仅轮正常完成（官方只认 complete）且为轮内
-            // 最后一个工作段（guided 追问一轮多段只挂末段）才渲染；
-            // 复制内容=整轮正文合并（官方 join("\n\n")，B1）。
-            // 2026-10-24 验收：发了文件卡的轮操作行改挂卡后（官方
-            // deferAssistantActions 顺序——hasSummaryCard 由 closeTurn 标记）。
+ // 轮尾操作行（2026-10-23 用户反馈批，桌面 ConversationRowView
+ // 1580-1649 对位）：复制/点赞/点踩/分支 ghost 一排。
+ // B2/B3：仅轮正常完成（官方只认 complete）且为轮内
+ // 最后一个工作段（guided 追问一轮多段只挂末段）才渲染；
+ // 复制内容=整轮正文合并（官方 join("\n\n")，B1）。
+ // 2026-10-24 验收：发了文件卡的轮操作行改挂卡后（官方
+ // deferAssistantActions 顺序——hasSummaryCard 由 closeTurn 标记）。
             if (work.completedOk && work.isLastSegment && !work.hasSummaryCard)
               TurnTailActions(
                 row: vt,
@@ -353,10 +353,10 @@ class TurnBarState extends State<TurnBar> {
         ],
       );
     } else {
-      // 展开：整段时间序回放（正文/思考/工具/子代理——思考条与工具
-      // 行各自独立折叠，正文直接渲染）。
-      // 展开态轮尾：最后一个 assistantText 单元下标（轮尾操作行挂它
-      // 下面——与收起态外置正文同款，仅完成态）。
+ // 展开：整段时间序回放（正文/思考/工具/子代理——思考条与工具
+ // 行各自独立折叠，正文直接渲染）。
+ // 展开态轮尾：最后一个 assistantText 单元下标（轮尾操作行挂它
+ // 下面——与收起态外置正文同款，仅完成态）。
       final expandedUnits = buildWorkUnits(
         work.work,
         pairedSubagentByToolRowId: work.pairedSubagentByToolRowId,
@@ -374,15 +374,15 @@ class TurnBarState extends State<TurnBar> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // L2：子步骤一行摘要（各自收起态，点开是 L3 细节）——不按
-            // showTools 过滤（③语义：显式展开永远可见步骤列表）。
-            // 对抗审查 3-1/4-4（2026-10-22）：连续同类工具成组——官方
-            // EXPLORE/TERMINAL 分组开关默认开（CHANGES 关=编辑不合并，
-            // 不替官方开 flag）：连续 ≥2 只读类=「查阅」、连续 ≥2 Bash=
-            // 「终端 · N 个命令」；单条不造组（官方同款）。
+ // L2：子步骤一行摘要（各自收起态，点开是 L3 细节）——不按
+ // showTools 过滤（③语义：显式展开永远可见步骤列表）。
+ // 3-1/4-4（2026-10-22）：连续同类工具成组——官方
+ // EXPLORE/TERMINAL 分组开关默认开（CHANGES 关=编辑不合并，
+ // 不替官方开 flag）：连续 ≥2 只读类=「查阅」、连续 ≥2 Bash=
+ // 「终端 · N 个命令」；单条不造组（官方同款）。
             for (var unitIdx = 0; unitIdx < expandedUnits.length; unitIdx++)
               switch (expandedUnits[unitIdx]) {
-                // 合并卡（H12 批②）：Agent 工具行原位置，含工具状态。
+ // 合并卡（H12 ）：Agent 工具行原位置，含工具状态。
                 SubagentPairUnit(:final toolRow, :final subagentRow) =>
                   SearchTargetFrame(
                     rowId: intOf(toolRow['rowId']),
@@ -415,9 +415,9 @@ class TurnBarState extends State<TurnBar> {
                     ),
                   ),
                 RowUnit(:final row) => switch ('${row['kind']}') {
-                  // B2-1（lane 语义）：mid-turn auto-compact
-                  //（lane=assistantWork）落在回合内部的标记行——内嵌
-                  // 分隔线渲染，不劈开运行中轮。
+ // （lane 语义）：mid-turn auto-compact
+ //（lane=assistantWork）落在回合内部的标记行——内嵌
+ // 分隔线渲染，不劈开运行中轮。
                   'timelineMarker' => () {
                     final parsed = timelineMarkerLabelOf(row);
                     if (parsed == null) return const SizedBox.shrink();
@@ -439,13 +439,13 @@ class TurnBarState extends State<TurnBar> {
                         (running ||
                             unitIdx != lastTextUnitIdx ||
                             '${row['state']}' == 'streaming' ||
-                            // 对抗审查 B3：中断/失败轮不出操作行（官方
-                            // 只认 complete）；B2：guided 只挂末段。
+ // B3：中断/失败轮不出操作行（官方
+ // 只认 complete）；B2：guided 只挂末段。
                             !work.completedOk ||
                             !work.isLastSegment ||
-                            // B2-2：发了文件卡的轮操作行改挂卡尾
-                            //（收起态 316 行同款守卫）——展开态漏守卫会
-                            // 与 FileSummaryCard 尾部各出一条=双操作行。
+ // 发了文件卡的轮操作行改挂卡尾
+ //（收起态 316 行同款守卫）——展开态漏守卫会
+ // 与 FileSummaryCard 尾部各出一条=双操作行。
                             work.hasSummaryCard)
                         ? SearchTargetFrame(
                             rowId: intOf(row['rowId']),
@@ -486,9 +486,9 @@ class TurnBarState extends State<TurnBar> {
                           ),
                   ),
                   'subagent' => SubagentTile(row: row, openSession: widget.openSession),
-                  // B5（2026-10-29 审查）：TodoWrite 待办
-                  // 清单官方有专用渲染（renderers/todo.tsx：状态图标+
-                  // 完成计数+当前项）——此前降级为通用文本行。
+ // B5（2026-10-29 审查）：TodoWrite 待办
+ // 清单官方有专用渲染（renderers/todo.tsx：状态图标+
+ // 完成计数+当前项）——此前降级为通用文本行。
                   'toolCall'
                       when '${row['toolName'] ?? row['name'] ?? ''}' ==
                               'OffPeakCreate' &&
@@ -523,8 +523,8 @@ class TurnBarState extends State<TurnBar> {
                   searchSourceText: widget.searchSourceText,
                 ),
               },
-            // （占位分支已随 ④ 移除：不可展开判定保证展开态必有可见
-            // 内容，空轮直接渲染纯标签条。）
+ // （占位分支已随 ④ 移除：不可展开判定保证展开态必有可见
+ // 内容，空轮直接渲染纯标签条。）
           ],
         ),
       );
@@ -554,7 +554,7 @@ class ReasoningTile extends StatefulWidget {
   final Map<String, dynamic> row;
   final DateTime? firstSeen;
 
-  /// 页面级定格的实测时长（收起期间完成等 tile 未挂载场景的兜底）。
+ /// 页面级定格的实测时长（收起期间完成等 tile 未挂载场景的兜底）。
   final int? elapsedMs;
 
   const ReasoningTile({
@@ -572,18 +572,18 @@ class ReasoningTileState extends State<ReasoningTile> {
   Timer? _ticker;
   bool _userOpen = false;
 
-  /// 完成边沿冻结的实测时长（对抗审查 2-1，2026-10-22：服务端从不
-  /// 下发 reasoning durationMs，官方在完成边沿用秒表实测值定稿——
-  /// 此前我方测到的值被丢弃，标签退化「几秒」）。
+ /// 完成边沿冻结的实测时长（2-1，2026-10-22：服务端从不
+ /// 下发 reasoning durationMs，官方在完成边沿用秒表实测值定稿——
+ /// 此前我方测到的值被丢弃，标签退化「几秒」）。
   int? _frozenMs;
   bool _wasStreaming = false;
 
-  /// 官方吸底跟随语义（reasoning.tsx:2px 容差）：用户离底暂停跟随、
-  /// 滚回底部自动恢复——此前无条件强拉会把用户往回看的操作拽到底。
+ /// 官方吸底跟随语义（reasoning.tsx:2px 容差）：用户离底暂停跟随、
+ /// 滚回底部自动恢复——此前无条件强拉会把用户往回看的操作拽到底。
   bool _autoFollow = true;
 
-  /// V2 折叠策略③：用户手动交互锁（官方 userInteracted 同款——手动
-  /// 展开/收起过，完成时的自动收起永久让位）。
+ /// V2 折叠策略③：用户手动交互锁（官方 userInteracted 同款——手动
+ /// 展开/收起过，完成时的自动收起永久让位）。
   bool _userToggled = false;
 
   bool get _streaming => widget.row['state'] == 'streaming';
@@ -603,9 +603,9 @@ class ReasoningTileState extends State<ReasoningTile> {
   @override
   void didUpdateWidget(covariant ReasoningTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 完成边沿当帧处理（对抗审查 2-6：原 1 秒轮询最多迟 1 秒）：
-    // ①秒表实测值定稿（官方 reasoning.tsx:129-133 同款）；②即时收起
-    // （userInteracted 锁：用户手动展开过的不自动收）。
+ // 完成边沿当帧处理（2-6：原 1 秒轮询最多迟 1 秒）：
+ // ①秒表实测值定稿（官方 reasoning.tsx:129-133 同款）；②即时收起
+ // （userInteracted 锁：用户手动展开过的不自动收）。
     if (_wasStreaming && !_streaming) {
       final seen = widget.firstSeen;
       if (seen != null) {
@@ -630,8 +630,8 @@ class ReasoningTileState extends State<ReasoningTile> {
   void _startTicker() {
     _ticker ??= Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      // 对抗审查 2-6：收起态无秒数不逐秒重绘（官方 reasoning.tsx:142-156
-      // 同款省电注释）；完成检测已移交 didUpdateWidget 边沿。
+ // 2-6：收起态无秒数不逐秒重绘（官方 reasoning.tsx:142-156
+ // 同款省电注释）；完成检测已移交 didUpdateWidget 边沿。
       if (!_streaming || !_userOpen) return;
       setState(() {});
     });
@@ -649,15 +649,15 @@ class ReasoningTileState extends State<ReasoningTile> {
     });
   }
 
-  /// 思考文本的最后一个非空行（官方 streaming 摘要规则）。
+ /// 思考文本的最后一个非空行（官方 streaming 摘要规则）。
   String get _lastLine {
     final text = '${widget.row['text'] ?? ''}';
     for (final line in text.split('\n').reversed) {
         if (line.trim().isNotEmpty) {
-        // 对抗审查 2-2：保尾不保头——官方语义"永远显示最新 token"，
-        // 截头 60 字会让长行摘要冻结在旧内容；手机不做横滚（触屏手势
-        // 冲突），前省略号截尾为等价实现。 B2-14：截点走代理对
-        // 安全版（劈开 emoji=replacement 字形）。
+ // 2-2：保尾不保头——官方语义"永远显示最新 token"，
+ // 截头 60 字会让长行摘要冻结在旧内容；手机不做横滚（触屏手势
+ // 冲突），前省略号截尾为等价实现。 ：截点走代理对
+ // 安全版（劈开 emoji=replacement 字形）。
         return clipHeadSafe(line.trim(), 60);
       }
     }
@@ -668,7 +668,7 @@ class ReasoningTileState extends State<ReasoningTile> {
     streaming: _streaming,
     expanded: _userOpen,
     durationMs: reasoningDurationMs(widget.row),
-    // tile 级边沿值优先（当帧精确），页面级定格兜底。
+ // tile 级边沿值优先（当帧精确），页面级定格兜底。
     measuredMs: _frozenMs ?? widget.elapsedMs,
     firstSeen: widget.firstSeen,
   );
@@ -677,14 +677,14 @@ class ReasoningTileState extends State<ReasoningTile> {
   Widget build(BuildContext context) {
     if (_streaming) _startTicker();
     if (_userOpen && _streaming) _followBottom();
-    // 对抗审查收敛：完成态退最淡档（官方 foreground-subtlest，
-    // reasoning.tsx:339-353）。
+ // 收敛：完成态退最淡档（官方 foreground-subtlest，
+ // reasoning.tsx:339-353）。
     final color = _streaming
         ? context.colors.running
         : context.colors.foregroundSubtlest;
 
-    // 整列 AnimatedSize（用户拍板 2026-10-24：流式两行定高→完成一行高
-    // 的收缩平滑过渡；条头与展开区高度变化统一动画）。
+ // 整列 AnimatedSize（用户拍板 2026-10-24：流式两行定高→完成一行高
+ // 的收缩平滑过渡；条头与展开区高度变化统一动画）。
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
@@ -702,19 +702,19 @@ class ReasoningTileState extends State<ReasoningTile> {
                 _userOpen = !_userOpen;
               });
               if (!opening) return;
-              // 验收回填（2026-10-22）：展开内滚停到最下端（最新内容——
-              // 收起期间 controller 保留旧 offset 会停在半截）；外层消息
-              // 列表随动露出展开区（AnimatedSize 300ms 后再滚，避免滚到
-              // 动画中间态）。
+ // 验收回填（2026-10-22）：展开内滚停到最下端（最新内容——
+ // 收起期间 controller 保留旧 offset 会停在半截）；外层消息
+ // 列表随动露出展开区（AnimatedSize 300ms 后再滚，避免滚到
+ // 动画中间态）。
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!mounted || !_innerScroll.hasClients) return;
                 _innerScroll.jumpTo(_innerScroll.position.maxScrollExtent);
               });
               Future.delayed(const Duration(milliseconds: 340), () {
                 if (!mounted) return;
-                // mounted 守卫已过；lint 对闭包内 context 误报，留痕豁免。
+ // mounted 守卫已过；lint 对闭包内 context 误报，留痕豁免。
                 Scrollable.ensureVisible(
-                  // ignore: use_build_context_synchronously
+ // ignore: use_build_context_synchronously
                   context,
                   duration: const Duration(milliseconds: 200),
                   alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
@@ -723,41 +723,41 @@ class ReasoningTileState extends State<ReasoningTile> {
               });
             },
             child: Padding(
-              // 2026-10-23 用户反馈：流式工作行行距收半档（7→5，相邻行
-              // 间隙 14→10）——紧凑一点不拥挤。
+ // 2026-10-23 用户反馈：流式工作行行距收半档（7→5，相邻行
+ // 间隙 14→10）——紧凑一点不拥挤。
               padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
               child: Row(
                 children: [
-                  // 静态大脑图标（官方 BrainIcon size-4，不做旋转动画）。
+ // 静态大脑图标（官方 BrainIcon size-4，不做旋转动画）。
                   Icon(Icons.psychology_outlined, size: 16, color: color),
                   const SizedBox(width: 7),
                   Expanded(
-                    // V3 动效包#6：运行中文字扫光（官方 animated-gradient-text
-                    // 复刻；ui-references §1.4 承诺补交付）。
+ // V3 动效包#6：运行中文字扫光（官方 animated-gradient-text
+ // 复刻；ui-references §1.4 承诺补交付）。
                     child: _streaming
                         ? ShimmerText(
                             text:
                                 _streaming && !_userOpen && _lastLine.isNotEmpty
                                 ? '${_label()} · $_lastLine'
                                 : _label(),
-                            // 批4 反馈②（2026-10-23 用户）：折叠态摘要一行
-                            // 信息量太少（流速快看不清）——升两行。
-                            // 同日反馈二修（18039 批因中途丢失重落地）：内容
-                            // 时长短 1↔2 行切换会让下方内容上蹿下跳——
-                            // minLines 固定两行占位（短句第二行留空）。
+ // 反馈②（2026-10-23 用户）：折叠态摘要一行
+ // 信息量太少（流速快看不清）——升两行。
+ // 同日反馈二修（批因中途丢失重落地）：内容
+ // 时长短 1↔2 行切换会让下方内容上蹿下跳——
+ // minLines 固定两行占位（短句第二行留空）。
                             maxLines: 2,
                             minLines: 2,
-                            // 工作区行族 13→14（官方 text-ui-base）。
+ // 工作区行族 13→14（官方 text-ui-base）。
                             style: TextStyle(
                               fontSize: AppType.uiBase,
                               color: color,
                             ),
                           )
                         : FixedLinesText(
-                            // 用户拍板（2026-10-24 第二轮验收）：流式期两行
-                            // 定高（防 1↔2 行跳动），完成态回落一行高（两行
-                            // 占位在收起的流式内容族中突兀）——2→1 的高度
-                            // 收缩由整列 AnimatedSize 平滑过渡。
+ // 用户拍板（2026-10-24 第二轮验收）：流式期两行
+ // 定高（防 1↔2 行跳动），完成态回落一行高（两行
+ // 占位在收起的流式内容族中突兀）——2→1 的高度
+ // 收缩由整列 AnimatedSize 平滑过渡。
                             text:
                                 _streaming && !_userOpen && _lastLine.isNotEmpty
                                 ? '${_label()} · $_lastLine'
@@ -779,7 +779,7 @@ class ReasoningTileState extends State<ReasoningTile> {
               ),
             ),
           ),
-          // ②折叠动画（官方 300ms 高度过渡对位，用户拍板 2026-10-22）。
+ // ②折叠动画（官方 300ms 高度过渡对位，用户拍板 2026-10-22）。
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOutCubic,
@@ -811,7 +811,10 @@ class ReasoningTileState extends State<ReasoningTile> {
                               : '${widget.row['text']}',
                           style: TextStyle(
                             fontSize: AppType.uiBase,
-                            color: context.colors.foregroundSubtle,
+ // 2026-11-05 反馈④：思考正文 70% 档归到与
+ // 工具行同层（subtlest）——正文黑/工作行灰
+ // 的层级差此前只达官方六成。
+                            color: context.colors.foregroundSubtlest,
                             height: 1.5,
                           ),
                         ),
@@ -888,12 +891,12 @@ class ToolGroupTileState extends State<ToolGroupTile> {
           onTap: () =>
               setState(() => widget.toolOpen[widget.unit.anchorRowId] = !open),
           child: Padding(
-            // 2026-10-23 用户反馈：流式工作行行距收半档（7→5，相邻行
-            // 间隙 14→10）——紧凑一点不拥挤。
+ // 2026-10-23 用户反馈：流式工作行行距收半档（7→5，相邻行
+ // 间隙 14→10）——紧凑一点不拥挤。
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
             child: Row(
               children: [
-                // 2026-10-23 用户反馈批：组运行中图标同用 running 琥珀。
+ // 2026-10-23 用户反馈批：组运行中图标同用 running 琥珀。
                 Icon(
                   widget.unit.family == GroupFamily.terminal
                       ? Icons.terminal_outlined
@@ -905,9 +908,9 @@ class ToolGroupTileState extends State<ToolGroupTile> {
                 ),
                 const SizedBox(width: 7),
                 Expanded(
-                  // 运行中：最新活跃子工具摘要（官方 explore.tsx:440-444
-                  // 同款；扫光对位单行工具行——2026-10-23 用户反馈批
-                  // 起，扫光与图标统一 running 琥珀）。
+ // 运行中：最新活跃子工具摘要（官方 explore.tsx:440-444
+ // 同款；扫光对位单行工具行——2026-10-23 用户反馈批
+ // 起，扫光与图标统一 running 琥珀）。
                   child: runningRow != null
                       ? ShimmerText(
                           text:
@@ -976,7 +979,7 @@ class ToolGroupTileState extends State<ToolGroupTile> {
   }
 }
 
-/// 工具行输出视口（对抗审查 4-1，2026-10-22）：限高滚动（官方
+/// 工具行输出视口（4-1，2026-10-22）：限高滚动（官方
 /// max-h-5lh overflow-auto 对位；原 8 行 ellipsis 死截断全文不可达），
 /// 运行中自动吸底、用户上滚即冻结、回底恢复（官方 ExecuteOutput 同款），
 /// 空输出出「没有输出。」占位；SelectableText=官方错误复制钮的手机
@@ -985,9 +988,9 @@ class ToolGroupTileState extends State<ToolGroupTile> {
 class SubagentTile extends StatelessWidget {
   final Map<String, dynamic> row;
 
-  /// 配对的 Agent 工具行（H12 批② 合并卡）：null=未配对的独立 subagent
-  /// 卡（fail-open 保留）。工具状态参与终态判定——官方 agentToolCall 块
-  /// 同携两者（配对后唯一的状态出口，不能只剩 subagent 视角）。
+ /// 配对的 Agent 工具行（H12 合并卡）：null=未配对的独立 subagent
+ /// 卡（fail-open 保留）。工具状态参与终态判定——官方 agentToolCall 块
+ /// 同携两者（配对后唯一的状态出口，不能只剩 subagent 视角）。
   final Map<String, dynamic>? toolRow;
   final ConversationSessionOpener openSession;
   const SubagentTile({required this.row, this.toolRow, required this.openSession});
@@ -998,11 +1001,11 @@ class SubagentTile extends StatelessWidget {
     final type = '${row['subagentType'] ?? ''}';
     final status = '${row['status'] ?? row['state'] ?? ''}';
     final toolStatus = '${toolRow?['status'] ?? ''}';
-    // 终态合成（官方状态词表：subagent running/success/failed/cancelled；
-    // toolCall …/error/cancelled）：失败/取消必须可读——合并卡是配对后
-    // 唯一的状态出口，灰卡无字=失败不可见（审查 H12 实锤）。优先级：
-    // 失败/取消取两侧并集；运行只认 subagent 行（子代理终态压过滞后的
-    // 工具行——工具行 running 只在 subagent 状态缺席时兜底）。
+ // 终态合成（官方状态词表：subagent running/success/failed/cancelled；
+ // toolCall …/error/cancelled）：失败/取消必须可读——合并卡是配对后
+ // 唯一的状态出口，灰卡无字=失败不可见（审查 H12 实锤）。优先级：
+ // 失败/取消取两侧并集；运行只认 subagent 行（子代理终态压过滞后的
+ // 工具行——工具行 running 只在 subagent 状态缺席时兜底）。
     final failed = status == 'failed' || toolStatus == 'error';
     final cancelled =
         !failed && (status == 'cancelled' || toolStatus == 'cancelled');
@@ -1026,10 +1029,16 @@ class SubagentTile extends StatelessWidget {
         ? context.colors.running
         : context.colors.foregroundSubtle;
     final iconColor = failed ? context.colors.destructive : titleColor;
-    // 官方下钻语义（refs rows.ts subagentRowSchema.childSessionId 注释：
-    // 存在 → UI 可下钻订阅 conversation/<childSessionId>）：有值才可点开
-    // 只读会话视图（桌面 SubagentSessionSidePane 同款）。
+ // 官方下钻语义（refs rows.ts subagentRowSchema.childSessionId 注释：
+ // 存在 → UI 可下钻订阅 conversation/<childSessionId>）：有值才可点开
+ // 只读会话视图（桌面 SubagentSessionSidePane 同款）。
     final childSessionId = '${row['childSessionId'] ?? ''}'.trim();
+ // 2026-11-05 反馈①：类型恒显（官方 agent.tsx kindLabel+kindDetail
+ // 三段式「子智能体 · 类型 · 任务描述」——此前类型只在 summary 为空
+ // 时兜底，常态不可见）；下钻标题同官方 sidePaneTabPresentation
+ // 优先用类型。
+    final title = summary.isEmpty ? '子智能体 $type' : summary;
+    final openTitle = type.isNotEmpty ? type : title;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
@@ -1047,7 +1056,7 @@ class SubagentTile extends StatelessWidget {
                   openSession(
                     context,
                     sessionId: childSessionId,
-                    title: summary.isEmpty ? '子智能体 $type' : summary,
+                    title: openTitle,
                     readOnly: true,
                   ),
                 ),
@@ -1059,14 +1068,18 @@ class SubagentTile extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${summary.isEmpty ? '子智能体 $type' : summary}$suffix',
+ // kindLabel（子智能体）· kindDetail（类型名）· 主文本
+ //（任务摘要）——官方 ToolSummaryRow 三段式；类型此前
+ // 只在 summary 为空时兜底，常态不可见。
+                    '子智能体${type.isEmpty ? '' : ' · $type'}'
+                    '${summary.isEmpty ? '' : ' · $summary'}$suffix',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: AppType.uiCaption,
-                      // 2026-10-25 用户拍板：随 logo 同档——运行中标题也
-                      // 琥珀（此前仅图标橙、标题恒灰，执行完回落灰）。
-                      // 批②补：失败=destructive、取消=灰（suffix 可读）。
+ // 2026-10-25 用户拍板：随 logo 同档——运行中标题也
+ // 琥珀（此前仅图标橙、标题恒灰，执行完回落灰）。
+ // 补：失败=destructive、取消=灰（suffix 可读）。
                       color: titleColor,
                     ),
                   ),
@@ -1087,6 +1100,6 @@ class SubagentTile extends StatelessWidget {
     );
   }
 }
-// （ B1-P3-10/B2-12：排队条已随 迁出本文件——
-//  OfflineSendQueueStrip 见 conversation_composer.dart、QueueStrip 的
-//  sendQueuedNow/deleteQueueItem 转发层见 app_state.dart。）
+// （/：排队条已随 迁出本文件——
+// OfflineSendQueueStrip 见 conversation_composer.dart、QueueStrip 的
+// sendQueuedNow/deleteQueueItem 转发层见 app_state.dart。）

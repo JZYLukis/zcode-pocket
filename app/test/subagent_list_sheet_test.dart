@@ -1,4 +1,4 @@
-// 会话子代理列表（2026-10-26 批④拍板⑥，官方 SubagentSessionSidePane
+// 会话子代理列表（2026-10-26 拍板⑥，官方 SubagentSessionSidePane
 // 手机化）：分段渲染（运行中/已结束）、endedCursor 分页加载、
 // childSessionId 下钻只读会话、空/错误态。
 import 'package:flutter/material.dart';
@@ -76,7 +76,7 @@ Future<void> _open(WidgetTester tester) async {
 }
 
 void main() {
-  // 正常手机视口（默认 800×600 偏矮致弹层布局断言失真）。
+ // 正常手机视口（默认 800×600 偏矮致弹层布局断言失真）。
   void setPhoneView(WidgetTester tester) {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
@@ -107,15 +107,17 @@ void main() {
     expect(find.textContaining('写报告 · 失败'), findsOneWidget,
         reason: '失败条目须有可读信号（红标题+失败后缀）');
 
-    // 下钻：点运行中条目 → 推入只读会话页（标题=子代理标题）。
-    // 有界泵：下钻页加载转圈是无限动画（pumpAndSettle 必超时）。
+ // 下钻：点运行中条目 → 推入只读会话页（2026-11-05 反馈①：标题优先
+ // 用类型——官方 sidePaneTabPresentation L127 语义；类型即子代理身份，
+ // 任务 title 仍在列表行可见）。
+ // 有界泵：下钻页加载转圈是无限动画（pumpAndSettle 必超时）。
     await tester.tap(find.textContaining('勘察工作区'));
     for (var i = 0; i < 15; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.text('勘察工作区'), findsWidgets,
-        reason: '下钻页顶栏标题=子代理标题');
-    expect(Navigator.of(tester.element(find.text('勘察工作区').first)).canPop(),
+    expect(find.text('general-purpose'), findsWidgets,
+        reason: '下钻页顶栏标题=子代理类型');
+    expect(Navigator.of(tester.element(find.text('general-purpose').first)).canPop(),
         isTrue);
   });
 

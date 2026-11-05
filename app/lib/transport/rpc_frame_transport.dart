@@ -22,7 +22,7 @@ class RpcFrameTransport {
   /// (hundreds of thousands of tokens) can produce large snapshots, so this
   /// must be generous enough not to silently drop the initial conversation
   /// frame — which would leave the UI spinning forever (a past regression).
-  //单一真源在 [ValueReader.maxValueBytes]（ /G3
+  //单一真源在 [ValueReader.maxValueBytes]（
   /// P2-4：与解码层上限必须一致——此前 64MiB vs 16MiB 各持一个数，16-
   /// 64MiB 消息重组成功后被解码层静默丢弃）。
   static const maxMessageBytes = ValueReader.maxValueBytes;

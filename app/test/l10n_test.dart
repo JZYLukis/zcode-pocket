@@ -64,10 +64,10 @@ void main() {
 
   test('断线排队条英文拼接括号成对（P1/P2/P3 三路同报）', () {
     L10n.setTestLocale('en-US');
-    // 调用方（conversation_composer）按 前缀+条数+后缀 三段拼接。
+ // 调用方（conversation_composer）按 前缀+条数+后缀 三段拼接。
     final composed =
         tr('未连接，已排队待发送（') + '2' + tr(' 条），恢复连接后自动发出');
-    // 修复前：后半词条英文值丢了 `)`，开括号永悬。
+ // 修复前：后半词条英文值丢了 `)`，开括号永悬。
     final opens = '('.allMatches(composed).length;
     final closes = ')'.allMatches(composed).length;
     expect(opens, greaterThan(0), reason: '前缀词条带开括号');
@@ -94,18 +94,18 @@ void main() {
     expect(find.text('Archive management'), findsNothing);
   });
 
-  // ── （51 路审查 l10n 大扫除）回归锚点 ──
-  // 每组修复抽代表串钉住，防后续批次再漏登记词表。
+ // ── （51 路审查 l10n 大扫除）回归锚点 ──
+ // 每组修复抽代表串钉住，防后续批次再漏登记词表。
   test('批C组1：任务主页/中心/归档（L1）', () {
     L10n.setTestLocale('en-US');
-    // 连接横幅与搜索分区头（带括号计数 pattern）。
+ // 连接横幅与搜索分区头（带括号计数 pattern）。
     expect(tr('凭据已失效（桌面可能刷新了二维码）'),
         'Credentials expired (the desktop may have refreshed the QR code)');
     expect(tr('置顶 (3)'), 'Pinned (3)');
     expect(tr('其他工作区 (2)'), 'Other workspaces (2)');
-    // run() 失败前缀的 ASCII 冒号形态。
+ // run() 失败前缀的 ASCII 冒号形态。
     expect(tr('删除失败: TimeoutException'), 'Delete failed: TimeoutException');
-    // 归档页三件套 + P3-1 独立键（Restore 而非 Resume）。
+ // 归档页三件套 + 独立键（Restore 而非 Resume）。
     expect(tr('恢复任务'), 'Restore task');
     expect(tr('已恢复「修复登录」'), 'Restored “修复登录”');
     expect(tr('将删除 12 个归档任务（不可恢复）。确定继续？'),
@@ -114,8 +114,8 @@ void main() {
 
   test('批C组1：归档相对时间占位递归（P1 P2-2 最小修法）', () {
     L10n.setTestLocale('en-US');
-    // 调用方（archived_tasks_page）在拼接前先 tr 时间片段，整串再走
-    // custom pattern——两步合起来必须产出全英文。
+ // 调用方（archived_tasks_page）在拼接前先 tr 时间片段，整串再走
+ // custom pattern——两步合起来必须产出全英文。
     final composed = '归档于 ${tr('3 天前')}';
     expect(tr(composed), 'Archived 3 days ago');
   });
@@ -124,10 +124,10 @@ void main() {
     L10n.setTestLocale('en-US');
     expect(tr('本机 ') + '0.1.0-abc' + tr(' · 桌面端 ') + '3.16.3',
         'Local 0.1.0-abc · Desktop 3.16.3');
-    // 删除账号确认框正文（破坏性操作必须可读）。
+ // 删除账号确认框正文（破坏性操作必须可读）。
     expect(tr('该账号名下有 2 台电脑档案。删除后这些电脑将无法连接（档案保留，重新登录该账号即可恢复）。'),
         'This account has 2 computer profiles. After deletion, these computers cannot connect (the profiles are kept; sign in to this account again to restore them).');
-    // git 分支阻塞码人话与配对失败多行 pattern。
+ // git 分支阻塞码人话与配对失败多行 pattern。
     expect(tr('仓库里有未解决的冲突——请先在桌面端处理'),
         'The repository has unresolved conflicts — resolve them on the desktop first');
     expect(tr('连接失败：TimeoutException\n（桌面端 ZCode 需处于运行状态）'),
@@ -138,7 +138,7 @@ void main() {
     L10n.setTestLocale('en-US');
     expect(tr('等待中'), 'Waiting');
     expect(tr('终端 · 4 个命令，1 个失败'), 'Terminal · 4 commands, 1 failed');
-    // 思考时长：片段预译 + 整串 pattern（B2-6 同根因两步走）。
+ // 思考时长：片段预译 + 整串 pattern（同根因两步走）。
     expect(tr('思考 · 持续了 ${tr('2 分 3 秒')}'), 'Thought for 2m 3s');
     expect(tr('排队中 (2) · 回合结束后自动发送'),
         'Queued (2) · auto-send when the turn ends');
@@ -150,12 +150,12 @@ void main() {
 
   test('批C组1：重置礼包徽标与 FGS 常驻通知（N1/Q1）', () {
     L10n.setTestLocale('en-US');
-    // 徽标（单机会）：倒计时片段预译后整串 pattern（N1 P2-2）。
+ // 徽标（单机会）：倒计时片段预译后整串 pattern（N1 ）。
     final badge = '1 次重置额度 · 剩余 ${tr('2 小时 3 分')}';
     expect(tr(badge), '1 reset credit · 2h 3m left');
-    // FGS 常驻通知：任务标题为用户内容，pattern 捕获段必须保持原文。
+ // FGS 常驻通知：任务标题为用户内容，pattern 捕获段必须保持原文。
     expect(tr('「修复登录」等 2 个任务运行中'),
-        '“修复登录” and 2 tasks running');
+        '“修复登录” — 2 task(s) running in total');
     expect(tr('无任务运行'), 'No tasks running');
   });
 
@@ -171,12 +171,12 @@ void main() {
         'Changes to 3 files will be restored to the state before this turn; '
         '1 cannot be safely undone and 2 are ignored (skipped '
         'automatically). Chat history is not affected.');
-    // 源串已对齐官方词表空格口径（D2-07）。
+ // 源串已对齐官方词表空格口径。
     expect(tr('… 还有 3 条'), '… 3 more');
     expect(tr('连接失败：SocketException'), 'Connection failed: SocketException');
   });
 
-  // ── （core 基础）机制回归锚点 ──
+ // ── （core 基础）机制回归锚点 ──
   test('数字压缩进位边界（P2 P3-6：修复前 999999→"1000K"/999999999→"1000M"）',
       () {
     L10n.setTestLocale('en-US');
@@ -201,23 +201,23 @@ void main() {
     expect(hasCjk('、'), isTrue, reason: 'CJK 标点区 U+3000-303F');
     expect(hasCjk('％'), isTrue, reason: '全角形式区 U+FF00-FFEF');
     expect(hasCjk('abc 123'), isFalse);
-    // 纯全角符号未命中词表时保持原文（行为不劣化）。
+ // 纯全角符号未命中词表时保持原文（行为不劣化）。
     L10n.setTestLocale('en-US');
     expect(tr('％'), '％');
   });
 
   testWidgets('system 档跟随系统语言即时生效（P3 P2-1：didChangeLocales → '
       'refresh → 根层重建——修复前需重启 app）', (tester) async {
-    // 平台 locale 测试覆写跨用例粘性：显式锚定初始中文并收尾清理，
-    // 否则前序用例留下的 en-US 会让首个断言失败（测试卫生）。
+ // 平台 locale 测试覆写跨用例粘性：显式锚定初始中文并收尾清理，
+ // 否则前序用例留下的 en-US 会让首个断言失败（测试卫生）。
     tester.binding.platformDispatcher.localeTestValue = const Locale('zh', 'CN');
     addTearDown(tester.binding.platformDispatcher.clearLocaleTestValue);
     L10n.resetForTest();
     await tester.pumpWidget(const ZcodeCompanionApp());
     await tester.pump();
     expect(L10n.resolvedLocale, 'zh-CN');
-    // 模拟系统语言翻转（configChanges 含 locale → Activity 不重建 →
-    // 只走 PlatformDispatcher 通知，正是修复针对的路径）。
+ // 模拟系统语言翻转（configChanges 含 locale → Activity 不重建 →
+ // 只走 PlatformDispatcher 通知，正是修复针对的路径）。
     tester.binding.platformDispatcher.localeTestValue = const Locale('en', 'US');
     tester.binding.handleLocaleChanged();
     await tester.pump();

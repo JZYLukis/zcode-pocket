@@ -79,9 +79,9 @@ void main() {
       ),
     ));
     await tester.pump();
-    // 圈定 +d 行的祖先容器再断言：原先对整棵树的
-    // Container 颜色集合做 contains——任何无关容器恰好复用同主题色都会
-    // 假绿（目标行未渲染时照样通过）。
+ // 圈定 +d 行的祖先容器再断言：原先对整棵树的
+ // Container 颜色集合做 contains——任何无关容器恰好复用同主题色都会
+ // 假绿（目标行未渲染时照样通过）。
     final addedRowColors = tester
         .widgetList<Container>(
           find.ancestor(of: find.text('d'), matching: find.byType(Container)),
@@ -216,11 +216,11 @@ void main() {
     final spec = AppThemeSpec.light;
     final addedBg = spec.colors.diffAdded.withValues(alpha: AppAlpha.faint);
     final removedBg = spec.colors.diffRemoved.withValues(alpha: AppAlpha.faint);
-    // 2026-10-23 diff 语法高亮批起行底走 BoxDecoration（叠加语法 token
-    // 色+行首 3px 竖条，官方 lightweight-diff-preview.ts:73-111 对位）；
-    // Paseo 批"整行底色染色"语义保留。
-    // 圈定目标行祖先容器再断言：整树颜色集合 contains
-    // 会被无关同色容器假绿。
+ // 2026-10-23 diff 语法高亮批起行底走 BoxDecoration（叠加语法 token
+ // 色+行首 3px 竖条，官方 lightweight-diff-preview.ts:73-111 对位）；
+ // Paseo 批"整行底色染色"语义保留。
+ // 圈定目标行祖先容器再断言：整树颜色集合 contains
+ // 会被无关同色容器假绿。
     Set<Color?> rowColors(String text) => tester
         .widgetList<Container>(
           find.ancestor(of: find.text(text), matching: find.byType(Container)),
@@ -255,7 +255,7 @@ void main() {
         {'rowId': 2, 'kind': 'turnHeader', 'state': 'completedSuccess'},
       ],
     );
-    // 快照 config：模型=glm-5.3-flash、思考档=high。
+ // 快照 config：模型=glm-5.3-flash、思考档=high。
     app.readOverride = (id) => SessionCacheEntry(
       deviceSid: 'd1',
       sessionId: id,
@@ -299,7 +299,9 @@ void main() {
       snapshotControl: {
         'title': 'Paseo参考',
         'control': {'phase': 'idle'},
-        'config': {'model': 'grok-4'},
+ // 2026-11-05 反馈④：grok 已入资产表（x.svg）——回退用例换
+ // Simple Icons 仍未收录的腾讯混元。
+        'config': {'model': 'hy3'},
       },
       savedAt: DateTime.now().millisecondsSinceEpoch,
       byteSize: 1024,

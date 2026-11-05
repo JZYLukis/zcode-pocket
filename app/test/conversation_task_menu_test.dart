@@ -46,7 +46,8 @@ class _MenuApp extends AppState {
   @override
   bool get loaded => true;
   @override
-  Future<ConversationSubscription> ensureConversation(String sessionId) async {
+  Future<ConversationSubscription> ensureConversation(String sessionId,
+      {Object? seedCacheEntry}) async {
     sub.seed();
     return sub;
   }

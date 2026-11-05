@@ -24,3 +24,27 @@ jobs:
         run: flutter analyze --no-fatal-infos
       - name: Test
         run: flutter test
+
+  # 编译验证构建（公开构建验证）：只证明公开树可构建，
+  # 不注入任何 secret、不上传/发布产物。正式包仍由维护者在本地
+  # 用发布脚本 + release keystore 构建，校验和随 Release 公布。
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Compile check (debug APK)
+        run: flutter build apk --debug --target-platform android-arm64

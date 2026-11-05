@@ -68,7 +68,7 @@ class _HomeApp extends AppState {
     notifyListeners();
   }
 
-  // 批量操作（优化批 #22）：归档/标已读计数与列表就地剔除。
+ // 批量操作（优化批 #22）：归档/标已读计数与列表就地剔除。
   final List<String> archivedIds = [];
   final List<String> markedReadIds = [];
   @override
@@ -87,7 +87,8 @@ class _HomeApp extends AppState {
   }
 
   @override
-  Future<void> switchToProject(Map<String, dynamic> project) async {
+  Future<void> switchToProject(Map<String, dynamic> project,
+      {bool keepHomePreview = false}) async {
     projectSwitches++;
     homePhase = LinkPhase.connecting;
     await switchCompleter?.future;
@@ -305,7 +306,7 @@ void main() {
   });
 
   testWidgets('新建搜索时键盘不遮项目选项（viewInsets 透传）', (tester) async {
-    // 本用例自管画布（375×806+键盘 viewInsets），不走 _narrow。
+ // 本用例自管画布（375×806+键盘 viewInsets），不走 _narrow。
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -403,7 +404,7 @@ void main() {
     final nowMs = DateTime.now().millisecondsSinceEpoch;
     final app = _HomeApp()
       ..tasks = [
-        // 8 条更早（120-127 天前，远离自然周月边界必落「更早」）+ 1 条今天。
+ // 8 条更早（120-127 天前，远离自然周月边界必落「更早」）+ 1 条今天。
         for (var i = 0; i < 8; i++)
           _task('old-$i', '更早任务 $i', 'p1', nowMs - (120 + i) * 86400000),
         _task('today-0', '今天任务', 'p1', nowMs - 60000),
@@ -411,7 +412,7 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.pump();
 
-    // 更早档组头在场且默认只显示 5 条 + 再显示入口。
+ // 更早档组头在场且默认只显示 5 条 + 再显示入口。
     expect(find.byKey(const ValueKey('home-group:recent:以前')), findsOneWidget);
     expect(find.text('更早任务 0'), findsOneWidget);
     expect(find.text('更早任务 4'), findsOneWidget);
@@ -421,7 +422,7 @@ void main() {
       findsOneWidget,
     );
 
-    // 点组头折叠：桶内任务与再显示入口全部隐藏。
+ // 点组头折叠：桶内任务与再显示入口全部隐藏。
     await tester.tap(find.byKey(const ValueKey('home-group:recent:以前')));
     await tester.pump();
     expect(find.text('更早任务 0'), findsNothing, reason: '折叠时间桶隐藏任务');
@@ -431,7 +432,7 @@ void main() {
     );
     expect(find.text('今天任务'), findsOneWidget, reason: '今天档不受影响');
 
-    // 再点展开恢复。
+ // 再点展开恢复。
     await tester.tap(find.byKey(const ValueKey('home-group:recent:以前')));
     await tester.pump();
     expect(find.text('更早任务 0'), findsOneWidget);
@@ -444,7 +445,7 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.pump();
 
-    // 项目B任务（跨项目：workspacePath=B ≠ 活动工作区A）。
+ // 项目B任务（跨项目：workspacePath=B ≠ 活动工作区A）。
     await tester.longPress(find.byKey(const ValueKey('cross-task-card-t2')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -452,7 +453,7 @@ void main() {
     expect(app.projectSwitches, 0,
         reason: 'Bug E：弹菜单零副作用（修前先切工作区→首页重建跳回最近）');
 
-    // 动作执行时才切（zcodeTask RPC 带所属工作区 scope）。
+ // 动作执行时才切（zcodeTask RPC 带所属工作区 scope）。
     await tester.tap(find.text('置顶'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -467,7 +468,7 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.pump();
 
-    // 长按 t1 → 菜单首项「选择任务」。
+ // 长按 t1 → 菜单首项「选择任务」。
     await tester.longPress(find.byKey(const ValueKey('cross-task-card-t1')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -476,10 +477,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // 多选栏出现；长按项自动入选（已选 1 个）。
+ // 多选栏出现；长按项自动入选（已选 1 个）。
     expect(find.byKey(const ValueKey('multi-select-bar')), findsOneWidget);
     expect(find.text('已选 1 个'), findsOneWidget);
-    // t1 行首=实心勾选圈（选中），t2=空心圈（未选）。
+ // t1 行首=实心勾选圈（选中），t2=空心圈（未选）。
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('cross-task-card-t1')),
@@ -495,14 +496,14 @@ void main() {
       findsOneWidget,
     );
 
-    // 多选模式下点按 t2=切换选中（不打开会话）。
+ // 多选模式下点按 t2=切换选中（不打开会话）。
     await tester.tap(find.byKey(const ValueKey('cross-task-card-t2')));
     await tester.pump();
     expect(find.text('已选 2 个'), findsOneWidget);
     expect(find.byType(ConversationPage), findsNothing,
         reason: '多选模式点行=切换选中，不进会话');
 
-    // 归档：18077 优化意见 F——先出二次确认，确认后才执行。
+ // 归档：优化意见 F——先出二次确认，确认后才执行。
     await tester.tap(find.byKey(const ValueKey('multi-archive')));
     await tester.pump();
     expect(find.text('归档选中的 2 个任务？'), findsOneWidget,
@@ -528,8 +529,8 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.pump();
 
-    // t1/t2 属当前工作区（fake 的 p1/p2 可达）；t3 在第三工作区不可切换，
-    // 批量语义见 _runBatchOp 的失败收集——本用例聚焦取消与标已读主路径。
+ // t1/t2 属当前工作区（fake 的 p1/p2 可达）；t3 在第三工作区不可切换，
+ // 批量语义见 _runBatchOp 的失败收集——本用例聚焦取消与标已读主路径。
     Future<void> enterVia(String id) async {
       await tester.longPress(find.byKey(ValueKey('cross-task-card-$id')));
       await tester.pump();
@@ -544,14 +545,14 @@ void main() {
     await tester.pump();
     expect(find.text('已选 2 个'), findsOneWidget);
 
-    // 取消：退出多选且不产生任何 RPC。
+ // 取消：退出多选且不产生任何 RPC。
     await tester.tap(find.byKey(const ValueKey('multi-cancel')));
     await tester.pump();
     expect(find.byKey(const ValueKey('multi-select-bar')), findsNothing);
     expect(app.markedReadIds, isEmpty);
     expect(app.archivedIds, isEmpty);
 
-    // 再次进入并批量标已读（同款二次确认）。
+ // 再次进入并批量标已读（同款二次确认）。
     await enterVia('t1');
     await tester.tap(find.byKey(const ValueKey('multi-mark-read')));
     await tester.pump();

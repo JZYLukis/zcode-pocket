@@ -20,7 +20,7 @@ import 'cache_policy.dart';
 class LocalCacheStore {
   LocalCacheStore(this.baseDir);
 
-  /// 生产工厂：path_provider 应用支持目录（不进用户可见文件区）。
+ /// 生产工厂：path_provider 应用支持目录（不进用户可见文件区）。
   static Future<LocalCacheStore> createDefault() async {
     final dir = await getApplicationSupportDirectory();
     final root = Directory('${dir.path}${Platform.pathSeparator}local-cache');
@@ -29,9 +29,9 @@ class LocalCacheStore {
     return LocalCacheStore(root);
   }
 
-  /// P3-1/E2-P3-1/E3-P3-4：崩溃残留 .tmp（write 与 rename
-  /// 之间进程死亡，唯一后缀会逐次累积且不被 _evict/removeDevice 覆盖）
-  /// 启动时顺手清扫；失败不阻塞启动。
+ /// /E2-/E3-：崩溃残留 .tmp（write 与 rename
+ /// 之间进程死亡，唯一后缀会逐次累积且不被 _evict/removeDevice 覆盖）
+ /// 启动时顺手清扫；失败不阻塞启动。
   static Future<void> _sweepTmp(Directory root) async {
     try {
       if (!await root.exists()) return;
@@ -41,7 +41,7 @@ class LocalCacheStore {
         }
       }
     } on Object {
-      // 清扫失败不阻塞启动。
+ // 清扫失败不阻塞启动。
     }
   }
 
@@ -59,11 +59,11 @@ class LocalCacheStore {
     '${baseDir.path}${Platform.pathSeparator}device',
   );
 
-  /// 跨设备目录安全名：sid 含非法路径字符时做哈希（正常 sid 是
-  /// hex/uuid，这里只是防御）。P3-3/E3-P3-5：String.hashCode
-  /// 跨执行稳定性无语言保证且碰撞无防护——换确定性 fnv1a-64 + 长度
-  /// 前缀（消除短串拼接碰撞维度）。存量目录漂移面≈0（防御路径，真实
-  /// sid 全过正则）。
+ /// 跨设备目录安全名：sid 含非法路径字符时做哈希（正常 sid 是
+ /// hex/uuid，这里只是防御）。/E3-：String.hashCode
+ /// 跨执行稳定性无语言保证且碰撞无防护——换确定性 fnv1a-64 + 长度
+ /// 前缀（消除短串拼接碰撞维度）。存量目录漂移面≈0（防御路径，真实
+ /// sid 全过正则）。
   String _safe(String name) {
     final ok = RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(name);
     if (ok) return name;
@@ -84,7 +84,7 @@ class LocalCacheStore {
     '${_devicesRoot.path}${Platform.pathSeparator}${_safe(deviceSid)}.json',
   );
 
-  // ------------------------------------------------------------- sessions
+ // ------------------------------------------------------------- sessions
 
   Future<SessionCacheEntry?> readSession(String deviceSid, String sessionId) async {
     if (_closed) return null;
@@ -98,18 +98,18 @@ class LocalCacheStore {
     }
   }
 
-  /// 写会话条目（原子替换）+ 淘汰执行。byteSize 在此处测量一次并写回
-  /// 条目（淘汰记账用真值，不信调用方；byteSize 不含自身字段 ~15B，
-  /// 淘汰决策走 stat.size 真值，此处仅参考——E1-P3-5 注）。
+ /// 写会话条目（原子替换）+ 淘汰执行。byteSize 在此处测量一次并写回
+ /// 条目（淘汰记账用真值，不信调用方；byteSize 不含自身字段 ~15B，
+ /// 淘汰决策走 stat.size 真值，此处仅参考——E1- 注）。
   Future<void> writeSession(SessionCacheEntry entry) async {
     if (_closed) return;
     try {
-      // P2-1：序列化全部在首个 await 之前完成——rows 与
-      // snapshotControl 若是调用方的活引用（capRows ≤上限时返回原列表、
-      // 控制块浅拷贝），await（dir.create）窗口内到达的新回合会把
-      // seq=N+1 的行混进"lastSeq=N"的一致水位条目（恢复种子重复行），
-      // 且 >200 行会话走 sublist 拷贝不受影响=同机制行为不一致。编码
-      // 产物是不可变 String，窗口内变更不再渗入。
+ // 序列化全部在首个 await 之前完成——rows 与
+ // snapshotControl 若是调用方的活引用（capRows ≤上限时返回原列表、
+ // 控制块浅拷贝），await（dir.create）窗口内到达的新回合会把
+ // seq=N+1 的行混进"lastSeq=N"的一致水位条目（恢复种子重复行），
+ // 且 >200 行会话走 sublist 拷贝不受影响=同机制行为不一致。编码
+ // 产物是不可变 String，窗口内变更不再渗入。
       var payload = entry.toJson();
       final bytes = utf8.encode(jsonEncode(payload)).length;
       payload = {...payload, 'byteSize': bytes};
@@ -123,7 +123,7 @@ class LocalCacheStore {
     }
   }
 
-  // -------------------------------------------------------------- device
+ // -------------------------------------------------------------- device
 
   Future<DeviceCacheEntry?> readDevice(String deviceSid) async {
     if (_closed) return null;
@@ -137,9 +137,9 @@ class LocalCacheStore {
     }
   }
 
-  /// 写设备条目（原子替换）。返回是否写成功——：
-  /// 内部仍容错不抛（缓存永不阻塞主流程），但调用方需要真实结果来
-  /// 决定指纹记账（写失败时同内容必须能在下轮重试，而非被去重锁死）。
+ /// 写设备条目（原子替换）。返回是否写成功——：
+ /// 内部仍容错不抛（缓存永不阻塞主流程），但调用方需要真实结果来
+ /// 决定指纹记账（写失败时同内容必须能在下轮重试，而非被去重锁死）。
   Future<bool> writeDevice(DeviceCacheEntry entry) async {
     if (_closed) return false;
     try {
@@ -152,9 +152,9 @@ class LocalCacheStore {
     }
   }
 
-  // -------------------------------------------------------------- cleanup
+ // -------------------------------------------------------------- cleanup
 
-  /// 配对删除：档案移除时清该设备全部条目（会话目录+设备文件）。
+ /// 配对删除：档案移除时清该设备全部条目（会话目录+设备文件）。
   Future<void> removeDevice(String deviceSid) async {
     if (_closed) return;
     try {
@@ -173,10 +173,10 @@ class LocalCacheStore {
 
   bool _closed = false;
 
-  // -------------------------------------------------------------- private
+ // -------------------------------------------------------------- private
 
   Future<void> _atomicWrite(File file, String content) async {
-    // 批次 2：.tmp 带唯一后缀（同名互踩的防御性消除，成本≈0）。
+ // 批次 2：.tmp 带唯一后缀（同名互踩的防御性消除，成本≈0）。
     final tmp = File('${file.path}.${_tmpSeq++}.tmp');
     await tmp.writeAsString(content, flush: true);
     await tmp.rename(file.path);
@@ -184,8 +184,8 @@ class LocalCacheStore {
 
   int _tmpSeq = 0;
 
-  /// 淘汰：枚举全部会话条目元信息（文件 mtime/size 即记账真值）→
-  /// cache_policy.evictSessions → 删除。
+ /// 淘汰：枚举全部会话条目元信息（文件 mtime/size 即记账真值）→
+ /// cache_policy.evictSessions → 删除。
   Future<void> _evict() async {
     try {
       final root = _sessionsRoot;
@@ -253,12 +253,14 @@ class SessionCacheWriter {
     _state = null;
   }
 
-  /// 立即落盘（demote/关闭前）：不一致水位（流式中）则跳过——中间态
-  /// 永不落盘，宁可少一次更新。
+ /// 立即落盘（demote/关闭前）：不一致水位（流式中）则跳过——中间态
+ /// 永不落盘，宁可少一次更新。
   Future<void> flush() async {
     final state = _state;
     if (state == null || !_atConsistentWatermark(state)) return;
-    await _write(state);
+ // （D-8 ）：flush 跳水位去重——乐观变更（不递增 seq）在
+ // 定时写里被水位拦下，demote/close 的 flush 是最后落盘机会，必须强制写。
+    await _write(state, force: true);
   }
 
   void _onChanged() => _schedule();
@@ -281,36 +283,36 @@ class SessionCacheWriter {
     });
   }
 
-  Future<void> _write(ConversationState state) async {
+  Future<void> _write(ConversationState state, {bool force = false}) async {
     if (_writing) {
-      // B2（2026-10-19 审查）：在途写期间又到一致水位快照（如 debounce
-      // 写进行中来了 flush）——原实现静默跳过，落盘停留在旧快照。排队
-      // 补写：当前写完成后用最新状态再写一次（防饿死：补写无条件触发，
-      // 仅水位不一致时按设计跳过中间态）。
+ // B2（2026-10-19 审查）：在途写期间又到一致水位快照（如 debounce
+ // 写进行中来了 flush）——原实现静默跳过，落盘停留在旧快照。排队
+ // 补写：当前写完成后用最新状态再写一次（防饿死：补写无条件触发，
+ // 仅水位不一致时按设计跳过中间态）。
       _pendingAfterWrite = true;
       return;
     }
     _writing = true;
     try {
       final (capFirstRowId, rows) = capRows(state.rows);
-      // P3-3：水位未动（logEpoch/seq/条数/游标一致）则免写
-      // ——重开已完成会话时 attach 排的 3s 定时器会把与盘上相同的快照
-      // 原样重写一遍（设备缓存有内容指纹去重，会话缓存此前没有）。
-      // 水位一致即内容一致（delta 必推 seq；快照重放同 seq 同形状），
-      // 控制块随水位定格。
+ // 水位未动（logEpoch/seq/条数/游标一致）则免写
+ // ——重开已完成会话时 attach 排的 3s 定时器会把与盘上相同的快照
+ // 原样重写一遍（设备缓存有内容指纹去重，会话缓存此前没有）。
+ // 水位一致即内容一致（delta 必推 seq；快照重放同 seq 同形状），
+ // 控制块随水位定格。
       final watermark = (
         logEpoch: state.logEpoch ?? '',
         seq: state.seq,
         totalCount: state.totalCount,
         firstRowId: capFirstRowId ?? state.firstRowId ?? -1,
       );
-      if (_lastPersisted == watermark) return;
+      if (!force && _lastPersisted == watermark) return;
       final snap = state.snapshot;
       Map<String, dynamic>? control;
       if (snap != null) {
-        // 完整控制块原样保存（含 pendingInteractions）——订阅种子必须与
-        // base 水位时刻的真状态严格一致（官方水位不变量），清洗只允许
-        // 发生在页面预渲层。
+ // 完整控制块原样保存（含 pendingInteractions）——订阅种子必须与
+ // base 水位时刻的真状态严格一致（官方水位不变量），清洗只允许
+ // 发生在页面预渲层。
         control = Map<String, dynamic>.of(snap)..remove('rows');
       }
       await store.writeSession(SessionCacheEntry(
@@ -329,7 +331,7 @@ class SessionCacheWriter {
         '[cache] session saved ${_shortSid(sessionId)}: '
         'rows=${rows.length} epoch=${state.logEpoch} seq=${state.seq}',
       );
-      // 成功落盘才记水位（失败路径不记，同水位下轮重试）。
+ // 成功落盘才记水位（失败路径不记，同水位下轮重试）。
       _lastPersisted = watermark;
     } on Object catch (e) {
       onLog('[cache] session write failed (contained): $e');

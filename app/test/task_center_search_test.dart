@@ -26,8 +26,8 @@ class _SearchApp extends AppState {
   LinkPhase get phase => LinkPhase.online;
   @override
   ConversationTransport get conversation => _FakeConversation();
-  /// 服务器搜索/任务卡守卫的判据是 bridge（三轮审查 D2 M-1 改判）——
-  /// fake 须覆写非空桥，否则测试误判离线。
+ /// 服务器搜索/任务卡守卫的判据是 bridge（三轮审查 D2 M-1 改判）——
+ /// fake 须覆写非空桥，否则测试误判离线。
   @override
   BridgeSession get bridge => _FakeBridge();
   @override
@@ -178,7 +178,7 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    // 主页跨工作区行（ws-b 的 t2）长按 → 动作菜单。
+ // 主页跨工作区行（ws-b 的 t2）长按 → 动作菜单。
     await tester.longPress(find.text('另一个任务'));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -187,8 +187,8 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    // 修复前：归档是菜单里唯一绕过 run()（ensureContext 归属护栏）的
-    // 动作——跨工作区任务直发会把当前工作区 scope 打偏。
+ // 修复前：归档是菜单里唯一绕过 run()（ensureContext 归属护栏）的
+ // 动作——跨工作区任务直发会把当前工作区 scope 打偏。
     expect(app.log, ['switch:ws-b', 'archive:t2'],
         reason: '归档必须与同菜单其余动作一样先走归属护栏');
   });
@@ -201,7 +201,8 @@ class _ArchiveOrderApp extends _SearchApp {
   final List<String> log = [];
 
   @override
-  Future<void> switchWorkspace(Map<String, dynamic> workspace) async {
+  Future<void> switchWorkspace(Map<String, dynamic> workspace,
+      {bool keepHomePreview = false}) async {
     log.add('switch:${workspace['workspaceIdentity']}');
   }
 

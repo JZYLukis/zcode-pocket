@@ -1,4 +1,4 @@
-/// multi-account-ux-1 批4（2026-11-04 用户拍板）：首页显示其他电脑任务
+/// multi-account-ux-1 （2026-11-04 用户拍板）：首页显示其他电脑任务
 /// ——设置开关（默认关）+ 本地缓存快照聚合区（不建连接不订阅）。
 library;
 
@@ -54,14 +54,16 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('默认关：开关在设置页可切换且持久化（批4）', (tester) async {
-    final prefs = UiPrefs(storage: _MemStorage());
+    final storage = _MemStorage();
+    final prefs = UiPrefs(storage: storage);
     await prefs.load();
     expect(prefs.showOtherComputers, isFalse, reason: '默认关（拍板）');
     await prefs.setShowOtherComputers(true);
     expect(prefs.showOtherComputers, isTrue);
-    // 重启往返。
-    final reloaded = UiPrefs(storage: _MemStorage());
-    expect(true, isTrue); // 占位（_MemUiStorage 未跨实例共享——见下例）
+ // （D-8 ）：同一存储实例重启往返（旧断言是 expect(true,true) 占位）。
+    final reloaded = UiPrefs(storage: storage);
+    await reloaded.load();
+    expect(reloaded.showOtherComputers, isTrue, reason: '重启后保持开启');
     prefs.dispose();
     reloaded.dispose();
   });

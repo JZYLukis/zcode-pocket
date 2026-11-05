@@ -13,7 +13,7 @@ import 'package:zcode_pocket/ui/subagents_page.dart';
 /// 内置/插件子智能体的「模型/思考档覆盖」：官方语义=只读档案不开放全
 /// 字段编辑，开放行内模型/effort 覆盖（SubagentsSection
 /// supportsModelOverride 对位；写用户级 agents-state，null=清除）。
-/// 18074 验收④重排：弹层+保存钮→两只行内下拉 chip 即改即存（官方
+/// 验收④重排：弹层+保存钮→两只行内下拉 chip 即改即存（官方
 /// SubagentModelOverrideControl 对位）。断言：内置/插件行选模型/思考档
 /// /继承默认的通道载荷正确；官方门（仅 general-purpose/Explore+插件）；
 /// 自定义行照旧全量编辑。
@@ -22,7 +22,7 @@ class _OverrideChannel extends ChannelClient {
   _OverrideChannel() : super(sendBody: (_) {});
 
   final calls = <(String, Map<String, dynamic>)>[];
-  // 按 agentId 记覆盖（保存后下一次 list 带回，模拟官方 list 投影）。
+ // 按 agentId 记覆盖（保存后下一次 list 带回，模拟官方 list 投影）。
   final overridesById = <String, Map<String, dynamic>?>{};
 
   Map<String, dynamic> _agent(
@@ -51,6 +51,9 @@ class _OverrideChannel extends ChannelClient {
     switch (method) {
       case 'list':
         return {
+ // 宿主真实形态（subagentsService list=allRuntimeScopes）：agents
+ // 是运行时投影，canonical 插件条目也在其中；pluginAgents 才是
+ // 一文件一条的插件投影——直接双渲染即真机 8 卡重复事故。
           'agents': [
             _agent(
               'builtin-general-purpose',
@@ -60,6 +63,13 @@ class _OverrideChannel extends ChannelClient {
               override: overridesById['builtin-general-purpose'],
             ),
             _agent('builtin-code-reviewer', 'code-reviewer', 'built-in', 'built-in'),
+            _agent(
+              'plugin:demo:helper',
+              'demo:helper',
+              'plugin',
+              'plugin',
+              override: overridesById['plugin:demo:helper'],
+            ),
           ],
           'pluginAgents': [
             _agent(
@@ -181,7 +191,7 @@ Future<void> _pump(WidgetTester tester, _OverrideApp app) async {
   }
 }
 
-/// 18077 验收#17（P 重排）：覆盖下拉在点行展开区内——调用方先显式
+/// 验收#17（P 重排）：覆盖下拉在点行展开区内——调用方先显式
 /// 展开所属行（tap rowKey），本助手只负责点下拉+选菜单项。
 Future<void> _expandRow(WidgetTester tester, Key rowKey) async {
   await tester.tap(find.byKey(rowKey));
@@ -218,8 +228,8 @@ void main() {
     await _pump(tester, app);
     final channel = (app.bridge as _OverrideBridge).channel;
 
-    // 18077 验收#17（P 重排）：覆盖下拉默认收起（点行展开）；非目标行
-    // 展开后也没有。
+ // 验收#17（P 重排）：覆盖下拉默认收起（点行展开）；非目标行
+ // 展开后也没有。
     expect(
       find.byKey(const ValueKey('override-model-builtin-general-purpose')),
       findsNothing,
@@ -285,7 +295,7 @@ void main() {
         .firstWhere((c) => c.$1 == 'setPluginAgentModelOverride');
     expect(pluginCall.$2['agentId'], 'plugin:demo:helper');
 
-    // 思考档：有模型基后可选，随 options.reasoningLevel 下发。
+ // 思考档：有模型基后可选，随 options.reasoningLevel 下发。
     await _pick(
       tester,
       const ValueKey('override-thought-plugin:demo:helper'),
@@ -296,7 +306,7 @@ void main() {
       'reasoningLevel': 'high',
     });
 
-    // 继承默认=清除覆盖（modelSelection: null）。
+ // 继承默认=清除覆盖（modelSelection: null）。
     await _pick(
       tester,
       const ValueKey('override-model-plugin:demo:helper'),
@@ -328,5 +338,31 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.text('编辑子智能体'), findsOneWidget, reason: '自定义行照旧打开全量编辑器');
+  });
+
+ // 真机 2026-11-05 反馈②：4 个 *:visual-judge 在「内置」与「插件」组
+ // 整组重复 8 张卡。根因=宿主 agents（运行时投影含插件 canonical）与
+ // pluginAgents 双渲染；官方 projectSettingsSubagents 滤 source=plugin。
+  testWidgets('插件条目只出现一次：内置组滤掉 source=plugin，插件组照常', (
+    tester,
+  ) async {
+    final app = _OverrideApp();
+    await _pump(tester, app);
+
+    expect(
+      find.byKey(const ValueKey('subagent-plugin:demo:helper')),
+      findsOneWidget,
+      reason: '插件条目仅插件组一张卡（修复前 agents+pluginAgents 双渲染=两卡同 key）',
+    );
+    expect(
+      find.text('内置 (2)'),
+      findsOneWidget,
+      reason: '内置组计数只含真内置两条（修复前 agents 含插件=3）',
+    );
+    expect(
+      find.text('插件 (1)'),
+      findsOneWidget,
+      reason: '插件组计数照常',
+    );
   });
 }

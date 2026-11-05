@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart' hide Text;
 
+import '../core/payload_guard.dart';
 import '../core/localized_text.dart';
 import '../core/theme.dart';
 import '../transport/conversation.dart';
@@ -113,9 +114,9 @@ List<ConversationSearchMatch> buildConversationSearchMatches(
   List<ChatItem> items,
   String query,
 ) {
-  // B2-P2-4/D2-08：长度稳定折叠——İ 等扩长字符会使折叠串
-  // 下标漂移（snippet 切原串错位/极端越界），命中下标必须落在原串
-  // 坐标系（与 buildSearchHighlightSpans 同源 foldCaseStable）。
+ // /：长度稳定折叠——İ 等扩长字符会使折叠串
+ // 下标漂移（snippet 切原串错位/极端越界），命中下标必须落在原串
+ // 坐标系（与 buildSearchHighlightSpans 同源 foldCaseStable）。
   final needle = foldCaseStable(query.trim());
   if (needle.isEmpty) return const [];
   final matches = <ConversationSearchMatch>[];
@@ -128,10 +129,10 @@ List<ConversationSearchMatch> buildConversationSearchMatches(
       _ => const <Map<String, dynamic>>[],
     };
     final turnId = item is TurnBarItem
-        ? (item.work.header?['rowId'] as num?)?.toInt()
+        ? intOf(item.work.header?['rowId'])
         : null;
     for (final row in rows) {
-      final rowId = (row['rowId'] as num?)?.toInt();
+      final rowId = intOf(row['rowId']);
       final kind = _searchKindOf(row);
       final source = _searchTextOf(row);
       if (rowId == null || rowId < 0 || kind == null || source == null) {
@@ -315,9 +316,9 @@ class ConversationSearchController {
     unawaited(pumpHistory());
   }
 
-  /// 定位实际开始（页面守卫通过后）才标记已定位——先标记会让
-  /// pumpHistory 的补定位条件（locatedIdentity==null）永久失效
-  ///（独立复核低 1：列表未挂载时首个命中不再自动滚入）。
+ /// 定位实际开始（页面守卫通过后）才标记已定位——先标记会让
+ /// pumpHistory 的补定位条件（locatedIdentity==null）永久失效
+ ///（独立复核低 1：列表未挂载时首个命中不再自动滚入）。
   void markLocated(ConversationSearchMatch match) {
     locatedIdentity = match.identity;
   }
@@ -492,8 +493,8 @@ class ConversationSearchBar extends StatelessWidget {
                       color: context.colors.foregroundSubtle,
                     ),
                   ),
-                // 18077 审美门建议②：可见图形放大（arrow 图形稀疏视觉
-                // 偏小——28/24 进 40dp 可见档；隐性触控面 48 不变）。
+ // 审美门建议②：可见图形放大（arrow 图形稀疏视觉
+ // 偏小——28/24 进 40dp 可见档；隐性触控面 48 不变）。
                 IconButton(
                   key: const ValueKey('conversation-search-previous'),
                   onPressed: matches.isEmpty ? null : onPrevious,
@@ -525,9 +526,9 @@ class ConversationSearchBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppType.uiXs,
                         fontWeight: FontWeight.w600,
-                        // 18077 验收#11（I）：accent 深色档=近黑深藏青
-                        // （0xFF001D3D）叠深色 header 上几乎不可见——
-                        // 改品牌蓝（浅 #134CFF/深 #4099FF，两档可读）。
+ // 验收#11（I）：accent 深色档=近黑深藏青
+ // （0xFF001D3D）叠深色 header 上几乎不可见——
+ // 改品牌蓝（浅 #134CFF/深 #4099FF，两档可读）。
                         color: context.colors.brandAccent,
                       ),
                     ),

@@ -1,4 +1,4 @@
-// H11 窄修红绿（2026-10-25 批①，用户拍板"只修手动收起"）：
+// H11 窄修红绿（2026-10-25 ，用户拍板"只修手动收起"）：
 // 运行中手动收起的回合，完成边沿不得按"末轮默认展开"强行弹开——
 // "手动收起不变"承诺的补落地。动态路径（区别于既有静态首帧
 // 夹具）：真 ConversationState + applySeed 推演，先点收起再推完成帧。
@@ -38,10 +38,10 @@ class _LiveSub implements ConversationSubscription {
     ));
   }
 
-  /// 时序对齐生产（每步之间必须真实泵帧，同步重播种会被合并构建）：
-  /// ①同内容重播种→壳脱落（一次性结构重挂，State 重建）；
-  /// ②再推一帧运行中增量→重建后的 State 经 didUpdateWidget 置
-  /// _wasRunning（生产中流式帧天然完成此事）。
+ /// 时序对齐生产（每步之间必须真实泵帧，同步重播种会被合并构建）：
+ /// ①同内容重播种→壳脱落（一次性结构重挂，State 重建）；
+ /// ②再推一帧运行中增量→重建后的 State 经 didUpdateWidget 置
+ /// _wasRunning（生产中流式帧天然完成此事）。
   Future<void> primeRunning(
     WidgetTester tester,
     List<Map<String, dynamic>> rows,
@@ -64,8 +64,9 @@ class _LiveApp extends AppState {
 
   @override
   Future<ConversationSubscription> ensureConversation(
-    String sessionId,
-  ) async => sub;
+    String sessionId, {
+    Object? seedCacheEntry,
+  }) async => sub;
 }
 
 Widget _host(AppState app) => AppStateScope(
@@ -118,12 +119,12 @@ void main() {
 
     await sub.primeRunning(tester, _rows('running', 'running'));
 
-    // 运行中默认展开：两个工具行都可见。
+ // 运行中默认展开：两个工具行都可见。
     expect(find.textContaining('live-keep-a.dart'), findsWidgets);
     expect(find.textContaining('live-keep-b.dart'), findsWidgets);
 
-    // 用户点回合条收起（运行分支）：步骤全部收起（收起态=状态条+
-    // 外置正文，运行中尚无正文可显）。
+ // 用户点回合条收起（运行分支）：步骤全部收起（收起态=状态条+
+ // 外置正文，运行中尚无正文可显）。
     await tester.tap(find.textContaining('工作中').first);
     await _settle(tester);
     expect(
@@ -133,8 +134,8 @@ void main() {
     );
     expect(find.textContaining('live-keep-b.dart'), findsNothing);
 
-    // 完成帧到达（异常终态=failed 强开档）——H11：手动收起仍优先。
-    // 2026-10-26 语义下正常完成本就收起，failed 强开是唯一冲突档。
+ // 完成帧到达（异常终态=failed 强开档）——H11：手动收起仍优先。
+ // 2026-10-26 语义下正常完成本就收起，failed 强开是唯一冲突档。
     sub.reseed(_rows('failed', 'success'), phase: 'idle');
     await _settle(tester);
     expect(

@@ -98,12 +98,12 @@ class WorkspaceController {
         client.relay.stateListenable.removeListener(listener);
         if (_disposedProvider() || !identical(_clientProvider(), client)) return;
         _ensureWorkspaceListSubscription(client);
-        // J3 P1-3/J2 P2-3：与 prepareBootstrap 同款先设置
-        // _lastOpenAction——本路径（waitPaired 90s 超时后配对）此前从未
-        // 设置，bootstrap 一旦失败（RPC 超时/桌面无响应）：
-        // ①maybeScheduleWorkspaceRedrive 的 action==null 闸直接空转，
-        //   redrive 自愈链在这条路径上不存在（paired+无桥永久死端）；
-        // ②unawaited 无 catch，异常仅被全局 onError 记日志。
+ // J3 /J2 ：与 prepareBootstrap 同款先设置
+ // _lastOpenAction——本路径（waitPaired 90s 超时后配对）此前从未
+ // 设置，bootstrap 一旦失败（RPC 超时/桌面无响应）：
+ // ①maybeScheduleWorkspaceRedrive 的 action==null 闸直接空转，
+ // redrive 自愈链在这条路径上不存在（paired+无桥永久死端）；
+ // ②unawaited 无 catch，异常仅被全局 onError 记日志。
         _lastOpenAction = () async {
           if (_disposedProvider() || !identical(_clientProvider(), client)) {
             return;
@@ -125,11 +125,11 @@ class WorkspaceController {
   void onRelayState() {
     if (_disposedProvider()) return;
     if (_clientProvider()?.relay.state == RelayState.paired) {
-      // paired 边沿不清退避计数（ J1-10）：退避设计为 3s×10→30s，
-      // 但 relay 每次重配对都把 _redriveAttempt 清零——relay 自身抖动
-      // （paired↔reconnecting）+桥打不开组合下重驱动固定 3s 一锤，退避
-      // 失效（既打桌面又刷日志）。清零只发生在成功开栈处
-      // （openActiveWorkspace 收尾）。
+ // paired 边沿不清退避计数：退避设计为 3s×10→30s，
+ // 但 relay 每次重配对都把 _redriveAttempt 清零——relay 自身抖动
+ // （paired↔reconnecting）+桥打不开组合下重驱动固定 3s 一锤，退避
+ // 失效（既打桌面又刷日志）。清零只发生在成功开栈处
+ // （openActiveWorkspace 收尾）。
       maybeScheduleWorkspaceRedrive();
     }
     _onNotify();
@@ -204,9 +204,9 @@ class WorkspaceController {
   }
 
   Future<void> bootstrapWorkspace(CompanionClient client) async {
-    // 断线批（2026-10-26 D1）并发守卫：重驱动与 _startBootstrapWhenPaired
-    // 监听会在同一 paired 边沿各自调用本函数——B3 的守卫只挡"已完成"，
-    // 挡不住两个在飞 bootstrap 各开一个桥（B3 原始病灶）。在飞互斥。
+ // 断线批（2026-10-26 D1）并发守卫：重驱动与 _startBootstrapWhenPaired
+ // 监听会在同一 paired 边沿各自调用本函数——B3 的守卫只挡"已完成"，
+ // 挡不住两个在飞 bootstrap 各开一个桥（B3 原始病灶）。在飞互斥。
     if (_bootstrapInFlight) {
       _onLog('[workspace] bootstrap skipped: another bootstrap in flight');
       return;
@@ -220,27 +220,27 @@ class WorkspaceController {
   }
 
   Future<void> _doBootstrapWorkspace(CompanionClient client) async {
-    // J1-3/J3 P2-1：bootstrap 的多个 await（bootstrap/
-    // listWorkspaces/restore-miss 2s 重试）窗口内用户可能已手动切换工作
-    // 区——尾部无条件 switchWorkspace(target) 会拆掉用户刚开的桥、把
-    // 选择反向跳回恢复目标。进入时快照 epoch，收尾前校验仍一致才重放。
+ // /J3 ：bootstrap 的多个 await（bootstrap/
+ // listWorkspaces/restore-miss 2s 重试）窗口内用户可能已手动切换工作
+ // 区——尾部无条件 switchWorkspace(target) 会拆掉用户刚开的桥、把
+ // 选择反向跳回恢复目标。进入时快照 epoch，收尾前校验仍一致才重放。
     final epochAtStart = _switchEpoch;
     _onBootstrapStarted();
-    // B3 加固（2026-10-16 夜）：bootstrap 只负责"从零建立工作区栈"。
-    // 已有活跃工作区时禁止重跑——waitPaired 超时路径注册的
-    // _startBootstrapWhenPaired 监听与 relay 恢复路径（bridge recovery）
-    // 会在一次真实断线后同时触发，两条路径各开一个 bridge 互相打架，
-    // 实测桥接工作区在两个值之间摆动（真机实录）。恢复期由
-    // 桥恢复路径独占负责（订阅层自动重订阅）。
+ // B3 加固（2026-10-16 夜）：bootstrap 只负责"从零建立工作区栈"。
+ // 已有活跃工作区时禁止重跑——waitPaired 超时路径注册的
+ // _startBootstrapWhenPaired 监听与 relay 恢复路径（bridge recovery）
+ // 会在一次真实断线后同时触发，两条路径各开一个 bridge 互相打架，
+ // 实测桥接工作区在两个值之间摆动（真机实录）。恢复期由
+ // 桥恢复路径独占负责（订阅层自动重订阅）。
     if (activeWorkspace != null && _bridge != null) {
       _onLog('[workspace] bootstrap skipped: workspace already active');
       return;
     }
     final boot = await client.bootstrap();
     if (_disposedProvider() || !identical(_clientProvider(), client)) return;
-    // 软转型+漂移留痕（ J3 P3-5）：桌面回非 String（num/map）时
-    // 硬 `as String?` 抛 TypeError 直接炸掉 bootstrap（随后进 redrive 循环
-    // 重试同败）；类型漂移打日志可见（本文件载荷防御惯例）。
+ // 软转型+漂移留痕（J3 ）：桌面回非 String（num/map）时
+ // 硬 `as String?` 抛 TypeError 直接炸掉 bootstrap（随后进 redrive 循环
+ // 重试同败）；类型漂移打日志可见（本文件载荷防御惯例）。
     final bootVersion = boot['desktopAppVersion'];
     if (bootVersion != null && bootVersion is! String) {
       _onLog(
@@ -273,9 +273,9 @@ class WorkspaceController {
     }
 
     var target = restoreTarget(workspaces);
-    // 病B复发（真机实录）：boot 首份列表可能不含 restoreKey 指向
-    // 的工作区 → 落到 default，用户被迫手切。未命中且有恢复键时重拉
-    // 一次列表再匹配（2s 给桌面 workspace-list 同步窗口）。
+ // 病B复发（真机实录）：boot 首份列表可能不含 restoreKey 指向
+ // 的工作区 → 落到 default，用户被迫手切。未命中且有恢复键时重拉
+ // 一次列表再匹配（2s 给桌面 workspace-list 同步窗口）。
     if (target == null &&
         _profileProvider().lastWorkspaceKey != null &&
         workspaces.isNotEmpty) {
@@ -307,7 +307,13 @@ class WorkspaceController {
     await switchWorkspace(target);
   }
 
-  Future<void> switchWorkspace(Map<String, dynamic> workspace) async {
+ /// [keepHomePreview]（2026-11-05 反馈②A）：跨工作区打开任务时为
+ /// true——切桥窗口保首页旧列表（SWR 式防闪）；其余调用方默认 false
+ /// 保持 J2 清残留语义。
+  Future<void> switchWorkspace(
+    Map<String, dynamic> workspace, {
+    bool keepHomePreview = false,
+  }) async {
     final client = _clientProvider();
     final key = workspaceKeyOf(workspace);
     if (client == null || key == null) return;
@@ -322,7 +328,11 @@ class WorkspaceController {
         !identical(_clientProvider(), client) ||
         epoch != _switchEpoch;
     _lastOpenAction = () => switchWorkspace(workspace);
-    await close(awaitCacheWrites: false, invalidateInFlightOpens: false);
+    await close(
+      awaitCacheWrites: false,
+      invalidateInFlightOpens: false,
+      keepHomePreview: keepHomePreview,
+    );
     if (isGone()) return;
     activeWorkspace = workspace;
     _taskCatalog.explicitProjectId = null;
@@ -337,9 +347,9 @@ class WorkspaceController {
         } catch (e) {
           _onLog('[workspace] bridge open retry ($key): $e');
           await Future<void>.delayed(const Duration(seconds: 2));
-          // 二次重试前验 isGone（ J2 P2-2）：陈旧切换对旧键的
-          // 重开会被桌面拒绝，其迟到失败经外层 catch 污染新切换的错误
-          // 横幅；作废即弃（外层 catch 的 isGone 守卫收尾）。
+ // 二次重试前验 isGone（J2 ）：陈旧切换对旧键的
+ // 重开会被桌面拒绝，其迟到失败经外层 catch 污染新切换的错误
+ // 横幅；作废即弃（外层 catch 的 isGone 守卫收尾）。
           if (isGone()) throw StateError('switch superseded');
           return client.openBridge(key, timeout: const Duration(seconds: 60));
         }
@@ -347,7 +357,10 @@ class WorkspaceController {
     );
   }
 
-  Future<void> switchToProject(Map<String, dynamic> project) async {
+  Future<void> switchToProject(
+    Map<String, dynamic> project, {
+    bool keepHomePreview = false,
+  }) async {
     final client = _clientProvider();
     final id = '${project['id'] ?? ''}'.trim();
     if (client == null || id.isEmpty) return;
@@ -361,15 +374,15 @@ class WorkspaceController {
     final currentKey = workspaceKeyOf(activeWorkspace ?? const {});
     final atProjectRoot =
         currentKey != null && rootPathsOf(resolved).contains(currentKey);
-    // 幂等门桥意图核对（ J2 P2-4/J3 P3-7）：早退的前提是在桥的
-    // 「新建会话归属」与目标项目一致，否则就地选中是假象——
-    // - 任务桥（taskIntent 非空）：createSession 不回落，归属恒未归类；
-    //   未归类任务跑在项目根目录是常态，桥恰好占位项目根时旧门命中，
-    //   UI 显示已选项目 P 而新建会话落「任务」区；
-    // - 项目桥：归属=桥 projectIntent 的 projectId，多项目共享同一
-    //   root 时在桥 intent 属于另一项目，同理必须走完整切换换桥；
-    // - tab 桥：归属=root 直配回落（首个 roots 含当前键的项目），与
-    //   createSession 的 rootMatchedProjectId 同口径。
+ // 幂等门桥意图核对（J2 /J3 ）：早退的前提是在桥的
+ // 「新建会话归属」与目标项目一致，否则就地选中是假象——
+ // - 任务桥（taskIntent 非空）：createSession 不回落，归属恒未归类；
+ // 未归类任务跑在项目根目录是常态，桥恰好占位项目根时旧门命中，
+ // UI 显示已选项目 P 而新建会话落「任务」区；
+ // - 项目桥：归属=桥 projectIntent 的 projectId，多项目共享同一
+ // root 时在桥 intent 属于另一项目，同理必须走完整切换换桥；
+ // - tab 桥：归属=root 直配回落（首个 roots 含当前键的项目），与
+ // createSession 的 rootMatchedProjectId 同口径。
     String? effectiveBridgeProject() {
       final bridge = _bridge;
       if (bridge == null) return null;
@@ -403,7 +416,11 @@ class WorkspaceController {
         !identical(_clientProvider(), client) ||
         epoch != _switchEpoch;
     _lastOpenAction = () => switchToProject(project);
-    await close(awaitCacheWrites: false, invalidateInFlightOpens: false);
+    await close(
+      awaitCacheWrites: false,
+      invalidateInFlightOpens: false,
+      keepHomePreview: keepHomePreview,
+    );
     if (isGone()) return;
     final name = '${project['name'] ?? ''}'.trim();
     final intent = projectIntentOf(project);
@@ -476,7 +493,11 @@ class WorkspaceController {
     );
   }
 
-  Future<void> switchToTask(Map<String, dynamic> task, {String? label}) async {
+  Future<void> switchToTask(
+    Map<String, dynamic> task, {
+    String? label,
+    bool keepHomePreview = false,
+  }) async {
     final client = _clientProvider();
     final taskId = '${task['taskId'] ?? ''}'.trim();
     final key = taskOpenKey(task);
@@ -484,10 +505,10 @@ class WorkspaceController {
     if (workspaceKeyOf(activeWorkspace ?? const {}) == key &&
         _bridge != null &&
         _sessionsIndex != null) {
-      // 早退也刷新项目选中态（ J2 P2-5）：完整路径会按「未归类→
-      // 伪项目/否则 null+refreshActiveProject」重置，早退不刷则上一显式
-      // 选中滞留——「无项目对话」入口语义不生效（新建会话归属与草稿落
-      // 点标签仍显示旧项目）。
+ // 早退也刷新项目选中态（J2 ）：完整路径会按「未归类→
+ // 伪项目/否则 null+refreshActiveProject」重置，早退不刷则上一显式
+ // 选中滞留——「无项目对话」入口语义不生效（新建会话归属与草稿落
+ // 点标签仍显示旧项目）。
       final unclassified = isUnclassifiedTask(task);
       final desired = unclassified ? conversationsPseudoProjectId : null;
       final beforeExplicit = _taskCatalog.explicitProjectId;
@@ -510,7 +531,11 @@ class WorkspaceController {
         !identical(_clientProvider(), client) ||
         epoch != _switchEpoch;
     _lastOpenAction = () => switchToTask(task, label: label);
-    await close(awaitCacheWrites: false, invalidateInFlightOpens: false);
+    await close(
+      awaitCacheWrites: false,
+      invalidateInFlightOpens: false,
+      keepHomePreview: keepHomePreview,
+    );
     if (isGone()) return;
     var hostId = '${task['hostId'] ?? ''}'.trim();
     if (hostId.isEmpty) hostId = 'local';
@@ -557,11 +582,11 @@ class WorkspaceController {
     }
   }
 
-  /// openActiveWorkspace 代际（ P2）：快速 A→B→C 切换时陈旧
-  /// attempt 的 isGone 早退无条件复位 workspaceOpening 会偷走新 attempt
-  /// 的在飞标志（spinner 消失/redrive 闸门被放行→并发重开双桥）。
-  /// 进入时快照，早退复位只在代际未变（无新 open）时执行；新 attempt
-  /// 或 close 负责自己的收尾。
+ /// openActiveWorkspace 代际（P2）：快速 A→B→C 切换时陈旧
+ /// attempt 的 isGone 早退无条件复位 workspaceOpening 会偷走新 attempt
+ /// 的在飞标志（spinner 消失/redrive 闸门被放行→并发重开双桥）。
+ /// 进入时快照，早退复位只在代际未变（无新 open）时执行；新 attempt
+ /// 或 close 负责自己的收尾。
   int _openingGeneration = 0;
 
   Future<void> openActiveWorkspace(
@@ -578,19 +603,19 @@ class WorkspaceController {
     workspaceError = null;
     _onLog('[workspace] opening… $logKey (spinner on)');
     _onNotify();
-    // 本尝试挂上的 si 重试定时器（ J2 P2-1 后果③）：isGone 收尾
-    // 时按身份精确回收，不误伤后续尝试新挂的定时器（旧实现泄漏到下次
-    // close/重试成功，60s 周期空转）。
+ // 本尝试挂上的 si 重试定时器（J2 后果③）：isGone 收尾
+ // 时按身份精确回收，不误伤后续尝试新挂的定时器（旧实现泄漏到下次
+ // close/重试成功，60s 周期空转）。
     Timer? myRetryTimer;
     try {
       final bridge = await openWithRetry();
       if (isGone()) {
-        // isGone 早退必须复位 workspaceOpening（/J2）：
-        // 此前只有成功/失败两路复位，早退残留 true 会永久封死
-        // maybeScheduleWorkspaceRedrive 的闸门并让开屏 spinner 卡死。
-        // P2：复位加代际守卫——isGone 成立即可能有新 open 已
-        // 再次置 true，陈旧 attempt 不得偷走（spinner 消失/闸门放行
-        // →并发重开双桥）。
+ // isGone 早退必须复位 workspaceOpening（/J2）：
+ // 此前只有成功/失败两路复位，早退残留 true 会永久封死
+ // maybeScheduleWorkspaceRedrive 的闸门并让开屏 spinner 卡死。
+ // P2：复位加代际守卫——isGone 成立即可能有新 open 已
+ // 再次置 true，陈旧 attempt 不得偷走（spinner 消失/闸门放行
+ // →并发重开双桥）。
         if (openingStillMine()) workspaceOpening = false;
         bridge.dispose();
         return;
@@ -604,9 +629,9 @@ class WorkspaceController {
       if (workspace == null || key == null) {
         throw StateError('ready 桥载荷缺少 workspaceKey/workspacePath');
       }
-      // conv 局部引用（ J2 P2-1 后果①）：降级分支的 `_conv!`
-      // 在 si 订阅 await 窗口内可能被 close() 置空——空指针异常落外层
-      // catch 会把「Null check operator…」拼进用户横幅。
+ // conv 局部引用（J2 后果①）：降级分支的 `_conv!`
+ // 在 si 订阅 await 窗口内可能被 close() 置空——空指针异常落外层
+ // catch 会把「Null check operator…」拼进用户横幅。
       final conv = bridge.conversation(workspaceScopeOf(workspace), onLog: _onLog);
       _conv = conv;
       _onNotify();
@@ -642,9 +667,9 @@ class WorkspaceController {
             );
           }
         } else if (isRuntimeUnavailableError(e) || e is TimeoutException) {
-          // 降级分支入口先验 isGone（ J2 P2-1 后果②）：陈旧
-          // open 的降级晚于新 open 完成时会把新工作区的 siDormant 翻回
-          // true（假降级窗口最长 60s，靠泄漏定时器重订阅自愈）。
+ // 降级分支入口先验 isGone（J2 后果②）：陈旧
+ // open 的降级晚于新 open 完成时会把新工作区的 siDormant 翻回
+ // true（假降级窗口最长 60s，靠泄漏定时器重订阅自愈）。
           if (isGone()) {
             if (openingStillMine()) workspaceOpening = false; // 回测组1 P2：陈旧早退不得偷新 open 标志
             return;
@@ -668,6 +693,14 @@ class WorkspaceController {
           _siRetryTimer = null;
         }
         await sub.dispose();
+ // （D-8 ）：陈旧 open 已落位 _bridge/_conv——isGone 早退
+ // 必须按身份收尾，否则旧桥泄漏且 _conv 指向陈旧 transport（后续新
+ // 订阅可能挂到旧桥）。身份判等防误清新 open 已落位的桥。
+        if (identical(_bridge, bridge)) {
+          _bridge = null;
+          _conv = null;
+          bridge.dispose();
+        }
         return;
       }
       _sessionsIndex = sub;
@@ -689,32 +722,32 @@ class WorkspaceController {
       _onCacheWrite();
     } catch (e) {
       _onLog('open workspace failed: $e');
-      // 陈旧失败不覆盖新切换的状态（ J2 P2-2）：快速连续切换
-      // A→B 时 A 的迟到失败会把 B 健康态的 workspaceError 写脏（此后无
-      // 人再清，跨区打开因此误判「切换未完成」放弃开任务）——isGone
-      // 即弃权，也不碰 workspaceOpening（新切换的在飞标志归它自己管）。
+ // 陈旧失败不覆盖新切换的状态（J2 ）：快速连续切换
+ // A→B 时 A 的迟到失败会把 B 健康态的 workspaceError 写脏（此后无
+ // 人再清，跨区打开因此误判「切换未完成」放弃开任务）——isGone
+ // 即弃权，也不碰 workspaceOpening（新切换的在飞标志归它自己管）。
       if (isGone()) return;
-      // 半开栈收尾（ J1-11）：si 订阅抛非降级错误 rethrow 时
-      // _bridge/_conv 已落位而 _sessionsIndex 未建——redrive 闸以
-      // `_bridge != null` 为「已开」代理被挡，自动重驱动失效。视为失败
-      // 收尾：拆掉半开桥再调度（手动重试钮不受影响）。
+ // 半开栈收尾：si 订阅抛非降级错误 rethrow 时
+ // _bridge/_conv 已落位而 _sessionsIndex 未建——redrive 闸以
+ // `_bridge != null` 为「已开」代理被挡，自动重驱动失效。视为失败
+ // 收尾：拆掉半开桥再调度（手动重试钮不受影响）。
       if (_sessionsIndex == null && _bridge != null) {
         _bridge?.dispose();
         _bridge = null;
         _conv = null;
       }
       workspaceOpening = false;
-      // 原始异常串只进日志（上方 _onLog）；横幅走人话档（
-      // J1-12/J3 P3-3）。
+ // 原始异常串只进日志（上方 _onLog）；横幅走人话档
+ // /J3 ）。
       workspaceError = _workspaceOpenErrorMessage(e);
       _onNotify();
       maybeScheduleWorkspaceRedrive();
     }
   }
 
-  /// workspaceError 人话档（ J1-12/J3 P3-3）：原始异常（英文
-  /// 协议串/ChannelRpcError/Bad state 前缀）此前直拼进横幅。分档对齐
-  /// 会话层错误文案整改方向（超时/桥拒/桌面不在/其他）。
+ /// workspaceError 人话档（/J3 ）：原始异常（英文
+ /// 协议串/ChannelRpcError/Bad state 前缀）此前直拼进横幅。分档对齐
+ /// 会话层错误文案整改方向（超时/桥拒/桌面不在/其他）。
   String _workspaceOpenErrorMessage(Object e) {
     if (e is TimeoutException) {
       return '打开工作区超时：电脑未及时响应，请确认电脑端 ZCode 正在运行后重试';
@@ -741,8 +774,8 @@ class WorkspaceController {
 
   Future<void> retrySessionsIndex() async {
     if (_disposedProvider() || _siRetrying || !siDormant) return;
-    // C2 L1：conv 可能已被 close() 提前置空（关栈窗口）——局部非空
-    // 引用替代 `_conv!`，避免未捕获空指针（unawaited 定时器回调）。
+ // C2 L1：conv 可能已被 close() 提前置空（关栈窗口）——局部非空
+ // 引用替代 `_conv!`，避免未捕获空指针（unawaited 定时器回调）。
     final conv = _conv;
     if (conv == null) return;
     _siRetrying = true;
@@ -797,35 +830,36 @@ class WorkspaceController {
     }
   }
 
-  /// [invalidateInFlightOpens]=false 仅限三个 switch 入口（它们自身先
-  /// ++_switchEpoch 再调 close，作废的是"别人"的在飞打开）——外部关闭
-  /// （suspend/disposeStack，经 ComputerStack._closeWorkspaceStack）默认
-  /// 作废在飞 open，否则 close 的多段 await 窗口内 isGone 的 client 身份
-  /// 判定未变（suspend 清 _client 发生在 close 落地之后），在飞 open 会
-  /// 把 _bridge/_conv 写回即将释放的 client 上：半开栈复活，恢复期
-  /// bootstrap 被"已有桥"守卫跳过，假在线死链（ J1-2）。
+ /// [invalidateInFlightOpens]=false 仅限三个 switch 入口（它们自身先
+ /// ++_switchEpoch 再调 close，作废的是"别人"的在飞打开）——外部关闭
+ /// （suspend/disposeStack，经 ComputerStack._closeWorkspaceStack）默认
+ /// 作废在飞 open，否则 close 的多段 await 窗口内 isGone 的 client 身份
+ /// 判定未变（suspend 清 _client 发生在 close 落地之后），在飞 open 会
+ /// 把 _bridge/_conv 写回即将释放的 client 上：半开栈复活，恢复期
+ /// bootstrap 被"已有桥"守卫跳过，假在线死链。
   Future<void> close({
     bool awaitCacheWrites = true,
     bool invalidateInFlightOpens = true,
+    bool keepHomePreview = false,
   }) async {
     if (invalidateInFlightOpens) ++_switchEpoch;
-    // isGone 早退路径不复位 workspaceOpening（此前只有成功/失败两路
-    // 复位），残留 true 会永久封死 redrive 闸——close 统一
-    // 兜底复位；随后若有新 open 会自行重新置位。
+ // isGone 早退路径不复位 workspaceOpening（此前只有成功/失败两路
+ // 复位），残留 true 会永久封死 redrive 闸——close 统一
+ // 兜底复位；随后若有新 open 会自行重新置位。
     workspaceOpening = false;
     _cancelDeviceCacheWrite();
-    // 三轮审查 C2 L1：si 复活定时器取消与 siDormant 复位提到一切
-    // await 之前——否则 _conv 提前置空后，60s 定时器恰好落在后续
-    // flush/detach 的 await 窗口内时，retrySessionsIndex 会对 null
-    // conv 解引用（unawaited 未捕获异常）。
+ // 三轮审查 C2 L1：si 复活定时器取消与 siDormant 复位提到一切
+ // await 之前——否则 _conv 提前置空后，60s 定时器恰好落在后续
+ // flush/detach 的 await 窗口内时，retrySessionsIndex 会对 null
+ // conv 解引用（unawaited 未捕获异常）。
     _siRetryTimer?.cancel();
     _siRetryTimer = null;
     siDormant = false;
     await _conversationRegistry.close(awaitWrites: awaitCacheWrites);
-    // 对抗审查 M2：si dispose / detach 的 await 窗口内新发起的会话注册
-    // 会捕获已递增的 epoch 且 transport 仍是旧 conv（isStale 恒假）→
-    // 挂上即将 dispose 的桥。会话注册一关闭就先断 transport 引用，窗口
-    // 内的新注册直接走"no active workspace"失败。
+ // M2：si dispose / detach 的 await 窗口内新发起的会话注册
+ // 会捕获已递增的 epoch 且 transport 仍是旧 conv（isStale 恒假）→
+ // 挂上即将 dispose 的桥。会话注册一关闭就先断 transport 引用，窗口
+ // 内的新注册直接走"no active workspace"失败。
     _conv = null;
     await _flushDeviceCache(awaitWrites: awaitCacheWrites);
     final siSub = _sessionsIndex;
@@ -834,9 +868,13 @@ class WorkspaceController {
       beforeTasksIndexDispose: () async {
         await siSub?.dispose();
       },
+      keepHomePreview: keepHomePreview,
     );
     _bridge?.dispose();
     _bridge = null;
     activeWorkspace = null;
   }
+
+ /// 2026-11-05 反馈②A：打开失败时清保住的旧首页行（转发 TaskCatalog）。
+  void clearStaleHomePreview() => _taskCatalog.clearStaleHomePreview();
 }

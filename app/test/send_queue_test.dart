@@ -106,10 +106,10 @@ class _MemorySendQueueStore extends SendQueueStore {
     _data[bucket.key]?.removeWhere((e) => e.id == id);
   }
 
-  // 桶键格式耦合钉子：removeSession/removeDevice 按
-  // jsonEncode 数组的 [0]=deviceSid / [3]=scope 位置解析——这是生产
-  // SendQueueStore 的内部约定，此处复制了一份；键格式改动须同步此处
-  // （真存储纯逻辑组在同文件，格式漂移会让那边先红，此处旅程组是第二道）。
+ // 桶键格式耦合钉子：removeSession/removeDevice 按
+ // jsonEncode 数组的 [0]=deviceSid / [3]=scope 位置解析——这是生产
+ // SendQueueStore 的内部约定，此处复制了一份；键格式改动须同步此处
+ // （真存储纯逻辑组在同文件，格式漂移会让那边先红，此处旅程组是第二道）。
   @override
   Future<void> removeSession(String deviceSid, String sessionId) async {
     final scope = 'session:$sessionId';
@@ -166,17 +166,17 @@ class _QueueApp extends AppState {
   final SendQueueStore queueStore;
   BridgeSession? bridgeOverride;
 
-  /// 18076 反馈#6：模拟 relay 重连档（桥保留、链路断）。
+ /// 反馈#6：模拟 relay 重连档（桥保留、链路断）。
   bool reconnectingOverride = false;
-  /// 18077 验收#12：默认在线（无栈假体 super.phase=offline，而 drain
-  /// 现要求 online 才重放）；离线行为由 reconnectingOverride 显式模拟。
+ /// 验收#12：默认在线（无栈假体 super.phase=offline，而 drain
+ /// 现要求 online 才重放）；离线行为由 reconnectingOverride 显式模拟。
   bool onlineOverride = true;
   final sendTexts = <String>[];
   final sentCommandIds = <String?>[];
   var failNextSend = false;
 
-  /// A2-P1-2：createSession 闸门——挂起期间可模拟退页
-  ///（重放建会话的网络往返窗口）。
+ /// A2-：createSession 闸门——挂起期间可模拟退页
+ ///（重放建会话的网络往返窗口）。
   Completer<void>? createSessionGate;
 
   @override
@@ -193,7 +193,8 @@ class _QueueApp extends AppState {
   };
 
   @override
-  Future<ConversationSubscription> ensureConversation(String sessionId) async =>
+  Future<ConversationSubscription> ensureConversation(String sessionId,
+      {Object? seedCacheEntry}) async =>
       _QueueSub(sessionId);
 
   int createSessionCalls = 0;
@@ -332,14 +333,14 @@ void main() {
       expect(entries.map((x) => x.text), ['好条目']);
     });
 
-    // P2-2：close 只置 _closed 不等盘尾——dispose→进程退出
-    // 窗口里最后一次 add/remove 的落盘可丢。对齐 DraftStore.close（内部
-    // 先 await flush）。
+ // close 只置 _closed 不等盘尾——dispose→进程退出
+ // 窗口里最后一次 add/remove 的落盘可丢。对齐 DraftStore.close（内部
+ // 先 await flush）。
     test('close 先等盘尾写完成再关门（收尾不丢最后一次落盘）', () async {
       final file = File('${tmp.path}/q.json');
       final store = SendQueueStore(file);
       await store.add(bucket, e('收尾消息'));
-      // 不显式 flush——close 自身必须等已入链的盘尾写。
+ // 不显式 flush——close 自身必须等已入链的盘尾写。
       await store.close();
       expect(file.existsSync(), isTrue,
           reason: 'close 返回时已入链的盘尾写须已完成');
@@ -356,8 +357,8 @@ void main() {
     await tester.pumpWidget(_host(app, sessionId: 's1'));
     await _pump(tester);
 
-    // 模拟飞行模式：桥仍在（恢复保留）但 relay 已进重连档——旧条件
-    // 只看 bridge==null，会走 45s waitHealthy 超时；新条件秒级入队。
+ // 模拟飞行模式：桥仍在（恢复保留）但 relay 已进重连档——旧条件
+ // 只看 bridge==null，会走 45s waitHealthy 超时；新条件秒级入队。
     app.reconnectingOverride = true;
     await tester.enterText(find.byKey(const ValueKey('chat-input')), '飞行模式消息');
     await tester.pump();
@@ -408,12 +409,12 @@ void main() {
       await _pump(tester);
       expect(app.sendTexts, isEmpty);
 
-      // 半途失败一次（accepted 前崩溃窗口的等价模拟）→ 条目留队且已带 ID。
+ // 半途失败一次（accepted 前崩溃窗口的等价模拟）→ 条目留队且已带 ID。
       app.failNextSend = true;
       app.bridgeOverride = _StubBridge();
       app.notifyListeners();
       await _pump(tester, 25);
-      // 直接从内存桩数据取（唯一桶的唯一条目）。
+ // 直接从内存桩数据取（唯一桶的唯一条目）。
       final allEntries = [
         for (final list in store._data.values) ...list,
       ];
@@ -423,7 +424,7 @@ void main() {
           reason: '发送携带的就是钉住的 ID');
       final firstId = pinned;
 
-      // 恢复后再次 drain——沿用同一 commandId（服务端幂等去重）。
+ // 恢复后再次 drain——沿用同一 commandId（服务端幂等去重）。
       app.bridgeOverride = _StubBridge();
       app.notifyListeners();
       await _pump(tester, 25);
@@ -488,8 +489,8 @@ void main() {
       final app = _QueueApp(store)
         ..bridgeOverride = _StubBridge()
         ..createSessionGate = Completer<void>();
-      // 预置带挂起选型 config 的草稿条目（离线排队新建条目形态——
-      // 重放进 _sendText 草稿路径：createSession 网络往返期间退页）。
+ // 预置带挂起选型 config 的草稿条目（离线排队新建条目形态——
+ // 重放进 _sendText 草稿路径：createSession 网络往返期间退页）。
       await store.add(
         const SendQueueBucket(
           deviceSid: 'device-q',
@@ -507,14 +508,14 @@ void main() {
       await tester.pumpWidget(_host(app, sessionId: null)); // 草稿页
       await _pump(tester, 20); // drain 重放 → createSession 等闸门
 
-      // 重放期间退出页面（createSession 仍在途）。
+ // 重放期间退出页面（createSession 仍在途）。
       await tester.pumpWidget(const SizedBox());
       app.createSessionGate!.complete();
       await _pump(tester, 25);
 
-      // 修复前：unmounted 分支不清挂起选型 → _replayQueuedSend finally
-      // 对已 dispose 的 State setState 抛异常 → drain 跳过 store.remove
-      // → 条目留存再次重放=重复建会话+重复首条消息。
+ // 修复前：unmounted 分支不清挂起选型 → _replayQueuedSend finally
+ // 对已 dispose 的 State setState 抛异常 → drain 跳过 store.remove
+ // → 条目留存再次重放=重复建会话+重复首条消息。
       final all = [for (final list in store._data.values) ...list];
       expect(all, isEmpty,
           reason: '重放已成功（createSession 消费正文）——条目必须 remove');
@@ -536,8 +537,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('send-button')));
       await _pump(tester);
 
-      // 单条排队：无展开钮，条目直接可见可撤销（条目 Text 为
-      // translate:false 的本地化 Text，按 strip 内 IconButton 定位）。
+ // 单条排队：无展开钮，条目直接可见可撤销（条目 Text 为
+ // translate:false 的本地化 Text，按 strip 内 IconButton 定位）。
       final btn = find.descendant(
         of: find.byKey(const ValueKey('send-queue-strip')),
         matching: find.byType(IconButton),
@@ -573,8 +574,8 @@ void main() {
       expect(find.textContaining('发送失败'), findsOneWidget,
           reason: '错误横幅照常呈现');
 
-      // 15s 失败退避到点自动重试（E3-P2-3：非边沿 notify 不得旁路退避，
-      // 由 _retryTimer 统一驱动）。桥/phase 未变=不是恢复边沿。
+ // 15s 失败退避到点自动重试（E3-：非边沿 notify 不得旁路退避，
+ // 由 _retryTimer 统一驱动）。桥/phase 未变=不是恢复边沿。
       await tester.pump(const Duration(seconds: 16));
       await _pump(tester, 25);
       expect(app.sendTexts, ['会失败的', '跟随着的']);
@@ -588,7 +589,7 @@ void main() {
       await tester.pumpWidget(_host(app, sessionId: 's1'));
       await _pump(tester);
 
-      // 飞行模式形态：桥为恢复保留 + relay 重连档。
+ // 飞行模式形态：桥为恢复保留 + relay 重连档。
       app.bridgeOverride = _StubBridge();
       app.reconnectingOverride = true;
       await tester.enterText(
@@ -600,12 +601,12 @@ void main() {
       await _pump(tester, 6);
       expect(find.byKey(const ValueKey('send-queue-strip')), findsOneWidget);
 
-      // 入队后 app 状态变化（notify）→ 旧实现 drain 会立即重放：真发送
-      // 走 waitHealthy 挂 45s（_sending=true：按钮转圈、第二条被吞）。
+ // 入队后 app 状态变化（notify）→ 旧实现 drain 会立即重放：真发送
+ // 走 waitHealthy 挂 45s（_sending=true：按钮转圈、第二条被吞）。
       app.notifyListeners();
       await _pump(tester, 20);
       expect(app.sendTexts, isEmpty, reason: '离线期 drain 不得发起注定失败的 RPC');
-      // 发送键可用（非 _sending 转圈态）：再发第二条应能入队。
+ // 发送键可用（非 _sending 转圈态）：再发第二条应能入队。
       await tester.enterText(
         find.byKey(const ValueKey('chat-input')),
         '第二条离线消息',
@@ -638,7 +639,7 @@ void main() {
       }
       expect(app.sendTexts, isEmpty);
 
-      // 重连成功：phase 边沿 + 一次 notify（恢复横幅那次更新）。
+ // 重连成功：phase 边沿 + 一次 notify（恢复横幅那次更新）。
       app.reconnectingOverride = false;
       app.notifyListeners();
       await _pump(tester, 25);
@@ -660,14 +661,14 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('send-button')));
       await _pump(tester, 4);
 
-      // 在线+桥在：drain 立即跑但首次失败（failNextSend）→ 条目留队。
+ // 在线+桥在：drain 立即跑但首次失败（failNextSend）→ 条目留队。
       app.bridgeOverride = _StubBridge();
       app.notifyListeners();
       await _pump(tester, 25);
       expect(app.sendTexts, isEmpty, reason: '首试失败条目留队');
       expect(find.byKey(const ValueKey('send-queue-strip')), findsOneWidget);
 
-      // 不再 notify——15s 兜底 timer 自行重试（failNextSend 已复位）。
+ // 不再 notify——15s 兜底 timer 自行重试（failNextSend 已复位）。
       await tester.pump(const Duration(seconds: 16));
       await _pump(tester, 10);
       expect(app.sendTexts, ['要重试的消息'], reason: '失败后 15s 自动重试发出');

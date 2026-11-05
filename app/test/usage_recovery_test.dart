@@ -1,4 +1,4 @@
-// 18077 验收#18 红绿（Bug Q/R）：用量页断网不得永远转圈；网络恢复
+// 验收#18 红绿（Bug Q/R）：用量页断网不得永远转圈；网络恢复
 // 自动重试。修前：断网时 transport 挂死连 RPC 30s 都不触发（Q），恢复
 // 后也不重拉、须退出重进（R）。
 import 'dart:async';
@@ -71,8 +71,8 @@ class _HangingBridge implements BridgeSession {
 class _RecoveryApp extends AppState {
   final _HangingBridge hangingBridge = _HangingBridge();
   bool onlineOverride = true;
-  /// 模拟 relay 掉档（reconnecting）：桥为恢复保留、phase 非 online
-  /// ——真实断网形态（18076 反馈#6 同款语义）。
+ /// 模拟 relay 掉档（reconnecting）：桥为恢复保留、phase 非 online
+ /// ——真实断网形态（反馈#6 同款语义）。
   bool offlinePhase = false;
 
   @override
@@ -97,7 +97,7 @@ void main() {
       (call) async => 'Asia/Shanghai',
     );
     final app = _RecoveryApp()..onlineOverride = true;
-    // 桥在但所有 usage 调用挂死（Bug Q 现场）。
+ // 桥在但所有 usage 调用挂死（Bug Q 现场）。
     app.hangingBridge.channel.hangNext = true;
     await tester.pumpWidget(
       AppStateScope(
@@ -107,8 +107,8 @@ void main() {
     );
     await _pump(tester, 20);
 
-    // 12s 页面级超时后：错误态呈现（默认 tab=个人套餐，文案=网络不佳
-    // 人话+重试按钮），不再无限 spinner。
+ // 12s 页面级超时后：错误态呈现（默认 tab=个人套餐，文案=网络不佳
+ // 人话+重试按钮），不再无限 spinner。
     await tester.pump(const Duration(seconds: 13));
     await _pump(tester, 8);
     expect(find.textContaining('网络不佳'), findsWidgets,
@@ -136,9 +136,21 @@ void main() {
     await _pump(tester, 8);
     expect(find.textContaining('网络不佳'), findsWidgets);
 
-    // 网络恢复：挂死解除 + phase 回 online + app 通知（恢复横幅那次）。
-    // N1-P3-8 修复后后台边沿不 force 双拉（电量红线）——测试须显式置于
-    // 前台 resumed（真机常见路径），否则恢复分支按设计早退。
+ // （终审）：后台边沿不 force 双拉的正向锁——paused 下
+ // offline→online 不得产生新 RPC（省电红线），回前台后必须重拉。
+    final okBeforeEdge = app.hangingBridge.channel.okCalls;
+    app.offlinePhase = false;
+    app.notifyListeners();
+    await _pump(tester, 10);
+    expect(app.hangingBridge.channel.okCalls, okBeforeEdge,
+        reason: 'paused 状态 offline→online 边沿不得 force 双拉（电量红线）');
+    app.offlinePhase = true;
+    app.notifyListeners();
+    await _pump(tester, 5);
+
+ // 网络恢复：挂死解除 + phase 回 online + app 通知（恢复横幅那次）。
+ // N1- 修复后后台边沿不 force 双拉（电量红线）——测试须显式置于
+ // 前台 resumed（真机常见路径），否则恢复分支按设计早退。
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     app.hangingBridge.channel.hangNext = false;
     app.offlinePhase = false;
@@ -148,8 +160,8 @@ void main() {
     expect(app.hangingBridge.channel.okCalls, greaterThan(0),
         reason: '恢复边沿自动重拉（Bug R：修前须退出重进）');
 
-    // 收尾：挂起请求的 12s 页面级超时 timer 仍在飞——推进到期让 timer
-    // 自然完成（否则 tearDown 报 pending timer）。
+ // 收尾：挂起请求的 12s 页面级超时 timer 仍在飞——推进到期让 timer
+ // 自然完成（否则 tearDown 报 pending timer）。
     await tester.pump(const Duration(seconds: 13));
     await _pump(tester, 4);
   });

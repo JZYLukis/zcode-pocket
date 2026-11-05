@@ -42,7 +42,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
   @override
   void initState() {
     super.initState();
-    // AppStateScope.of 不能在 initState 同步调用（阶段 1 根因陷阱）
+ // AppStateScope.of 不能在 initState 同步调用（阶段 1 根因陷阱）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _load();
@@ -91,7 +91,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
         });
       }
     } catch (e) {
-      // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
+ // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
       debugPrint('[subagents] 列表加载失败: $e');
       if (mounted) {
         setState(() {
@@ -117,8 +117,8 @@ class _SubagentsPageState extends State<SubagentsPage> {
 
   final Map<String, bool> _optimisticEnabled = {};
 
-  /// B29：列表搜索（官方 SubagentsSection 搜索框对位，
-  /// 按名称/描述过滤三段全量）。
+ /// B29：列表搜索（官方 SubagentsSection 搜索框对位，
+ /// 按名称/描述过滤三段全量）。
   String _searchQuery = '';
   bool _searchOpen = false;
 
@@ -135,7 +135,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
   }
 
   Future<void> _toggle(Map<String, dynamic> agent, bool enabled) async {
-    // 乐观更新（ #6：15s 往返期间受控开关回弹像"点击失败"）
+ // 乐观更新（#6：15s 往返期间受控开关回弹像"点击失败"）
     setState(() => _optimisticEnabled['${agent['id']}'] = enabled);
     try {
       await _channel('setEnabled', {
@@ -175,8 +175,8 @@ class _SubagentsPageState extends State<SubagentsPage> {
     if (ok != true) return;
     try {
       await _channel('deleteAgent', {
-        // H4（审计）：官方 AgentDeleteParams {agentId, filePath} 必填——
-        // 实现第一行就 rm(filePath)，缺失必 TypeError。
+ // H4（审计）：官方 AgentDeleteParams {agentId, filePath} 必填——
+ // 实现第一行就 rm(filePath)，缺失必 TypeError。
         'agentId': agent['id'],
         'filePath': agent['path'] ?? '',
       });
@@ -186,10 +186,10 @@ class _SubagentsPageState extends State<SubagentsPage> {
     }
   }
 
-  /// 内置/插件行的行内「模型/思考档覆盖」（18074 验收④：官方桌面
-  /// SubagentModelOverrideControl 对位——两只 32dp 行内下拉即改即存，
-  /// 不再走底部弹层）。官方语义：这些档案只读，覆盖写用户级
-  /// agents-state；modelSelection 传 null=清除覆盖恢复默认。
+ /// 内置/插件行的行内「模型/思考档覆盖」（验收④：官方桌面
+ /// SubagentModelOverrideControl 对位——两只 32dp 行内下拉即改即存，
+ /// 不再走底部弹层）。官方语义：这些档案只读，覆盖写用户级
+ /// agents-state；modelSelection 传 null=清除覆盖恢复默认。
   List<Map<String, dynamic>> _modelCatalog = const [];
   List<String> _thoughtLevels = const [];
 
@@ -219,7 +219,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
         _thoughtLevels = thought.toList();
       });
     } catch (_) {
-      // 目录不可用：清除已有覆盖仍可用；新选模型暂不可用。
+ // 目录不可用：清除已有覆盖仍可用；新选模型暂不可用。
     }
   }
 
@@ -231,7 +231,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
     return provider.isEmpty ? model : '$provider/$model';
   }
 
-  /// 行内覆盖控制器（_AgentTile 消费）：null=非覆盖目标（不显示 chips）。
+ /// 行内覆盖控制器（_AgentTile 消费）：null=非覆盖目标（不显示 chips）。
   _InlineOverride? _inlineOverrideFor(Map<String, dynamic> agent) {
     if (!_isOverrideTarget(agent)) return null;
     final override = agent['modelSelectionOverride'];
@@ -270,8 +270,8 @@ class _SubagentsPageState extends State<SubagentsPage> {
     return [for (final l in entry.first['thoughtLevels'] as List) '$l'];
   }
 
-  /// 即改即存（官方同款）：选模型（null=继承默认=清除全部）；选思考档
-  /// 时模型基=当前覆盖??继承档；换模型重置思考档（与原弹层语义一致）。
+ /// 即改即存（官方同款）：选模型（null=继承默认=清除全部）；选思考档
+ /// 时模型基=当前覆盖??继承档；换模型重置思考档（与原弹层语义一致）。
   Future<void> _applyOverride(
     Map<String, dynamic> agent, {
     String? modelValue,
@@ -322,9 +322,9 @@ class _SubagentsPageState extends State<SubagentsPage> {
     }
   }
 
-  /// A4：编辑时透传编辑器不管的既有字段（官方全字段覆写语义）。
-  /// name 由 saved 决定（改名合法），skills/disallowedTools/
-  /// permissionMode/background/mcpServers/injectAgentsMd 原样保留。
+ /// A4：编辑时透传编辑器不管的既有字段（官方全字段覆写语义）。
+ /// name 由 saved 决定（改名合法），skills/disallowedTools/
+ /// permissionMode/background/mcpServers/injectAgentsMd 原样保留。
   Map<String, dynamic> _preserveEditorForeignFields(
     Map<String, dynamic> agent,
   ) => {
@@ -368,14 +368,14 @@ class _SubagentsPageState extends State<SubagentsPage> {
         await _channel('updateAgent', {
           ...base,
           'agentId': agent['id'],
-          // M3（审计）：官方 AgentUpdateParams 带 oldFilePath——改名/移动
-          // 时缺失会写新文件不删旧文件，留下重复 agent。
+ // M3（审计）：官方 AgentUpdateParams 带 oldFilePath——改名/移动
+ // 时缺失会写新文件不删旧文件，留下重复 agent。
           'oldFilePath': agent['path'] ?? '',
-          // A4（2026-10-29 审查实证）：官方 updateAgent=
-          // serialize(config)+整体覆写文件（subagentsService.ts:778-781）。
-          // 编辑器只产出 7 字段——不透传既有字段的话，disallowedTools/
-          // skills/permissionMode/background/mcpServers 会被抹掉。
-          // 桌面同款（SubagentsSection.tsx:1011-1032 全字段透传）。
+ // A4（2026-10-29 审查实证）：官方 updateAgent=
+ // serialize(config)+整体覆写文件（subagentsService.ts:778-781）。
+ // 编辑器只产出 7 字段——不透传既有字段的话，disallowedTools/
+ // skills/permissionMode/background/mcpServers 会被抹掉。
+ // 桌面同款（SubagentsSection.tsx:1011-1032 全字段透传）。
           'config': {
             ..._preserveEditorForeignFields(agent),
             ...saved,
@@ -405,8 +405,8 @@ class _SubagentsPageState extends State<SubagentsPage> {
               )
             : const Text('子智能体', style: TextStyle(fontSize: AppType.uiLg)),
         actions: [
-          // B29：列表搜索（官方 SubagentsSection 搜索框
-          // 对位，名称/描述过滤三段）。
+ // B29：列表搜索（官方 SubagentsSection 搜索框
+ // 对位，名称/描述过滤三段）。
           IconButton(
             key: const ValueKey('subagent-search-toggle'),
             icon: Icon(_searchOpen ? Icons.close : Icons.search),
@@ -429,14 +429,14 @@ class _SubagentsPageState extends State<SubagentsPage> {
         label: const Text('新建'),
       ),
       body: _loading
-          // 优化批 #2：裸转圈换带说明的 AppLoading。
+ // 优化批 #2：裸转圈换带说明的 AppLoading。
           ? const Center(child: AppLoading('正在加载子代理…'))
           : _error != null
           ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 优化批 #3：错误文案为人话映射结果（原始异常进日志）。
+ // 优化批 #3：错误文案为人话映射结果（原始异常进日志）。
                   Text(
                     _error!,
                     style: TextStyle(
@@ -453,11 +453,31 @@ class _SubagentsPageState extends State<SubagentsPage> {
     );
   }
 
+ /// 按 id 去重兜底：宿主 runtimeAgents 可能带裸名别名（canonical 与
+ /// 裸名同名互撞时只报 diagnostic），同 id 保留首条。
+  List<Map<String, dynamic>> _dedupeById(
+    Iterable<Map<String, dynamic>> list,
+  ) {
+    final seen = <String>{};
+    final out = <Map<String, dynamic>>[];
+    for (final a in list) {
+      final id = '${a['id'] ?? ''}';
+      if (id.isNotEmpty && !seen.add(id)) continue;
+      out.add(a);
+    }
+    return out;
+  }
+
   Widget _buildBody() {
+ // 官方 projectSettingsSubagents 投影（SubagentsSection.tsx）：agents
+ // 是运行时投影、canonical 插件条目也在其中，直接渲染会与
+ // pluginAgents（一文件一条）整组重复——内置组须先滤掉 source=plugin。
     final sections = {
-      '自定义': _section('userAgents'),
-      '内置': _section('agents'),
-      '插件': _section('pluginAgents'),
+      '自定义': _dedupeById(_section('userAgents')),
+      '内置': _dedupeById(
+        _section('agents').where((a) => '${a['source'] ?? ''}' != 'plugin'),
+      ),
+      '插件': _dedupeById(_section('pluginAgents')),
     };
     final total = sections.values.map((l) => l.length).fold(0, (a, b) => a + b);
     if (total == 0) {
@@ -521,7 +541,7 @@ bool _isOverrideTarget(Map<String, dynamic> agent) {
       (name == 'general-purpose' || name == 'Explore');
 }
 
-/// 行内覆盖控制器（18074 验收④重排）：官方桌面 SubagentModelOverrideControl
+/// 行内覆盖控制器（验收④重排）：官方桌面 SubagentModelOverrideControl
 /// 对位——两只 32dp 行内下拉即改即存，按钮文字即覆盖状态（「继承默认」/
 /// 模型名），无额外角标。
 class _InlineOverride {
@@ -535,21 +555,21 @@ class _InlineOverride {
     required this.onPickThought,
   });
 
-  /// 当前覆盖模型值（'provider/model'；null=继承默认）。
+ /// 当前覆盖模型值（'provider/model'；null=继承默认）。
   final String? modelValue;
   final String? thought;
 
-  /// 覆盖??继承 的模型（思考档可用性判据；null=思考档禁用）。
+ /// 覆盖??继承 的模型（思考档可用性判据；null=思考档禁用）。
   final String? baseModelValue;
   final List<(String, String)> models;
 
-  /// (value, name) 位置记录。
+ /// (value, name) 位置记录。
   final List<String> thoughtLevels;
   final void Function(String? value) onPickModel;
   final void Function(String? level) onPickThought;
 }
 
-/// 18077 验收#17（优化意见 P，视觉子代理七项分析）重排：主行=图标+
+/// 验收#17（优化意见 P，视觉子代理七项分析）重排：主行=图标+
 /// 「名称单行省略+副行模型摘要」双列+开关；模型/思考档下拉移入点按
 /// 展开区（原行内图标+名称+插件 chip+两只下拉+开关四件套把名称挤到
 /// 2 字符宽逐字断行+元素叠压的根除）；删与小节标题语义重复的插件
@@ -562,7 +582,7 @@ class _AgentTile extends StatefulWidget {
   final bool editable;
   final bool enabled;
 
-  /// 非空=内置/插件覆盖目标（点行展开配置区）；null=不显示。
+ /// 非空=内置/插件覆盖目标（点行展开配置区）；null=不显示。
   final _InlineOverride? inlineOverride;
 
   const _AgentTile({
@@ -582,6 +602,30 @@ class _AgentTile extends StatefulWidget {
 class _AgentTileState extends State<_AgentTile> {
   bool _expanded = false;
 
+ /// agent.color（服务端调色板名）→ 色点；未知名/缺失返回 null（不画）。
+  static Color? _agentDotColor(Object? raw) {
+    switch ('${raw ?? ''}') {
+      case 'blue':
+        return const Color(0xFF3B82F6);
+      case 'cyan':
+        return const Color(0xFF06B6D4);
+      case 'green':
+        return const Color(0xFF22C55E);
+      case 'red':
+        return const Color(0xFFEF4444);
+      case 'orange':
+        return const Color(0xFFF97316);
+      case 'purple':
+        return const Color(0xFFA855F7);
+      case 'pink':
+        return const Color(0xFFEC4899);
+      case 'yellow':
+        return const Color(0xFFEAB308);
+      default:
+        return null;
+    }
+  }
+
   String _modelLabel(String value) {
     final hit = widget.inlineOverride?.models
         .where((m) => m.$1 == value)
@@ -592,18 +636,13 @@ class _AgentTileState extends State<_AgentTile> {
   }
 
   String? get _summaryLine {
-    final o = widget.inlineOverride;
-    if (o == null) {
-      final d = '${widget.agent['description'] ?? ''}';
-      return d.isEmpty ? null : d;
-    }
-    final model = o.modelValue == null
-        ? '模型 · 继承默认'
-        : '模型 · ${_modelLabel(o.modelValue!)}';
-    if (o.baseModelValue != null && o.thought != null) {
-      return '$model · 思考 ${o.thought}';
-    }
-    return model;
+ // 2026-11-05 反馈①：副标题恒显 description（官方 SubagentsSection
+ // L554-556 同款恒显+两行截断）——覆盖目标的「模型 · 继承默认」此前
+ // 把它顶掉，恰好 general-purpose/Explore 与全部插件行全中（用户
+ // 「看不出是什么类型的子代理」）；模型/思考覆盖状态由展开区行内
+ // chips 承载（验收#17 形态），信息不丢。
+    final d = '${widget.agent['description'] ?? ''}';
+    return d.isEmpty ? null : d;
   }
 
   @override
@@ -623,8 +662,8 @@ class _AgentTileState extends State<_AgentTile> {
         color: Colors.transparent,
         child: InkWell(
           key: ValueKey('subagent-${agent['id']}'),
-          // 自定义行整行点进编辑器；内置/插件行点按=展开/收起配置区
-          //（18074 的行内 chips 形态被 18077 验收#17 重排推翻）。
+ // 自定义行整行点进编辑器；内置/插件行点按=展开/收起配置区
+ //（的行内 chips 形态被 验收#17 重排推翻）。
           onTap: widget.editable
               ? widget.onEdit
               : (o == null
@@ -639,19 +678,61 @@ class _AgentTileState extends State<_AgentTile> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 官方行首 36dp 圆角图标砖（底色比卡片暗一档反转对比）。
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: context.colors.background,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.smart_toy_outlined,
-                        size: 18,
-                        color: context.colors.foregroundSubtle,
-                      ),
+ // 官方行首 36dp 圆角图标砖（底色比卡片暗一档反转对比）。
+ // 2026-11-05 反馈①：agent.color 存在时右下角画颜色点
+ //（官方 SubagentsSection L540-545 对位；内置
+ // general-purpose=blue / Explore=cyan 服务端定义）——
+ // 同一机器人轮廓下给出类型身份的可扫读差异。
+                    Builder(
+                      builder: (dotCtx) {
+                        final agentColor = _agentDotColor(agent['color']);
+                        final icon = Icon(
+                          Icons.smart_toy_outlined,
+                          size: 18,
+                          color: context.colors.foregroundSubtle,
+                        );
+                        if (agentColor == null) {
+                          return Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: context.colors.background,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: icon,
+                          );
+                        }
+                        return Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: context.colors.background,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Center(child: icon),
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: agentColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: context.colors.card,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -689,9 +770,9 @@ class _AgentTileState extends State<_AgentTile> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // 官方 supportsEnabledToggle：仅 user scope 可切换——
-                    // 内置/插件行恒启用（18074 验收④：官方 Switch 32×18，
-                    // FittedBox scaleDown 收到同档）；不可切行为展开箭头。
+ // 官方 supportsEnabledToggle：仅 user scope 可切换——
+ // 内置/插件行恒启用（验收④：官方 Switch 32×18，
+ // FittedBox scaleDown 收到同档）；不可切行为展开箭头。
                     if ('${agent['scope'] ?? 'user'}' == 'user')
                       SizedBox(
                         width: 40,
@@ -726,8 +807,8 @@ class _AgentTileState extends State<_AgentTile> {
                       ),
                   ],
                 ),
-                // 展开配置区（内置/插件行）：「模型/思考档」两只规范行，
-                // 48dp 触控目标。
+ // 展开配置区（内置/插件行）：「模型/思考档」两只规范行，
+ // 48dp 触控目标。
                 if (o != null && _expanded) ...[
                   Divider(height: 20, color: context.colors.border),
                   _overrideRow(
@@ -763,7 +844,7 @@ class _AgentTileState extends State<_AgentTile> {
     );
   }
 
-  /// 展开区规范下拉行（48dp 触控）：行首灰 label+当前值+箭头。
+ /// 展开区规范下拉行（48dp 触控）：行首灰 label+当前值+箭头。
   Widget _overrideRow({
     required BuildContext context,
     required String chipKey,
@@ -865,14 +946,14 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
   String? _descriptionError;
   String? _promptError;
 
-  /// F13（WR 对齐）：模型/思考档（官方 SubAgentConfig.modelSelection；
-  /// 目录源=当前活跃会话的 getTaskConfigOptions，与模型面板同源）。
+ /// F13（WR 对齐）：模型/思考档（官方 SubAgentConfig.modelSelection；
+ /// 目录源=当前活跃会话的 getTaskConfigOptions，与模型面板同源）。
   String? _selectedModel; // "providerId/modelId" 或 null=继承默认
   String? _selectedThought;
   List<Map<String, dynamic>> _modelCatalog = const [];
   List<String> _thoughtLevels = const [];
 
-  /// 官方 AGENT_COLORS（SubagentsSection.tsx:1063-1094）。
+ /// 官方 AGENT_COLORS（SubagentsSection.tsx:1063-1094）。
   static const _agentColors = [
     '#6366f1',
     '#8b5cf6',
@@ -911,9 +992,9 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
   Future<void> _loadCatalog() async {
     try {
       final app = AppStateScope.of(context);
-      // 宿主级 model-selection 目录（2026-10-27 真机验收⑧）：不要求活跃
-      // 会话——设置页直接新建/编辑子代理时也能设置默认模型与思考档；
-      // 旧 getTaskConfigOptions 在无会话时目录为空，只剩"继承默认"。
+ // 宿主级 model-selection 目录（2026-10-27 真机验收⑧）：不要求活跃
+ // 会话——设置页直接新建/编辑子代理时也能设置默认模型与思考档；
+ // 旧 getTaskConfigOptions 在无会话时目录为空，只剩"继承默认"。
       final options = await app.modelSelectionOptions();
       if (!mounted) return;
       final models = <Map<String, dynamic>>[];
@@ -939,7 +1020,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
         _thoughtLevels = thought.toList();
       });
     } catch (_) {
-      // 目录不可用：模型/思考档保持"继承默认"可用。
+ // 目录不可用：模型/思考档保持"继承默认"可用。
     }
   }
 
@@ -952,9 +1033,9 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
   }
 
   Map<String, dynamic> _buildModelSelection() {
-    // 官方 modelSelectionSchema（strict）：{providerId, modelId,
-    // options?: {reasoningLevel}}——思考档在 options.reasoningLevel，
-    // 顶层多余字段（如 thoughtLevel）会被 strict 拒（F13 复查抓出）。
+ // 官方 modelSelectionSchema（strict）：{providerId, modelId,
+ // options?: {reasoningLevel}}——思考档在 options.reasoningLevel，
+ // 顶层多余字段（如 thoughtLevel）会被 strict 拒（F13 复查抓出）。
     final v = _selectedModel!;
     final slash = v.indexOf('/');
     return {
@@ -1045,14 +1126,14 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
             ),
           ),
           const SizedBox(height: 10),
-          // F13：颜色（官方 8 色对位）。
+ // F13：颜色（官方 8 色对位）。
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (final c in _agentColors)
                 GestureDetector(
-                  // 点击已选颜色=取消选择。
+ // 点击已选颜色=取消选择。
                   onTap: () => setState(() => _color = _color == c ? null : c),
                   child: Container(
                     width: 30,
@@ -1072,10 +1153,10 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
             ],
           ),
           const SizedBox(height: 10),
-          // F13：模型选择（目录=getTaskConfigOptions；空目录=继承默认）。
+ // F13：模型选择（目录=getTaskConfigOptions；空目录=继承默认）。
           DropdownButtonFormField<String?>(
-            // 目录异步到达前 items 只有"继承默认"——value 必须在
-            // items 中否则 debug 断言崩溃；不在目录时退回 null（继承）。
+ // 目录异步到达前 items 只有"继承默认"——value 必须在
+ // items 中否则 debug 断言崩溃；不在目录时退回 null（继承）。
             initialValue: _modelCatalog.any((m) => m['value'] == _selectedModel)
                 ? _selectedModel
                 : null,
@@ -1130,7 +1211,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
                   foregroundColor: context.colors.onBrand,
                 ),
                 onPressed: () {
-                  // 官方校验（SubagentsSection.tsx:929-959）。
+ // 官方校验（SubagentsSection.tsx:929-959）。
                   final name = _name.text.trim();
                   final desc = _description.text.trim();
                   final prompt = _systemPrompt.text.trim();
@@ -1158,7 +1239,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
                     'name': name,
                     'description': desc,
                     'systemPrompt': prompt,
-                    // 全角/半角逗号都认（中文输入法默认全角， #7）
+ // 全角/半角逗号都认（中文输入法默认全角， #7）
                     'tools': _tools.text
                         .split(RegExp(r'[,，]'))
                         .map((t) => t.trim())

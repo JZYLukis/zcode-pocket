@@ -1,3 +1,5 @@
+import '../core/payload_guard.dart';
+
 /// 会话页纯内存展示状态：折叠、live collapse、思考计时与文件卡缓存。
 /// 不承载协议、发送、持久化或滚动状态。
 class ConversationViewStore {
@@ -19,9 +21,9 @@ class ConversationViewStore {
 
   Map<int, bool> toolOpenFor(String? sessionId) {
     final sid = sessionId ?? '_anonymous';
-    // A2-P3-4/A3-P3-5：旧 >100 一律 wipe-all（第 101 个会话
-    // 抹掉其余全部会话的折叠记忆）——改按插入序逐条驱逐至 99（与会话
-    // 页生命周期量级匹配，保留其余记忆）。
+ // A2-/A3-：旧 >100 一律 wipe-all（第 101 个会话
+ // 抹掉其余全部会话的折叠记忆）——改按插入序逐条驱逐至 99（与会话
+ // 页生命周期量级匹配，保留其余记忆）。
     while (_toolOpenBySession.length > 100) {
       final oldest = _toolOpenBySession.keys.firstWhere(
         (key) => key != sid,
@@ -33,17 +35,19 @@ class ConversationViewStore {
     return _toolOpenBySession.putIfAbsent(sid, () => <int, bool>{});
   }
 
-  /// 行数回退（row.removed：编辑重发/回滚）时按当前行裁剪页面级 Map
-  /// （ A1-P3-4：六 Map 只增不减，长会话单调增长；行数增长
-  /// 不裁——流式常态，裁了会丢思考计时）。[liveKeys]=当前投影条目键
-  /// 集（seenRowKeys 用；null=不裁 seenRowKeys）。
+ /// 行数回退（row.removed：编辑重发/回滚）时按当前行裁剪页面级 Map
+ /// （A1-：六 Map 只增不减，长会话单调增长；行数增长
+ /// 不裁——流式常态，裁了会丢思考计时）。[liveKeys]=当前投影条目键
+ /// 集（seenRowKeys 用；null=不裁 seenRowKeys）。
   void pruneAfterRowShrink(
     List<Map<String, dynamic>> rows, {
     Set<String>? liveKeys,
   }) {
     final liveRowIds = <int>{};
     for (final row in rows) {
-      final id = (row['rowId'] as num?)?.toInt();
+ // （D-8 ）：统一数字守卫——服务端把 rowId 发成 String 时
+ // 不得让稳定键退化为 index（前插历史会跳）。
+      final id = intOf(row['rowId']);
       if (id != null && id >= 0) liveRowIds.add(id);
     }
     void pruneInt<K extends int>(Map<K, dynamic> map) {
@@ -55,7 +59,12 @@ class ConversationViewStore {
     pruneInt(reasoningElapsedMs);
     pruneInt(fileCardOpen);
     pruneInt(fileCardItems);
-    pruneInt(liveCollapsedByRow);
+ // （D-8 ）：liveCollapsedByRow 键是 base*1000+seg，不能按裸
+ // rowId 裁——基行仍活着即保留其全部段键（键 ~/ 1000 == base）。
+    if (liveCollapsedByRow.length > liveRowIds.length) {
+      liveCollapsedByRow.removeWhere(
+          (k, _) => !liveRowIds.contains(k) && !liveRowIds.contains(k ~/ 1000));
+    }
     if (liveKeys != null && seenRowKeys.length > liveKeys.length) {
       seenRowKeys.removeWhere((k) => !liveKeys.contains(k));
     }
@@ -65,7 +74,7 @@ class ConversationViewStore {
     if (reasoningFirstSeen.isEmpty) return;
     for (final row in rows) {
       if (row['kind'] != 'reasoning' || row['state'] == 'streaming') continue;
-      final id = (row['rowId'] as num?)?.toInt();
+      final id = intOf(row['rowId']);
       if (id == null || reasoningElapsedMs.containsKey(id)) continue;
       final seen = reasoningFirstSeen[id];
       if (seen == null) continue;
@@ -74,12 +83,12 @@ class ConversationViewStore {
   }
 
   int? reasoningElapsedOf(Map<String, dynamic> row) {
-    final id = (row['rowId'] as num?)?.toInt();
+    final id = intOf(row['rowId']);
     return id == null ? null : reasoningElapsedMs[id];
   }
 
   DateTime? firstSeenOf(Map<String, dynamic> row) {
-    final rowId = (row['rowId'] as num?)?.toInt();
+    final rowId = intOf(row['rowId']);
     if (rowId == null) return null;
     if (row['state'] == 'streaming') {
       return reasoningFirstSeen.putIfAbsent(rowId, () {
@@ -92,3 +101,4 @@ class ConversationViewStore {
     return reasoningFirstSeen[rowId];
   }
 }
+

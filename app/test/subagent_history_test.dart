@@ -40,12 +40,13 @@ class _SlowSub implements ConversationSubscription {
 class _SlowApp extends AppState {
   final sub = _SlowSub();
 
-  /// 测试缝：非空时 ensureConversation 抛该错误（lineage-invalid 映射用例）。
+ /// 测试缝：非空时 ensureConversation 抛该错误（lineage-invalid 映射用例）。
   Object? overrideEnsureError;
   @override
   bool get loaded => true;
   @override
-  Future<ConversationSubscription> ensureConversation(String sessionId) {
+  Future<ConversationSubscription> ensureConversation(String sessionId,
+      {Object? seedCacheEntry}) {
     return Future.delayed(const Duration(milliseconds: 100), () {
       final err = overrideEnsureError;
       if (err != null) throw err;

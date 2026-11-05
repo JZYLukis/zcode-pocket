@@ -33,7 +33,7 @@ void main() {
     expect(find.textContaining('无遥测'), findsOneWidget);
     expect(find.text('项目许可证（Apache 2.0）'), findsOneWidget);
     expect(find.text('第三方来源声明'), findsOneWidget);
-    // 版权行在页尾（折叠线下），滚到可见再断言署名。
+ // 版权行在页尾（折叠线下），滚到可见再断言署名。
     await tester.scrollUntilVisible(
       find.textContaining('JZYLukis'),
       200,
@@ -55,7 +55,7 @@ void main() {
     await _tapRow(tester, 'about-third-party-notices');
     expect(find.textContaining('MIT License', findRichText: true), findsWidgets);
     expect(find.textContaining('Simple Icons', findRichText: true), findsWidgets);
-    // 双语声明（2026-11-04）：英文概要段在文件首部，应用内同步可见。
+ // 双语声明（2026-11-04）：英文概要段在文件首部，应用内同步可见。
     expect(find.textContaining('English summary', findRichText: true),
         findsWidgets);
   });
@@ -67,6 +67,13 @@ void main() {
     expect(find.text('About ZCode Pocket'), findsOneWidget);
     expect(find.text('Notices'), findsOneWidget);
     expect(find.text('Privacy'), findsOneWidget);
+ // 锁屏说明入页后许可行落到首屏之外（ListView 懒构建）——先滚到可见。
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('about-project-license')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
     expect(find.text('Project license (Apache 2.0)'), findsOneWidget);
     expect(find.text('声明'), findsNothing);
   });

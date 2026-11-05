@@ -45,27 +45,26 @@ class ChannelClient {
       }
       if (header.length < 2 || header[1] is! num) return;
       final id = (header[1] as num).toInt();
-      // 无 handler 的帧（超时后迟到响应/未知
-      // id）不再整帧解码——最坏 64MiB JSON 解码纯白耗 CPU；帧间自包含，
-      // 跳过读取不影响后续帧。
+ // 无 handler 的帧（超时后迟到响应/未知
+ // id）不再整帧解码——最坏 64MiB JSON 解码纯白耗 CPU；帧间自包含，
+ // 跳过读取不影响后续帧。
       final h = _handlers[id];
       if (h == null) return;
+      dynamic data;
       try {
-        final data = decodeValue(reader);
-        h(type, data);
+        data = decodeValue(reader);
       } on Object catch (e) {
-        // 载荷解码失败（超限/畸形）
-        // 不再只打一行日志让在途 call 干等 timeout——一次性调用立即
-        // 失败走调用方重试链（failPendingOnGap 同款语义，"响应帧不可
-        // 用"）；持久事件监听不动（订阅看门狗自愈）。重试若再次收到
-        // 同一超大帧则快速失败而非逐个等满 30s 超时。
+ // （D-8 ）：try 只包解码——handler 自身抛错不得被归因为
+ // "载荷损坏"（会以 frameLost 失败在途 call，误报结果未知）。
         onLog?.call('[ipc] invalid payload (id=$id): $e');
-        final h = _handlers[id];
-        if (h != null && !_persistentEventIds.contains(id)) {
+        final h2 = _handlers[id];
+        if (h2 != null && !_persistentEventIds.contains(id)) {
           _handlers.remove(id);
-          h(-1, null); // 未知 type 触发 call 的 fail 路径
+          h2(-1, null);
         }
+        return;
       }
+      h(type, data);
     } on Object catch (e) {
       onLog?.call('[ipc] invalid frame: $e');
     }
@@ -84,8 +83,8 @@ class ChannelClient {
     sendBody(writer.toBytes());
   }
 
-  /// 物理丢帧（SEQ GAP）时失败所有在途调用：响应帧可能就在丢失集里，
-  /// 等待只会白耗 timeout——立即失败让调用方重试（重试响应走新帧）。
+ /// 物理丢帧（SEQ GAP）时失败所有在途调用：响应帧可能就在丢失集里，
+ /// 等待只会白耗 timeout——立即失败让调用方重试（重试响应走新帧）。
   void failPendingOnGap() {
     final ids = _handlers.keys
         .where((id) => !_persistentEventIds.contains(id))
@@ -137,8 +136,8 @@ class ChannelClient {
             completer.completeError(ChannelRpcError('$data', data));
             break;
           default:
-            // 物理丢帧（failPendingOnGap 以未知 type 触发）：立即失败，
-            // 调用方按 ChannelRpcError 重试——不等 timeout。
+ // 物理丢帧（failPendingOnGap 以未知 type 触发）：立即失败，
+ // 调用方按 ChannelRpcError 重试——不等 timeout。
             _handlers.remove(id);
             completer.completeError(
               ChannelRpcError(
@@ -161,8 +160,8 @@ class ChannelClient {
     });
   }
 
-  /// Subscribe to a channel event. Returns a cancel function which sends
-  /// EventDispose. Mirrors `requestEvent` / `sendCancelOrDispose`.
+ /// Subscribe to a channel event. Returns a cancel function which sends
+ /// EventDispose. Mirrors `requestEvent` / `sendCancelOrDispose`.
   void Function() addEventListener(
     String channel,
     String event,
@@ -191,9 +190,9 @@ class ChannelClient {
   }
 
   void dispose() {
-    // 换桥/销桥时在途 call 立即失败（gap 同款
-    // 语义——响应可能已随旧通道丢失，调用方按「结果未知/可重试」收敛），
-    // 不再各自干等 30-120s timeout；持久事件监听无 completer，清表即可。
+ // 换桥/销桥时在途 call 立即失败（gap 同款
+ // 语义——响应可能已随旧通道丢失，调用方按「结果未知/可重试」收敛），
+ // 不再各自干等 30-120s timeout；持久事件监听无 completer，清表即可。
     failPendingOnGap();
     _handlers.clear();
     _persistentEventIds.clear();
@@ -204,11 +203,11 @@ class ChannelRpcError implements Exception {
   final String message;
   final Object? data;
 
-  /// 「响应帧丢失（结果未知）」的结构化标记：此前
-  /// 消费方（conversation_page）靠裸字符串 contains('response frame lost')
-  /// 跨层匹配，任一侧改文案即静默把「结果未知」降级成普通失败（用户
-  /// 重发=双投递）。生产方在此立单一真源，消费方按字段判定（UI 侧接线
-  /// 归界面批次）。
+ /// 「响应帧丢失（结果未知）」的结构化标记：此前
+ /// 消费方（conversation_page）靠裸字符串 contains('response frame lost')
+ /// 跨层匹配，任一侧改文案即静默把「结果未知」降级成普通失败（用户
+ /// 重发=双投递）。生产方在此立单一真源，消费方按字段判定（UI 侧接线
+ /// 归界面批次）。
   final bool frameLost;
   ChannelRpcError(this.message, this.data, {this.frameLost = false});
 
@@ -253,11 +252,11 @@ class Channels {
   static const promptAttachmentTransfer = 'prompt-attachment-transfer';
   static const offPeakTask = 'off-peak-task';
 
-  /// 窗口宿主 Controller 服务（controller/tasks-index 主题所在，
-  /// ）——官方 ServiceChannels.WindowController（channels.ts:112）。
+ /// 窗口宿主 Controller 服务（controller/tasks-index 主题所在，
+ /// ）——官方 ServiceChannels.WindowController（channels.ts:112）。
   static const windowController = 'window-controller';
 
-  /// Host 项目服务（readTree 项目全集， 工作区列表修复）——
-  /// 官方 ServiceChannels.Project（channels.ts:117）。
+ /// Host 项目服务（readTree 项目全集， 工作区列表修复）——
+ /// 官方 ServiceChannels.Project（channels.ts:117）。
   static const project = 'project';
 }

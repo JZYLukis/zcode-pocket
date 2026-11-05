@@ -19,8 +19,8 @@ class _RowsApp extends AppState {
 
   @override
   Future<SessionCacheEntry?> readSessionCache(String id) async {
-    // 只给父会话缓存：下钻子会话走空缓存→标题回落 widget.title
-    // （H1 断言的正是这条兜底路径）。
+ // 只给父会话缓存：下钻子会话走空缓存→标题回落 widget.title
+ // （H1 断言的正是这条兜底路径）。
     if (id != 's1') return null;
     return SessionCacheEntry(
         deviceSid: 'd1',
@@ -73,7 +73,7 @@ Map<String, dynamic> _subagentRow(
     {
       'rowId': rowId,
       'kind': 'subagent',
-      // ignore: use_null_aware_elements —— 显式判空更贴夹具可读性。
+ // ignore: use_null_aware_elements —— 显式判空更贴夹具可读性。
       if (parentToolCallId != null) 'parentToolCallId': parentToolCallId,
       if (childSessionId != null) 'childSessionId': childSessionId,
       'subagentType': 'general-purpose',
@@ -96,12 +96,14 @@ void main() {
     await tester.pumpWidget(_host(app));
     await _pump(tester);
 
-    // 卡（smart_toy 图标）恰好一张。
+ // 卡（smart_toy 图标）恰好一张。
     expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget);
-    // 工具行形态「子智能体 · …」不得再出现（重复根源）。
-    expect(find.textContaining('子智能体 ·'), findsNothing);
-    // 卡标题=summaryText，恰好一份（工具行 preview 若残留会第二份）。
-    expect(find.text('勘察①新任务工作区归属'), findsOneWidget);
+ // 2026-11-05 反馈①：合并卡=「子智能体 · 类型 · summary」三段式
+ //（官方 ToolSummaryRow 对位）——前缀恰一份；工具行 preview 若残留
+ // 会是第二份（重复根源）。
+    expect(find.textContaining('子智能体 · general-purpose'), findsOneWidget);
+    expect(find.textContaining('子智能体 ·'), findsOneWidget);
+    expect(find.textContaining('勘察①新任务工作区归属'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -109,8 +111,8 @@ void main() {
       (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
-    // summaryText 为空=下钻标题退「子智能体 <type>」兜底的常用形态
-    // （迁移笔误曾丢掉 $type，AppBar 显示尾随空格的「子智能体 」）。
+ // summaryText 为空=下钻标题退「子智能体 <type>」兜底的常用形态
+ // （迁移笔误曾丢掉 $type，AppBar 显示尾随空格的「子智能体 」）。
     final app = _RowsApp([
       {'rowId': 1, 'kind': 'userInput', 'text': '去勘察'},
       {'rowId': 2, 'kind': 'turnHeader', 'state': 'completedSuccess'},
@@ -123,12 +125,13 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.smart_toy_outlined));
     await _pump(tester);
-    // 下钻页 AppBar 标题=「子智能体 general-purpose」（合并卡本体在路由
-    // 下层仍在树中，故限定 AppBar 内断言）。
+ // 2026-11-05 反馈①：下钻页 AppBar 标题=类型名（官方
+ // sidePaneTabPresentation L127 优先用 subagentType；合并卡本体在
+ // 路由下层仍在树中，故限定 AppBar 内断言）。
     expect(
       find.descendant(
         of: find.byType(AppBar),
-        matching: find.text('子智能体 general-purpose'),
+        matching: find.text('general-purpose'),
       ),
       findsOneWidget,
     );
@@ -149,7 +152,8 @@ void main() {
     await tester.pumpWidget(_host(app));
     await _pump(tester);
     expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget);
-    expect(find.textContaining('子智能体 ·'), findsNothing);
+    expect(find.textContaining('子智能体 ·'), findsOneWidget,
+        reason: '合并卡三段式前缀；工具行残留会是第二份');
   });
 
   testWidgets('未配对的 Agent 工具行保留（不丢可见性）', (tester) async {
@@ -164,7 +168,7 @@ void main() {
     ]);
     await tester.pumpWidget(_host(app));
     await _pump(tester);
-    // tc-1 配对撤销；tc-2 未配对→工具行保留（宁可重复不丢行）。
+ // tc-1 配对撤销；tc-2 未配对→工具行保留（宁可重复不丢行）。
     expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget,
         reason: '配对的 subagent 卡');
     expect(find.textContaining('子智能体 · 任务乙'), findsOneWidget,
@@ -204,9 +208,9 @@ void main() {
     await _pump(tester);
 
     final runningTitle =
-        tester.widget<Text>(find.text('运行中的那个')).style!.color;
+        tester.widget<Text>(find.textContaining('运行中的那个')).style!.color;
     final doneTitle =
-        tester.widget<Text>(find.text('完成的那个')).style!.color;
+        tester.widget<Text>(find.textContaining('完成的那个')).style!.color;
     expect(runningTitle, runningToken,
         reason: '运行中标题=running 琥珀（与 logo 同档，用户 2026-10-25）');
     expect(doneTitle, isNot(runningToken), reason: '完成后回落灰');
@@ -273,7 +277,7 @@ void main() {
       {'rowId': 1, 'kind': 'userInput', 'text': '去办两步'},
       {'rowId': 2, 'kind': 'turnHeader', 'state': 'running'},
       _agentTool(3, 'tc-1', '跨段子任务'),
-      // guided 追问切段：段二只含 subagent 行（旧行为=两段各渲染一次）。
+ // guided 追问切段：段二只含 subagent 行（旧行为=两段各渲染一次）。
       {'rowId': 5, 'kind': 'userInput', 'text': '追问进展'},
       _subagentRow(6, '跨段子任务', 'running', parentToolCallId: 'tc-1'),
     ]);
@@ -282,9 +286,10 @@ void main() {
 
     expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget,
         reason: '跨段配对后只出一张合并卡（旧行为段一工具行+段二卡双渲染）');
-    expect(find.textContaining('子智能体 ·'), findsNothing);
-    // 合并卡渲染在 Agent 工具行原位置（官方 agentToolCall 项）——即
-    // 位于 guided 追问气泡之前。
+    expect(find.textContaining('子智能体 ·'), findsOneWidget,
+        reason: '2026-11-05 反馈①：合并卡三段式前缀恰一份');
+ // 合并卡渲染在 Agent 工具行原位置（官方 agentToolCall 项）——即
+ // 位于 guided 追问气泡之前。
     final cardTop = tester.getTopLeft(
       find.ancestor(
         of: find.byIcon(Icons.smart_toy_outlined),

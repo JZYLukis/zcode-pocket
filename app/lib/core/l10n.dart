@@ -11,8 +11,8 @@ class _L10nPattern {
   final Map<String, int> groups;
   const _L10nPattern(this.source, this.target, this.groups);
 
-  /// 占位符提取正则提为编译期常量（ P1 P3-6/P3 P3-3）：
-  /// 原先每次 apply 现场构造，EN 模式热路径上每条 pattern 各造一个。
+ /// 占位符提取正则提为编译期常量（P1 /P3 ）：
+ /// 原先每次 apply 现场构造，EN 模式热路径上每条 pattern 各造一个。
   static final RegExp _placeholder = RegExp(r'\{(\w+)\}');
 
   String? apply(String input) {
@@ -41,7 +41,7 @@ class L10n {
 
   static ValueListenable<String> get changes => _changes;
 
-  /// 测试与英文渲染扫描使用；生产默认关闭，避免重复日志。
+ /// 测试与英文渲染扫描使用；生产默认关闭，避免重复日志。
   static bool collectMissing = false;
 
   static String get resolvedLocale => _resolved;
@@ -90,7 +90,7 @@ class L10n {
   static void _setResolved(String locale) {
     if (_resolved == locale) return;
     _resolved = locale;
-    // 译文缓存随 locale 整体失效（结果与 locale 绑定，见 tr 注释）。
+ // 译文缓存随 locale 整体失效（结果与 locale 绑定，见 tr 注释）。
     _trCache.clear();
     _changes.value = locale;
   }
@@ -110,7 +110,7 @@ class L10n {
   }
 }
 
-/// CJK 判定（ P2 P3-7）：域含 CJK 扩展 A/B 区（\u3400-\u9fff）+
+/// CJK 判定（P2 ）：域含 CJK 扩展 A/B 区（\u3400-\u9fff）+
 /// CJK 标点（\u3000-\u303F）+ 兼容表意（\uF900-\uFAFF）+ 全角形式
 /// （\uFF00-\uFFEF）——纯标点/全角符号串也进入翻译查找（命中词表则译，
 /// 未命中保持原文，行为不劣化）。正则提为编译期常量（EN 模式下每个
@@ -127,10 +127,10 @@ String _trimNumber(double value) {
 }
 
 String _compactEnglishNumber(double value) {
-  // 压缩后复检进位（ P2 P3-6）：999999/1000=999.999 →
-  // toStringAsFixed(2)="1000.00" → 原实现输出 "1000K" 而非 "1M"。
-  // 该分支 value<1000000，商四舍五入到 "1000" 只发生在 999995+ 的进位
-  // 边界——命中即升上一档。
+ // 压缩后复检进位（P2 ）：999999/1000=999.999 →
+ // toStringAsFixed(2)="1000.00" → 原实现输出 "1000K" 而非 "1M"。
+ // 该分支 value<1000000，商四舍五入到 "1000" 只发生在 999995+ 的进位
+ // 边界——命中即升上一档。
   if (value >= 1000000000) return '${_trimNumber(value / 1000000000)}B';
   if (value >= 1000000) {
     final m = _trimNumber(value / 1000000);
@@ -188,7 +188,7 @@ String? _englishUnitsAndDates(String source) {
   return null;
 }
 
-/// 译文结果缓存（ P2 P2-3/P3 P3-3）：tr 的结果完全由
+/// 译文结果缓存（P2 /P3 ）：tr 的结果完全由
 /// (source, locale) 决定，但每个 Text 的每次 build 都会重调——未命中
 /// 词条要重扫 67 条 custom + 760 条 official 正则（滚动列表上每帧重复）。
 /// 命中即查表；locale 切换时随 _setResolved 整体清空。
@@ -201,6 +201,9 @@ String tr(String source) {
   final cached = _trCache[source];
   if (cached != null) return cached;
   final result = _resolveEn(source);
+ // （D-8 ）：无界缓存（动态错误串/插值句持续累积）——到上限
+ // 整体清空，词典命中率不受影响。
+  if (_trCache.length >= 4096) _trCache.clear();
   _trCache[source] = result;
   return result;
 }

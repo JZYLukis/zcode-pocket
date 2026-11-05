@@ -1,4 +1,4 @@
-// 会话子代理列表（2026-10-26 批④拍板⑥，方案 A——官方
+// 会话子代理列表（2026-10-26 拍板⑥，方案 A——官方
 // SubagentSessionSidePane 的手机化）：会话顶栏入口 → 底部弹层分
 // 「运行中 / 已结束」两段，已结束分页（endedCursor，官方默认 20/页）；
 // 点条目经 childSessionId 下钻现有只读会话页（官方同款 drill-in）。
@@ -46,7 +46,7 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
   @override
   void initState() {
     super.initState();
-    // initState 内不得读 inherited（AppStateScope）——首帧后再取。
+ // initState 内不得读 inherited（AppStateScope）——首帧后再取。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _load();
     });
@@ -110,11 +110,14 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
   void _open(Map<String, dynamic> item) {
     final child = '${item['childSessionId'] ?? ''}'.trim();
     if (child.isEmpty) return;
+ // 2026-11-05 反馈①：下钻页标题优先用类型（官方 sidePaneTabPresentation
+ // L127-128 同款——类型即子代理身份；无类型回退任务 title）。
+    final type = '${item['subagentType'] ?? ''}'.trim();
     unawaited(
       widget.openSession(
         context,
         sessionId: child,
-        title: '${item['title'] ?? '子智能体'}',
+        title: type.isNotEmpty ? type : '${item['title'] ?? '子智能体'}',
         readOnly: true,
       ),
     );
@@ -303,6 +306,10 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
         : running
             ? context.colors.running
             : context.colors.foreground;
+ // 2026-11-05 反馈①：类型徽标（协议 subagentType 字段本就随行返回，
+ // 此前 UI 未消费）——标题旁小 chip 给出 general-purpose / Explore
+ // 等类型身份。
+    final type = '${item['subagentType'] ?? ''}'.trim();
     return ListTile(
       key: ValueKey('subagent-${item['childSessionId'] ?? ''}'),
       dense: true,
@@ -311,12 +318,41 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
         size: 18,
         color: failed ? context.colors.destructive : titleColor,
       ),
-      title: Text(
-        '${item['title'] ?? '子智能体'}'
-        '${failed ? ' · 失败' : status == 'cancelled' ? ' · 已取消' : ''}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: AppType.uiBase, color: titleColor),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(
+              '${item['title'] ?? '子智能体'}'
+              '${failed ? ' · 失败' : status == 'cancelled' ? ' · 已取消' : ''}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: AppType.uiBase, color: titleColor),
+            ),
+          ),
+          if (type.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Container(
+              key: ValueKey('subagent-type-${item['childSessionId'] ?? ''}'),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: context.colors.foregroundSubtlest.withValues(
+                  alpha: 0.12,
+                ),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Text(
+                type,
+                translate: false,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: AppType.uiXs,
+                  color: context.colors.foregroundSubtle,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
       subtitle: '${item['summary'] ?? ''}'.isEmpty
           ? null

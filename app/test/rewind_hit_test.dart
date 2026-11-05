@@ -50,7 +50,8 @@ class _RewindSub implements ConversationSubscription {
 class _RewindApp extends AppState {
   final sub = _RewindSub();
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     sub.seed();
     return sub;
   }

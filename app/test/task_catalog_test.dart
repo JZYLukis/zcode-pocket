@@ -14,7 +14,7 @@ class _Channels implements ChannelClient {
   Object? readTreeError;
   final calls = <String>[];
 
-  /// 按方法名注入应答（loadTaskIndex 四路 RPC 的脚本化应答）。
+ /// 按方法名注入应答（loadTaskIndex 四路 RPC 的脚本化应答）。
   final responses = <String, dynamic>{};
 
   @override
@@ -272,16 +272,16 @@ void main() {
       expect(model.cards.map((c) => c.sessionId), ['t1']);
       expect(model.channelLoaded, isTrue);
 
-      // 既有抖动保护回归钉：四列表全空+已加载 → 仍按桥抖动跳过。
+ // 既有抖动保护回归钉：四列表全空+已加载 → 仍按桥抖动跳过。
       h.bridge.channelsImpl.responses['listTasks'] = <Object?>[];
       await h.catalog.loadTaskIndex();
       expect(model.cards.map((c) => c.sessionId), ['t1'],
           reason: '全空+deleted 空=疑似桥抖动，保持既有数据');
 
-      // 删光最后一个任务（官方 listTasks 契约=所有已持久化任务，含软删
-      // 墓碑行）：三列表真空但 listDeletedTaskIds=['t1']——修复前守卫把
-      // 这批成功结果当桥抖动丢弃，deletedIds 永不应用，60s 本地墓碑过期
-      // 后已删任务复活驻留。
+ // 删光最后一个任务（官方 listTasks 契约=所有已持久化任务，含软删
+ // 墓碑行）：三列表真空但 listDeletedTaskIds=['t1']——修复前守卫把
+ // 这批成功结果当桥抖动丢弃，deletedIds 永不应用，60s 本地墓碑过期
+ // 后已删任务复活驻留。
       h.bridge.channelsImpl.responses['listDeletedTaskIds'] = <String>['t1'];
       await h.catalog.loadTaskIndex();
       expect(model.cards, isEmpty, reason: 'deletedIds 负向 join 必须应用');
@@ -291,11 +291,11 @@ void main() {
     },
   );
 
-  // J3-P2-2（批C 组3 守卫铺满）：tasks-index 行映射排序对
-  // updatedAt 硬转换 `as num?`——单条畸形行抛 TypeError 落进
-  // _acceptLogicalFrame 的 catch 触发 resync，快照重放再抛=无界循环。
-  // 修复=安全读取（payload_guard.intOf，String 数字容忍解析、非数字
-  // 按 0 兜底），notifyListeners 不得再抛。
+ // tasks-index 行映射排序对
+ // updatedAt 硬转换 `as num?`——单条畸形行抛 TypeError 落进
+ // _acceptLogicalFrame 的 catch 触发 resync，快照重放再抛=无界循环。
+ // 修复=安全读取（payload_guard.intOf，String 数字容忍解析、非数字
+ // 按 0 兜底），notifyListeners 不得再抛。
   test('tasks-index 行 updatedAt 形态漂移不打断映射排序', () async {
     final ti = _TasksSub(() {});
     ti.state.logEpoch = 'e1';
@@ -314,5 +314,43 @@ void main() {
     expect(h.catalog.workspaceTasks.first['taskId'], 't1',
         reason: "'900' 容忍解析为 900 > 100，排序不变");
     await h.catalog.detach();
+  });
+
+ // 2026-11-05 反馈②A：跨工作区打开任务期间保首页旧列表（SWR 式防闪
+ // 「正在加载任务…」）——keepHomePreview 保行+零额外通知；打开失败
+ // clearStaleHomePreview 收口恢复 J2 清残留语义；新工作区首帧
+ // tasks-index 到达由既有 _onTasksIndexChanged 全量替换并复位标记。
+  test('detach(keepHomePreview)：保首页行+stale 标记；clear 收口清空+通知', () async {
+    final ti = _TasksSub(() {});
+    ti.state.logEpoch = 'e1';
+    final h = _Harness(tasksSubscription: ti);
+    await h.catalog.subscribeTasksIndex();
+    ti.state.rows['k1'] = {
+      'address': {'taskId': 't1', 'workspacePath': 'G:/示例项目'},
+      'meta': {'taskId': 't1', 'title': 'A', 'updatedAt': 100},
+    };
+    ti.state.notifyListeners();
+    expect(h.catalog.workspaceTasks, hasLength(1));
+    expect(h.catalog.homePreviewStale, isFalse);
+
+ // 保数据 detach：旧行保留、stale 置位、不额外 notify（首页继续
+ // 显示旧行而不是闪加载态）。
+    final notifies = h.notifyCount;
+    await h.catalog.detach(keepHomePreview: true);
+    expect(h.catalog.workspaceTasks, hasLength(1),
+        reason: '旧首页行保留（修复前 detach 即清空→首页闪「正在加载任务…」）');
+    expect(h.catalog.homePreviewStale, isTrue);
+    expect(h.notifyCount, notifies, reason: '保数据路径零额外通知');
+
+ // 打开失败收口：清空 + 通知（防旧行以新作用域被消费）。
+    h.catalog.clearStaleHomePreview();
+    expect(h.catalog.workspaceTasks, isEmpty);
+    expect(h.catalog.homePreviewStale, isFalse);
+    expect(h.notifyCount, greaterThan(notifies));
+
+ // 幂等：非 stale 态再清为 no-op。
+    final after = h.notifyCount;
+    h.catalog.clearStaleHomePreview();
+    expect(h.notifyCount, after);
   });
 }

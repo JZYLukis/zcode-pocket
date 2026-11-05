@@ -39,7 +39,7 @@ String friendlyError(Object e) {
 /// 点按=建 V2 档案并激活。online=该桌面有活的 device 角色连接（官方
 /// 服务端按 ws 连接计算——离线桌面无法连接，列表置灰）。
 class DeviceListPage extends StatefulWidget {
-  /// 目标账号（多账号批 2026-10-25；null=最近使用账号——历史行为）。
+ /// 目标账号（多账号批 2026-10-25；null=最近使用账号——历史行为）。
   final String? accountId;
 
   const DeviceListPage({super.key, this.accountId});
@@ -53,19 +53,19 @@ class _DeviceListPageState extends State<DeviceListPage> {
   String? _error;
   bool _connecting = false;
 
-  /// 401（凭据失效）标记：错误视图给「重新登录」
-  /// 出口——按 relay 语义 401=清会话回登录，重试永远再 401。
+ /// 401（凭据失效）标记：错误视图给「重新登录」
+ /// 出口——按 relay 语义 401=清会话回登录，重试永远再 401。
   bool _authRequired = false;
 
-  //连接失败的条内错误：不再顶掉
-  /// 整个设备列表——已加载清单保留，错误以条形提示+人话映射。
+ //连接失败的条内错误：不再顶掉
+ /// 整个设备列表——已加载清单保留，错误以条形提示+人话映射。
   String? _connectError;
 
   @override
   void initState() {
     super.initState();
-    // AppStateScope.of 需在首帧后调用（initState 期间依赖注册非法——
-    // debug 断言炸、release 依赖更新不生效）。
+ // AppStateScope.of 需在首帧后调用（initState 期间依赖注册非法——
+ // debug 断言炸、release 依赖更新不生效）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         unawaited(_resolveAccountChip());
@@ -75,7 +75,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
   }
 
   Future<void> _load() async {
-    // 连接进行中不重复拉清单（避免并发第二次直连）。
+ // 连接进行中不重复拉清单（避免并发第二次直连）。
     if (_connecting) return;
     setState(() {
       _error = null;
@@ -83,13 +83,13 @@ class _DeviceListPageState extends State<DeviceListPage> {
       _connectError = null;
     });
     final app = AppStateScope.of(context);
-    // 自动落点直连仅限首次加载（_devices 尚空）——
-    // 刷新语义=重拉清单确认状态，被自动直连劫持会把页面 pop 掉。
+ // 自动落点直连仅限首次加载（_devices 尚空）——
+ // 刷新语义=重拉清单确认状态，被自动直连劫持会把页面 pop 掉。
     final firstLoad = _devices == null;
     try {
       final api = RelayV2Api(
         origin: relayV2DefaultOrigin(),
-        // 多账号批（2026-10-25）：按指定账号拉清单+建档案。
+ // 多账号批（2026-10-25）：按指定账号拉清单+建档案。
         jwtProvider: () => app.accountStore.readJwtFor(widget.accountId),
       );
       final devices = await api.listDevices();
@@ -99,7 +99,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         'online=${devices.where((d) => d.online).length}',
       );
       setState(() => _devices = devices);
-      // 恰好一台在线：自动落点直连（官方语义，仅首次进入）。
+ // 恰好一台在线：自动落点直连（官方语义，仅首次进入）。
       final auto = firstLoad ? pickAutoConnectDevice(devices) : null;
       debugPrint('[app] [v2-ui] auto-pick=${auto ?? '无（多台/全离线/刷新）'}');
       if (auto != null) {
@@ -123,15 +123,15 @@ class _DeviceListPageState extends State<DeviceListPage> {
         });
       }
     } on Object catch (e) {
-      // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
+ // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
       debugPrint('[app] [v2-ui] 设备列表失败: $e');
       if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
-  /// 401 后重新登录：push 官方登录页，成功后重拉
-  /// 清单（save 落库即切 lastUsed，本页 jwtProvider=null=lastUsed 取新凭据）。
-  /// 当前拉取所用账号的显示名（批1）：widget.accountId 为空=lastUsed。
+ /// 401 后重新登录：push 官方登录页，成功后重拉
+ /// 清单（save 落库即切 lastUsed，本页 jwtProvider=null=lastUsed 取新凭据）。
+ /// 当前拉取所用账号的显示名：widget.accountId 为空=lastUsed。
   String? _accountChip;
 
   Future<void> _resolveAccountChip() async {
@@ -154,14 +154,14 @@ class _DeviceListPageState extends State<DeviceListPage> {
     if (!mounted) return;
     final jwt = result?['jwt'];
     if (jwt is String) {
-      // P2-3：重登可能换了账号（lastUsed 变）——chip 重解析。
+ // 重登可能换了账号（lastUsed 变）——chip 重解析。
       unawaited(_resolveAccountChip());
       unawaited(_load());
     }
   }
 
-  /// multi-account-ux-1 批2：同一台电脑改绑账号需显式确认（破坏性——
-  /// 旧账号的连接将失效）。确认后 forceRebind 重调完成改绑。
+ /// multi-account-ux-1 ：同一台电脑改绑账号需显式确认（破坏性——
+ /// 旧账号的连接将失效）。确认后 forceRebind 重调完成改绑。
   Future<void> _addProfileResolvingRebind(CompanionV2Params params) async {
     final app = AppStateScope.of(context);
     try {
@@ -182,8 +182,8 @@ class _DeviceListPageState extends State<DeviceListPage> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('改绑这台电脑的账号？'),
-          // P2-1：整句插值进不了词表（此前 EN 整段中文）——
-          // 拆四段各自 tr 后拼接（词条=前缀/中缀/后缀，见 custom_l10n）。
+ // 整句插值进不了词表（此前 EN 整段中文）——
+ // 拆四段各自 tr 后拼接（词条=前缀/中缀/后缀，见 custom_l10n）。
           content: Text(
             tr('该电脑当前绑定「') +
                 from +
@@ -205,8 +205,8 @@ class _DeviceListPageState extends State<DeviceListPage> {
         ),
       );
       if (ok != true) {
-        // 用户取消（ P2-1）：仅收起连接态——此前 throw rethrow
-        // 会落入外层 catch 报错或直接 pop 整页（列表页被误关）。
+ // 用户取消：仅收起连接态——此前 throw rethrow
+ // 会落入外层 catch 报错或直接 pop 整页（列表页被误关）。
         if (mounted) setState(() => _connecting = false);
         return;
       }
@@ -221,7 +221,11 @@ class _DeviceListPageState extends State<DeviceListPage> {
   Future<void> _connect(CompanionV2Params params) async {
     debugPrint('[app] [v2-ui] connect sid=${params.deviceSid}');
     if (_connecting) return;
-    setState(() => _connecting = true);
+ // （D-8 ）：新连接开始即清上次失败红条，不与之并存到本次结束。
+    setState(() {
+      _connecting = true;
+      _connectError = null;
+    });
     try {
       await _addProfileResolvingRebind(params);
       debugPrint('[app] [v2-ui] profile added, popping');
@@ -229,8 +233,8 @@ class _DeviceListPageState extends State<DeviceListPage> {
     } on Object catch (e) {
       debugPrint('[app] [v2-ui] connect failed: $e');
       if (mounted) {
-        // 连接失败保留列表（条内错误），文案过人话
-        // 映射与 _load 同口径（此前裸怼 RelayV2Unavailable 等协议串）。
+ // 连接失败保留列表（条内错误），文案过人话
+ // 映射与 _load 同口径（此前裸怼 RelayV2Unavailable 等协议串）。
         setState(() {
           _connecting = false;
           _connectError = '连接失败：${friendlyError(e)}';
@@ -243,14 +247,14 @@ class _DeviceListPageState extends State<DeviceListPage> {
   Widget build(BuildContext context) {
     final devices = _devices;
     final listBody = devices == null
-        // 优化批 #2：同上。
+ // 优化批 #2：同上。
         ? const Center(child: AppLoading('正在加载设备…'))
         : devices.isEmpty
         ? _emptyView()
         : ListView(
             padding: const EdgeInsets.all(12),
             children: [
-              // 连接失败条内呈现，设备清单保留。
+ // 连接失败条内呈现，设备清单保留。
               if (_connectError != null) ...[
                 Container(
                   key: const ValueKey('device-connect-error'),
@@ -309,9 +313,9 @@ class _DeviceListPageState extends State<DeviceListPage> {
       appBar: AppBar(
         backgroundColor: context.colors.background,
         surfaceTintColor: Colors.transparent,
-        // multi-account-ux-1 批1（2026-11-04 拍板）：显式标注「以哪个
-        // 账号拉取」——accountId 为空=最近使用账号（历史行为）。
-        // 显示名异步解析（备注名优先），解析前不占位。
+ // multi-account-ux-1 （2026-11-04 拍板）：显式标注「以哪个
+ // 账号拉取」——accountId 为空=最近使用账号（历史行为）。
+ // 显示名异步解析（备注名优先），解析前不占位。
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -366,8 +370,8 @@ class _DeviceListPageState extends State<DeviceListPage> {
           ],
         ),
         actions: [
-          // 网页备用入口（阶段 4.2 最小版 / H08-8B，2026-10-29 批次）：
-          // 零协议依赖逃生舱——协议漂移/握手失败时仍可用官方 Web 远控。
+ // 网页备用入口（阶段 4.2 最小版 / ，2026-10-29 批次）：
+ // 零协议依赖逃生舱——协议漂移/握手失败时仍可用官方 Web 远控。
           IconButton(
             key: const ValueKey('web-fallback-entry'),
             tooltip: tr('用网页版打开（备用通道）'),
@@ -384,7 +388,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         ],
       ),
       body: _connecting
-          // 优化批 #2：裸转圈换带说明的 AppLoading（等待语义可读）。
+ // 优化批 #2：裸转圈换带说明的 AppLoading（等待语义可读）。
           ? const Center(child: AppLoading('正在加载设备…'))
           : _error != null
           ? _errorView()
@@ -399,9 +403,9 @@ class _DeviceListPageState extends State<DeviceListPage> {
         children: [
           Text('$_error'),
           const SizedBox(height: 12),
-          // 401=凭据失效（JWT 无本地过期信号，重试
-          // 必然再 401）——给「重新登录」出口，对齐 relay「401=清会话回
-          // 登录」语义。
+ // 401=凭据失效（JWT 无本地过期信号，重试
+ // 必然再 401）——给「重新登录」出口，对齐 relay「401=清会话回
+ // 登录」语义。
           if (_authRequired) ...[
             FilledButton(
               key: const ValueKey('device-list-relogin'),

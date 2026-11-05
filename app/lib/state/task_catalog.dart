@@ -9,7 +9,7 @@ import '../transport/protocol_drift.dart';
 import 'cache_policy.dart';
 import 'task_list.dart';
 
-/// 工作区 scope 构造（唯一真源—— J2 P3-9/J3 P3-4 轻量合并）：
+/// 工作区 scope 构造（唯一真源—— J2 /J3 轻量合并）：
 /// TaskCatalog 与 WorkspaceController 此前各持一份逐字重复，TaskCatalog
 /// 内部另有 _taskScope 与 deleteArchivedTasks 的手写内联共三份，协议
 /// scope 字段演进时漏改面 ×3。
@@ -89,10 +89,10 @@ class TaskCatalog {
       onLog: _onLog,
     );
     model.applyChannelLists(
-      // channelActive 预渲 running 清洗（ J3 P3-6）：tasks-index
-      // 合并把 liveStatus='running' 写进通道行 status——workspaceTasks 路
-      // 已在读取侧 sanitize，本路原样落 dormant 模型会把已结束回合渲染
-      // 成运行中。白名单裁剪覆盖合并层消费的全部键。
+ // channelActive 预渲 running 清洗（J3 ）：tasks-index
+ // 合并把 liveStatus='running' 写进通道行 status——workspaceTasks 路
+ // 已在读取侧 sanitize，本路原样落 dormant 模型会把已结束回合渲染
+ // 成运行中。白名单裁剪覆盖合并层消费的全部键。
       active: cacheHomeTaskRows(cached.channelActive, sanitizeLive: true),
       pinnedIds: cached.pinnedIds,
       archivedIds: cached.archivedIds,
@@ -109,8 +109,8 @@ class TaskCatalog {
     String workspaceKey, {
     required bool dormant,
   }) {
-    // 先摘引用再 dispose（D2 L-3，HEAD 同序）：dispose 的 await 窗口内
-    // 任何重入读 taskList 不得摸到已死模型。
+ // 先摘引用再 dispose（D2 L-3，HEAD 同序）：dispose 的 await 窗口内
+ // 任何重入读 taskList 不得摸到已死模型。
     final oldModel = _taskList;
     _taskList = null;
     oldModel?.removeListener(_onTaskListChanged);
@@ -136,10 +136,10 @@ class TaskCatalog {
 
   void _onBridgeRecoveredReloadTasks() {
     if (_taskList != null) unawaited(loadTaskIndex());
-    // 恢复边沿两类数据收敛对称（ J1-7）：桥短暂断链期间
-    // loadProjects 失败会置 readTreeStatus='failed'——桥恢复后任务三列表
-    // 自动重拉而项目树不会，侧栏停留 tabs 兜底+失败提示直到手动刷新。
-    // 仅失败态重拉（ok/loading 态无需）。
+ // 恢复边沿两类数据收敛对称：桥短暂断链期间
+ // loadProjects 失败会置 readTreeStatus='failed'——桥恢复后任务三列表
+ // 自动重拉而项目树不会，侧栏停留 tabs 兜底+失败提示直到手动刷新。
+ // 仅失败态重拉（ok/loading 态无需）。
     if (readTreeStatus == 'failed') unawaited(loadProjects());
   }
 
@@ -198,10 +198,10 @@ class TaskCatalog {
   Future<void> loadProjects() async {
     final bridge = _bridgeProvider();
     if (bridge == null) return;
-    // 代际计数（ J3 P3-8）：多入口并发（openActiveWorkspace/
-    // refreshWorkspaces/moveTask/bridge recovered）只校验 bridge 身份不
-    // 校验"更新鲜"——15s 超时窗口内慢的旧请求后到覆盖新树（瞬时错树，
-    // 下一次拉取才自愈）。旧代际结果整体丢弃。
+ // 代际计数（J3 ）：多入口并发（openActiveWorkspace/
+ // refreshWorkspaces/moveTask/bridge recovered）只校验 bridge 身份不
+ // 校验"更新鲜"——15s 超时窗口内慢的旧请求后到覆盖新树（瞬时错树，
+ // 下一次拉取才自愈）。旧代际结果整体丢弃。
     final generation = ++_loadProjectsGeneration;
     readTreeStatus = 'loading';
     _onNotify();
@@ -281,7 +281,7 @@ class TaskCatalog {
       sub.onRowsRemoved = _onTasksIndexRowsRemoved;
       sub.state.addListener(_onTasksIndexChanged);
       _onLog('[tasks-index] subscribed');
-      // 订阅 call 返回前快照帧可能已 staged 应用——立即喂一次。
+ // 订阅 call 返回前快照帧可能已 staged 应用——立即喂一次。
       if (sub.state.hasSnapshot) _onTasksIndexChanged();
     } catch (e) {
       _onLog(
@@ -291,17 +291,22 @@ class TaskCatalog {
     }
   }
 
+ /// 2026-11-05 反馈②A：跨工作区打开任务时保住的旧首页列表是否仍在
+ /// 展示（新工作区首帧 tasks-index 到达即被整体替换并复位）。
+  bool homePreviewStale = false;
+
   void _onTasksIndexChanged() {
     if (_disposedProvider()) return;
     final state = _tasksIndex?.state;
     if (state == null || !state.hasSnapshot) return;
+    homePreviewStale = false;
     if (!_tasksIndexSnapshotLogged) {
       _tasksIndexSnapshotLogged = true;
       _onLog('[tasks-index] snapshot: ${state.rows.length} rows');
     }
-    // 守卫（ J3-P2-2）：updatedAt 硬转换抛 TypeError 会落在
-    // _acceptLogicalFrame 的 catch 里触发 _resync——同一快照重放再抛，
-    // 形成 resync 无界循环；改安全读取按 0 兜底。
+ // 守卫：updatedAt 硬转换抛 TypeError 会落在
+ // _acceptLogicalFrame 的 catch 里触发 _resync——同一快照重放再抛，
+ // 形成 resync 无界循环；改安全读取按 0 兜底。
     final mapped =
         [for (final row in state.rows.values) controllerRowToTaskMap(row)]
           ..sort(
@@ -362,19 +367,19 @@ class TaskCatalog {
         .map((t) => '${t['taskId'] ?? ''}')
         .where((id) => id.isNotEmpty)
         .toList();
-    // 注意：listDeletedTaskIds 官方契约是纯字符串数组（Promise<string[]>，
-    // refs zcodeTaskService.ts:460-464），与三列表的对象载荷不同——必须走
-    // 专用解析（2026-10-23 真机实锤：误用 ids() 对象解析恒空，负向 join
-    // 从未生效，桌面墓碑达数百时手机仍显示两百上下旧卡）。
+ // 注意：listDeletedTaskIds 官方契约是纯字符串数组（Promise<string[]>，
+ // refs zcodeTaskService.ts:460-464），与三列表的对象载荷不同——必须走
+ // 专用解析（2026-10-23 真机实锤：误用 ids() 对象解析恒空，负向 join
+ // 从未生效，桌面墓碑达数百时手机仍显示两百上下旧卡）。
     final deleted = parseDeletedTaskIds(results[3]);
-    // 桥抖动窗口内 RPC 失败会拿到全空三列表——直接应用会把已剔除的
-    // 归档任务复活、清掉置顶。全空且已有数据时跳过（bridge 恢复会重拉）。
-    // 守卫必须纳入 deleted（ J1-4/J3 P1-2/L2/L3 四路）：官方
-    // listTasks 契约=所有已持久化任务（含软删墓碑行，refs
-    // zcodeTaskService.ts:428-432），"三列表全空+deleted 非空"是删光最后
-    // 一个任务的合法终态——照旧跳过会把 deletedIds 负向 join 一起冻结，
-    // 60s 本地墓碑过期后已删任务复活驻留到重开工作区；且任一路 RPC 失败
-    // 时 deleted 同为空（catchError 归一），抖动保护不受影响。
+ // 桥抖动窗口内 RPC 失败会拿到全空三列表——直接应用会把已剔除的
+ // 归档任务复活、清掉置顶。全空且已有数据时跳过（bridge 恢复会重拉）。
+ // 守卫必须纳入 deleted（/J3 /L2/L3 四路）：官方
+ // listTasks 契约=所有已持久化任务（含软删墓碑行，refs
+ // zcodeTaskService.ts:428-432），"三列表全空+deleted 非空"是删光最后
+ // 一个任务的合法终态——照旧跳过会把 deletedIds 负向 join 一起冻结，
+ // 60s 本地墓碑过期后已删任务复活驻留到重开工作区；且任一路 RPC 失败
+ // 时 deleted 同为空（catchError 归一），抖动保护不受影响。
     if (active.isEmpty &&
         pinned.isEmpty &&
         archived.isEmpty &&
@@ -399,10 +404,10 @@ class TaskCatalog {
     final bridge = _bridgeProvider();
     final q = query.trim();
     if (bridge == null || q.isEmpty) return null;
-    // scopes = 全部已知工作区：workspace-list（当前 tabs）+ 项目任务聚合
-    // （：3.16 workspace-list 只剩 1 tab，项目全集补全搜索覆盖）
-    // + controller/tasks-index 当前窗口任务（B 首页同源补齐：避免 readTree
-    // 未就绪时"首页看得到、正文搜不到"）。
+ // scopes = 全部已知工作区：workspace-list（当前 tabs）+ 项目任务聚合
+ // （3.16 workspace-list 只剩 1 tab，项目全集补全搜索覆盖）
+ // + controller/tasks-index 当前窗口任务（B 首页同源补齐：避免 readTree
+ // 未就绪时"首页看得到、正文搜不到"）。
     final scopesByKey = <String, Map<String, dynamic>>{};
     void addScope(Map<String, dynamic> w) {
       final path = '${w['workspacePath'] ?? ''}';
@@ -428,7 +433,7 @@ class TaskCatalog {
       addScope(t);
     }
     final scopes = scopesByKey.values.toList();
-    // 没有可查询的 scope 是"搜索不可用"，不是"零匹配"。
+ // 没有可查询的 scope 是"搜索不可用"，不是"零匹配"。
     if (scopes.isEmpty) return null;
     Future<List<Map<String, dynamic>>> fetch(String kind) async {
       final res = await bridge.channels.call(
@@ -458,11 +463,11 @@ class TaskCatalog {
       }
     }
 
-    // 双路允许部分成功：pinned 失败不再拖掉 active 已命中的正文结果；
-    // 只有两路都失败才判定全文搜索不可用。
+ // 双路允许部分成功：pinned 失败不再拖掉 active 已命中的正文结果；
+ // 只有两路都失败才判定全文搜索不可用。
     final results = await Future.wait([tryFetch('active'), tryFetch('pinned')]);
     if (results[0] == null && results[1] == null) return null;
-    // taskId 去重（置顶行只来自 pinned 路，理论上不重叠，防御性合并）。
+ // taskId 去重（置顶行只来自 pinned 路，理论上不重叠，防御性合并）。
     final seen = <String>{};
     final out = <Map<String, dynamic>>[];
     for (final hit in [...results[0] ?? const [], ...results[1] ?? const []]) {
@@ -519,25 +524,46 @@ class TaskCatalog {
     return res;
   }
 
-  Future<dynamic> markTaskRead(String taskId) =>
-      _taskCall('setTaskUnread', {..._taskScope(taskId), 'unread': false});
+ /// 2026-11-05 反馈②B：官方 compare-and-clear（task-unread-state.md
+ /// 52-58——tasks-index 当前 unreadAt 仍等于 expectedUnreadAt 才清除）。
+ /// 此前每次打开都无条件发写，转场窗口内引来一次 meta 变更帧=首页
+ /// 整页重建观感；携带期望值后未读未变时服务端无变更推送。
+  Future<dynamic> markTaskRead(String taskId, {int? expectedUnreadAt}) =>
+      _taskCall('setTaskUnread', {
+        ..._taskScope(taskId),
+        'unread': false,
+        if (expectedUnreadAt != null) 'expectedUnreadAt': expectedUnreadAt,
+      });
 
   Future<dynamic> markTaskUnread(String taskId, {required bool unread}) =>
       _taskCall('setTaskUnread', {..._taskScope(taskId), 'unread': unread});
 
-  Future<void> detach({Future<void> Function()? beforeTasksIndexDispose}) async {
+  Future<void> detach({
+    Future<void> Function()? beforeTasksIndexDispose,
+    bool keepHomePreview = false,
+  }) async {
     final tiSub = _tasksIndex;
     _tasksIndex = null;
     _taskIndexReloadTimer?.cancel();
     _taskIndexReloadTimer = null;
     _tasksIndexSnapshotLogged = false;
-    // 切工作区清残留（ J2 P3-2）：workspaceTasks/archivedTasks 是
-    // 上一工作区的现场——不清则开桥窗口内首页/跨区搜索继续消费旧行，
-    // 点旧行会以新工作区的 conv/作用域去开旧任务（服务端找不到/开错
-    // 目录）。projects/projectTasks 按设计保留（同电脑切换数据仍有效，
-    // J2 排除项 12）；首页在 workspaceTasks 空时自有 currentTasks 兜底。
-    workspaceTasks = const [];
-    archivedTasks = const [];
+ // 切工作区清残留（J2 ）：workspaceTasks/archivedTasks 是
+ // 上一工作区的现场——不清则开桥窗口内首页/跨区搜索继续消费旧行，
+ // 点旧行会以新工作区的 conv/作用域去开旧任务（服务端找不到/开错
+ // 目录）。projects/projectTasks 按设计保留（同电脑切换数据仍有效，
+ // J2 排除项 12）；首页在 workspaceTasks 空时自有 currentTasks 兜底。
+ // 2026-11-05 反馈②A（keepHomePreview）：跨工作区打开任务的窗口内
+ // 保留旧首页行（SWR 式防闪「正在加载任务…」）——安全边界：旧行
+ // 点按走跨区路径按任务自身工作区解析（_openCrossWorkspaceTask），
+ // 不走 sessionId 直开；打开失败由调用方 clearStaleHomePreview()
+ // 收口恢复 J2 清残留语义。
+    if (keepHomePreview && workspaceTasks.isNotEmpty) {
+      homePreviewStale = true;
+    } else {
+      workspaceTasks = const [];
+      archivedTasks = const [];
+      homePreviewStale = false;
+    }
     final oldModel = _taskList;
     _taskList = null;
     _onTaskListRebuilt(null);
@@ -548,5 +574,15 @@ class TaskCatalog {
     _attachedBridge = null;
     oldModel?.removeListener(_onTaskListChanged);
     oldModel?.dispose();
+  }
+
+ /// 2026-11-05 反馈②A：打开失败时显式清保住的旧首页行（恢复 J2
+ /// 清残留语义——防旧行以新工作区作用域被消费）。
+  void clearStaleHomePreview() {
+    if (!homePreviewStale) return;
+    homePreviewStale = false;
+    workspaceTasks = const [];
+    archivedTasks = const [];
+    _onNotify();
   }
 }

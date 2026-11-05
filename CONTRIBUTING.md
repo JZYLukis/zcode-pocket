@@ -7,7 +7,8 @@ Thanks for your interest! （欢迎参与）
 - Setup: see the **Build** section in the README (Flutter 3.47.x
   recommended; `flutter pub get && flutter build apk --split-per-abi`).
 - Before sending a PR, make sure `flutter analyze` and `flutter test`
-  pass inside `app/` — CI runs both on every PR.
+  pass inside `app/` — CI runs both on every PR, plus a debug build to
+  confirm the tree still compiles.
 - Keep PRs focused: one topic per PR.
 - Note: this is an unofficial third-party client. Anything that depends
   on the official Web Remote Control protocol may need verification

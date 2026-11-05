@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'dart:convert';
 import 'dart:io' show Directory, Platform;
 
@@ -11,7 +13,7 @@ import 'package:zcode_pocket/transport/z_transport.dart';
 class FakeSecureStorage extends FlutterSecureStorage {
   FakeSecureStorage({this.latency = Duration.zero});
 
-  /// 每操作固定延迟：模拟真实 IO 的 await 边界（交错窗口）。
+ /// 每操作固定延迟：模拟真实 IO 的 await 边界（交错窗口）。
   final Duration latency;
   final Map<String, String> data = {};
 
@@ -83,7 +85,7 @@ void main() {
     test('坏条目跳过+计数，好条目保留（原实现整体抛→全清空）', () {
       final store = ProfileStore(storage: FakeSecureStorage());
       final good = _profile('sid-ok', label: '好档案');
-      // 一好一坏：url 非法 + 一条非 Map
+ // 一好一坏：url 非法 + 一条非 Map
       final json = '[${_encJson(good)},{"url":"not-a-url"},'
           '"garbage"]';
       final r = store.decodeProfileList(json);
@@ -104,7 +106,7 @@ void main() {
       final storage = FakeSecureStorage();
       final store = ProfileStore(storage: storage);
       await store.upsertProfile(_profile('sid-ok', label: '好档案'));
-      // 手工塞入坏条目（模拟历史版本写入的坏数据）
+ // 手工塞入坏条目（模拟历史版本写入的坏数据）
       final raw = storage.data['profile.relay.list']!;
       storage.data['profile.relay.list'] =
           '${raw.substring(0, raw.length - 1)},{"url":"not-a-url"}]';
@@ -120,8 +122,8 @@ void main() {
         latency: const Duration(milliseconds: 5),
       );
       final store = ProfileStore(storage: storage);
-      // 两个 upsert 同时在途：旧实现两者都先 read 到空表，后写者覆盖
-      // 先写者（丢一台电脑）。串行化后必须都在。
+ // 两个 upsert 同时在途：旧实现两者都先 read 到空表，后写者覆盖
+ // 先写者（丢一台电脑）。串行化后必须都在。
       final a = store.upsertProfile(_profile('sid-a', label: 'A'));
       final b = store.upsertProfile(_profile('sid-b', label: 'B'));
       await a;
@@ -151,9 +153,14 @@ void main() {
   group('18088 自救：加密列表顶层畸形（K1 P2-4/K2 P2-1）', () {
     test('relay.list JSON 整体畸形 → 明文备份回补接管（修复前=jsonDecode 抛出短路 rescue）', () async {
       final storage = FakeSecureStorage();
+      final backupPath = _tempBackupPath();
+      addTearDown(() {
+        final f = File(backupPath);
+        if (f.existsSync()) f.deleteSync();
+      });
       final store = ProfileStore(
         storage: storage,
-        debugBackupPath: _tempBackupPath(),
+        debugBackupPath: backupPath,
       );
       final v2 = AccountV2Profile(
         deviceSid: 'sid-v2',
@@ -167,7 +174,7 @@ void main() {
       await store.upsertProfile(v2);
       expect(storage.data['profile.relay.list'], contains('sid-v2'));
 
-      // 模拟加密层损坏出非 JSON 串（18087 同类故障的相邻形态：值在但坏了）。
+ // 模拟加密层损坏出非 JSON 串（同类故障的相邻形态：值在但坏了）。
       storage.data['profile.relay.list'] = '{"kind":"v2","sid":"sid-v2"';
       final r = await store.listProfilesDetailed();
       expect(

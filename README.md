@@ -53,7 +53,9 @@ ZCode account and a running desktop.
 ## Installation
 
 Grab a prebuilt APK from [Releases](https://github.com/JZYLukis/zcode-pocket/releases)
-(most phones: `arm64-v8a`) — or build from source below.
+(most phones: `arm64-v8a`) — or build from source below. Before mixing the two,
+read [Signing and switching builds](#signing-and-switching-builds): the
+signatures differ and switching requires uninstalling, which erases local data.
 
 ## Build
 
@@ -65,6 +67,32 @@ flutter build apk --split-per-abi
 Without `app/android/key.properties`, release builds fall back to debug
 signing (fine for personal use); configure your own signing for wider
 distribution.
+
+### Signing and switching builds
+
+The prebuilt APKs are signed with the maintainer's release keystore. A build
+made from this repository without `app/android/key.properties` uses the
+Android debug keystore instead, so the two have **different signatures**.
+
+Android refuses to update an installed app with an APK signed by a different
+key (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). To switch between the prebuilt APK
+and your own build you must uninstall the old app first. **Uninstalling erases
+local data** — signed-in accounts, paired computers, drafts, the offline send
+queue — and there is no cloud backup (`allowBackup=false`).
+
+To keep receiving updates without uninstalling, always build with the same
+keystore and keep using that build. Fill four keys in
+`app/android/key.properties` (values from your own keystore):
+
+| Key | Meaning |
+|---|---|
+| `storeFile` | keystore path (relative paths resolve inside `app/android/app/`) |
+| `storePassword` | keystore password |
+| `keyAlias` | key alias |
+| `keyPassword` | key password |
+
+Do not commit the keystore or this file; the repository `.gitignore` already
+excludes them.
 
 ### Voice input
 
@@ -84,6 +112,20 @@ with your own API keys in settings.
   **auto-launch / associated launch / background activity** for this app in
   system settings (location varies by vendor, usually under battery or
   startup management).
+
+## Privacy
+
+- No telemetry, no third-party analytics, no ads. Conversation and task data
+  go only to the ZCode desktop / official service you configure.
+- Account credentials are stored in the Android keystore; Android backup is
+  disabled (`allowBackup=false`), so app data is not copied into cloud
+  backups.
+- **Lock screen**: by default Android may show notification content on the
+  lock screen. ZCode Pocket notifications contain the task title and up to
+  60 characters of the latest assistant reply; the optional foreground
+  connection notification also shows the name of the running task. To hide
+  this, enable "hide sensitive notification content" (or disable lock-screen
+  notifications) for ZCode Pocket in system settings.
 
 ## Known limitations
 

@@ -1,0 +1,170 @@
+# Design decisions
+
+A short, public-facing summary of the choices that shape ZCode Pocket. It is
+not a full decision log: it records the constraints that keep coming back in
+bug reports and pull requests, so contributors can tell a bug from an intended
+trade-off.
+
+## 1. Unofficial client, protocol learned from the official implementation
+
+**Problem**: there is no public SDK for the Web Remote Control channel.
+**Decision**: implement against the official open-source desktop code and
+observed traffic; do not copy official runtime code; keep the unofficial
+disclaimer visible in the app and README.
+**Cost**: every desktop upgrade can invalidate an assumption; protocol work is
+continuous, and some features cannot be offered at all (see #12).
+
+## 2. Relay first, LAN as a fallback
+
+**Problem**: the phone is often not on the same network as the desktop.
+**Decision**: the primary transport is the official relay
+(`wss://zcode.z.ai`); the desktop's `zcode --web` channel is a secondary
+transport behind the same abstraction.
+**Cost**: two transports to maintain; the relay path depends on the official
+service being reachable and on its terms.
+
+## 3. One phone session per desktop, several desktops in parallel
+
+**Problem**: the relay allows one terminal per device session; a second one
+kicks the first.
+**Decision**: isolate each desktop in its own profile/connection instead of
+pretending a single connection can serve several desktops; switching desktops
+is an explicit action.
+**Cost**: N desktops means N connections and N credential sets; the UI must
+make "which computer am I looking at" unambiguous.
+
+## 4. Disconnect about 90 seconds after backgrounding
+
+**Problem**: a permanently open WebSocket keeps waking the radio.
+**Decision**: by default, drop the connection ~90 s after the app goes to the
+background and reconnect on return. Only the optional approval-alert mode
+keeps a background connection.
+**Cost**: no real-time task-completion notification unless approval alerts are
+enabled; returning to the app costs a reconnect and a cache refresh.
+
+## 5. Background heartbeat is widened, not removed
+
+**Problem**: a 5 s heartbeat in the background dominated battery use while the
+relay tolerated much quieter clients.
+**Decision**: widen the heartbeat interval while backgrounded (with a matching
+watchdog widening), restore it in the foreground. Any in-flight watchdog must
+be rescheduled when the interval changes.
+**Cost**: background commands can take longer to notice a dead link; the
+timing rules are subtle and are covered by dedicated tests.
+
+## 6. Cache snapshots, but never rewrite identical bytes
+
+**Problem**: frequent full rewrites of device/task snapshots cost I/O and
+wakeups without changing content.
+**Decision**: keep read-only snapshots for fast cold starts, and skip writes
+when a content fingerprint is unchanged.
+**Cost**: a stale snapshot is possible until the first live frame; staleness is
+shown in the UI rather than hidden.
+
+## 7. Task-centric home, projects as grouping
+
+**Problem**: a top row of project chips made switching and sorting awkward on
+a phone, and duplicated the task list.
+**Decision**: one task home grouped by time and project, with project ordering
+and pinning; project selection lives in the new-task flow and in the project
+groups.
+**Cost**: one extra tap to "browse a project"; wide-screen layouts need a
+separate compact treatment.
+
+## 8. Dual pane on wide screens, single column on phones
+
+**Problem**: foldables and tablets have room for a list and a conversation.
+**Decision**: at ≥600 dp logical width, show a task list on the left and the
+selected conversation on the right; below that, keep the single-column flow.
+**Cost**: two navigation models to test; the secondary pages (settings, usage)
+are still full-screen.
+
+## 9. Drafts are persisted, and uncertain sends are never automatic
+
+**Problem**: mobile apps are killed in the background; losing a long message
+is unacceptable.
+**Decision**: persist drafts per computer/account/workspace/conversation,
+flush on background, and mark a send as "in flight" on disk. If the app dies
+mid-send, show "result unknown, check before resending" instead of resending.
+**Cost**: extra local state and edge cases (attachment expiry, deleted tasks,
+account switches) that must be cleaned up explicitly.
+
+## 10. Offline queue only holds messages that were never sent
+
+**Problem**: users type while disconnected and expect the message to go out
+after reconnecting.
+**Decision**: queue only messages for which no send was ever attempted; once a
+send has been attempted, the uncertain-send rules from #9 apply.
+**Cost**: attachments cannot be queued (upload needs a connection); queued
+messages are replayed in order and stop at the first failure.
+
+## 11. Search is literal, local and occurrence-based
+
+**Problem**: full-text search over a long conversation must work offline and
+match what the user sees.
+**Decision**: case-insensitive literal matching over loaded rows, occurrence
+counts, previous/next navigation, and lazy loading of older history with an
+explicit "loaded range only" note while running or offline.
+**Cost**: very long histories need paging; search is not semantic and does not
+index reasoning content.
+
+## 12. No image/PDF preview; HTML preview only
+
+**Problem**: the protocol exposes conversation file changes and workflow
+artifacts, but no general "read arbitrary file bytes" method.
+**Decision**: render newly created HTML files locally; keep images/PDFs out of
+scope rather than asking the agent to inline base64 (which costs tokens every
+turn and stays in context).
+**Cost**: a real usability gap for binary files; it will be revisited if the
+official protocol adds a byte channel.
+
+## 13. Light-first visual system, dark follows the system
+
+**Problem**: the desktop has an established black/white skeleton with a single
+accent color; a phone client that invents its own palette feels foreign.
+**Decision**: light theme is the design baseline, dark theme follows the
+system setting, and both use the same tokens. Status is conveyed by motion and
+a small number of semantic colors, not by decoration.
+**Cost**: every new surface must be checked in both themes; contrast and
+baseline tests are part of CI.
+
+## 14. No telemetry, and exports go through an allow-list
+
+**Problem**: a client that holds account credentials must be auditable.
+**Decision**: no analytics or crash reporting; credentials live in the system
+keystore; Android backup is disabled; the public source tree is produced by an
+allow-listed `git archive` export with a sensitive-string, credential and image
+metadata check.
+**Cost**: no field diagnostics from users; bugs are reproduced locally, and the
+export step is deliberately strict.
+
+## 15. Release identity is SemVer + a date build code
+
+**Problem**: version numbers used to depend on whatever was installed on a
+test device.
+**Decision**: user-visible versions use SemVer; `versionCode` is
+`YYYYMMDDNN`; release builds embed the commit SHA in `versionName`; a release
+is an annotated tag that never moves.
+**Cost**: version bookkeeping is manual at the release window; rebuilding the
+same version is discouraged, and a bad release is superseded by the next
+patch.
+
+## 16. Voice input uses the system recognizer by default
+
+**Problem**: vendor speech engines are not portable and add large native
+dependencies.
+**Decision**: use Android's standard `SpeechRecognizer` when available, hide
+the entry when it is not, and keep optional transcript polishing behind
+user-supplied API keys. Vendor-specific engines are not part of the public
+build.
+**Cost**: recognition quality and availability depend on the device; some
+devices ship no recognition service.
+
+## 17. Protocol compatibility is additive and tolerant
+
+**Problem**: the desktop upgrades independently of the phone app.
+**Decision**: ignore unknown envelope types and fields, treat new optional
+fields as absent-safe, and verify protocol assumptions against each desktop
+version before shipping a fix.
+**Cost**: silent behavior changes are possible; the app needs explicit
+compatibility checks and conservative fallbacks for write operations.

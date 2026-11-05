@@ -50,10 +50,10 @@ class _PreviewLiveApp extends AppState {
   final List<Map<String, dynamic>> rows;
   final String sessionId;
 
-  /// live 快照比缓存多的 seq 数（>0=离开期间有新输出）。
+ /// live 快照比缓存多的 seq 数（>0=离开期间有新输出）。
   final int liveSeqDelta;
 
-  /// 订阅闸门：不 complete 则 ensureConversation 不返回（预渲必先落地）。
+ /// 订阅闸门：不 complete 则 ensureConversation 不返回（预渲必先落地）。
   final gate = Completer<void>();
   late final sub = _PreviewSub(sessionId);
 
@@ -79,7 +79,8 @@ class _PreviewLiveApp extends AppState {
       );
 
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     await gate.future;
     if (!sub.state.ready) {
       sub.state.applySeed(
@@ -133,8 +134,8 @@ Future<void> _pump(WidgetTester tester) async {
 }
 
 List<Map<String, dynamic>> _longRows() => [
-      // 轮结构（纯正文行不进投影——buildChatItems 语义，夹具需带
-      // turnHeader+userInput 成轮）。
+ // 轮结构（纯正文行不进投影——buildChatItems 语义，夹具需带
+ // turnHeader+userInput 成轮）。
       for (var i = 0; i < 15; i++) ...[
         {
           'rowId': i * 3 + 1,
@@ -167,11 +168,11 @@ void main() {
     await tester.pumpWidget(_host(_RowsApp(_longRows())));
     await _pump(tester);
 
-    // 粘底态初始无 FAB。
+ // 粘底态初始无 FAB。
     expect(find.byKey(const ValueKey('jump-bottom')), findsNothing);
 
-    // 模拟"用户滚动序列结束落点离底"：直接操作 position（不经生产代码
-    // 的 _markProgrammatic 窗口）→ 产生的 ScrollEnd 参与落点裁决。
+ // 模拟"用户滚动序列结束落点离底"：直接操作 position（不经生产代码
+ // 的 _markProgrammatic 窗口）→ 产生的 ScrollEnd 参与落点裁决。
     final scroll = _scrollable(tester);
     scroll.position
         .jumpTo((scroll.position.maxScrollExtent * 0.5).clamp(0.0, double.infinity));
@@ -191,7 +192,7 @@ void main() {
     addTearDown(tester.view.reset);
     final app = _RowsApp(_longRows());
 
-    // 第一次进入：滚到中部后退出（pop → dispose 存记忆）。
+ // 第一次进入：滚到中部后退出（pop → dispose 存记忆）。
     await tester.pumpWidget(_host(app));
     await _pump(tester);
     await tester.pump(const Duration(milliseconds: 400));
@@ -199,12 +200,12 @@ void main() {
     final mid = scroll.position.maxScrollExtent * 0.5;
     scroll.position.jumpTo(mid);
     await tester.pump(const Duration(milliseconds: 100));
-    // 落点裁决已解除粘底（上例语义）→ FAB 在场=非贴底态。
+ // 落点裁决已解除粘底（上例语义）→ FAB 在场=非贴底态。
     expect(find.byKey(const ValueKey('jump-bottom')), findsOneWidget);
     await tester.pumpWidget(const MaterialApp(home: Scaffold())); // 触发 dispose
     await tester.pump(const Duration(milliseconds: 100));
 
-    // 第二次进入同会话：还原中部位置（FAB 在场=非贴底），非回底。
+ // 第二次进入同会话：还原中部位置（FAB 在场=非贴底），非回底。
     await tester.pumpWidget(_host(_RowsApp(_longRows())));
     await _pump(tester);
     await tester.pump(const Duration(milliseconds: 400)); // 两次校正到期
@@ -218,7 +219,7 @@ void main() {
     );
   });
 
-  // 以下两用例用独立 sessionId 避开 static _scrollMemory 的跨用例残留。
+ // 以下两用例用独立 sessionId 避开 static _scrollMemory 的跨用例残留。
   Future<void> _primeMemory(WidgetTester tester, String sid) async {
     final app = _PreviewLiveApp(_longRows(), sessionId: sid);
     await tester.pumpWidget(_host(app, sessionId: sid));
@@ -238,7 +239,7 @@ void main() {
     addTearDown(tester.view.reset);
     await _primeMemory(tester, 's-plv');
 
-    // 第二遍（温重开）：订阅闸门关——预渲必先落地并还原记忆。
+ // 第二遍（温重开）：订阅闸门关——预渲必先落地并还原记忆。
     final app2 = _PreviewLiveApp(_longRows(), sessionId: 's-plv');
     await tester.pumpWidget(_host(app2, sessionId: 's-plv'));
     await _pump(tester);
@@ -246,11 +247,11 @@ void main() {
     expect(find.byKey(const ValueKey('jump-bottom')), findsOneWidget,
         reason: '预渲路径已还原非贴底记忆');
 
-    // live ready（冷会话网络唤醒后到）：无新输出（seq 相同）——还原的
-    // 阅读位置必须保持。修复前：_stickToBottom=true 无条件翻回+第二次
-    // _snapToBottom 跳底+1.2s 粘底跟随覆盖，温重开必回列表底部。
-    //（另一层：strip 退场使消息列表 Element 重建、position 复位 0——
-    // 修复同时重放记忆校正把阅读位置接回。）
+ // live ready（冷会话网络唤醒后到）：无新输出（seq 相同）——还原的
+ // 阅读位置必须保持。修复前：_stickToBottom=true 无条件翻回+第二次
+ // _snapToBottom 跳底+1.2s 粘底跟随覆盖，温重开必回列表底部。
+ //（另一层：strip 退场使消息列表 Element 重建、position 复位 0——
+ // 修复同时重放记忆校正把阅读位置接回。）
     app2.gate.complete();
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -273,7 +274,7 @@ void main() {
     addTearDown(tester.view.reset);
     await _primeMemory(tester, 's-plv2');
 
-    // 第二遍：live seq 比缓存前进（离开期间会话有新输出）→ 贴底看新。
+ // 第二遍：live seq 比缓存前进（离开期间会话有新输出）→ 贴底看新。
     final app2 = _PreviewLiveApp(_longRows(), sessionId: 's-plv2', liveSeqDelta: 5);
     await tester.pumpWidget(_host(app2, sessionId: 's-plv2'));
     await _pump(tester);

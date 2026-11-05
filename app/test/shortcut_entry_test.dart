@@ -28,7 +28,8 @@ class _ShortcutAppState extends AppState {
 
   List<Map<String, dynamic>> openedTasks = [];
   @override
-  Future<void> switchToTask(Map<String, dynamic> task, {String? label}) async {
+  Future<void> switchToTask(Map<String, dynamic> task,
+      {String? label, bool keepHomePreview = false}) async {
     openedTasks.add(task);
   }
 

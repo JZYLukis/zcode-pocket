@@ -39,7 +39,8 @@ class _QuickSub implements ConversationSubscription {
 class _QuickApp extends AppState {
   final sub = _QuickSub();
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     sub.seed(_rows());
     return sub;
   }

@@ -1,4 +1,4 @@
-// 浅色色值冻结单测（深色模式批 1 第一件事，dark-mode-plan §2 批1-1）。
+// 浅色色值冻结单测（深色模式批 1 第一件事，dark-mode-plan §2 -1）。
 //
 // 目的：theme.dart 全部浅色 token 落快照断言——此后任何浅色值改动即挂，
 // 改动须显式解锁（给理由+留痕 ADR）。这是「浅色零回归五道闸」的第 2 道
@@ -6,9 +6,9 @@
 //
 // 维护规则：
 // - 预期值=2026-10-23 基线快照（zai-light 镜像 + 4 个可用性主动偏离项，
-//   见 theme.dart 头部注释）。除非用户明示解锁，本文件预期值不许改。
+// 见 theme.dart 头部注释）。除非用户明示解锁，本文件预期值不许改。
 // - 深色模式重构后若 token 读取路径变化（static→palette 实例），只允许
-//   改「读取处」，预期字面值一律不动。
+// 改「读取处」，预期字面值一律不动。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,7 +30,7 @@ void main() {
     expectHex(AppThemeSpec.light.colors.header, 0xFFFFFFFF, 'header');
     expectHex(AppThemeSpec.light.colors.sidebar, 0xFFF0F0F0, 'sidebar');
     expectHex(AppThemeSpec.light.colors.card, 0xFFFFFFFF, 'card');
-    // Paseo 参考批（2026-10-23）：输入卡专用底——浅色与 card 同值零变化。
+ // Paseo 参考批（2026-10-23）：输入卡专用底——浅色与 card 同值零变化。
     expectHex(AppThemeSpec.light.colors.inputSurface, 0xFFFFFFFF, 'inputSurface=card');
     expectHex(AppThemeSpec.light.colors.surface, 0x080D0D0D, 'surface');
     expectHex(AppThemeSpec.light.colors.surfaceHover, 0x0D0D0D0D, 'surfaceHover');
@@ -46,7 +46,7 @@ void main() {
     expectHex(AppThemeSpec.light.colors.accent, 0xFFEBF4FF, 'accent');
     expectHex(AppThemeSpec.light.colors.foreground, 0xFF262626, 'foreground');
     expectHex(AppThemeSpec.light.colors.foregroundSubtle, 0xB3262626, 'foregroundSubtle(70%)');
-    expectHex(AppThemeSpec.light.colors.foregroundSubtlest, 0x8C262626, 'foregroundSubtlest(55%)');
+    expectHex(AppThemeSpec.light.colors.foregroundSubtlest, 0x73262626, 'foregroundSubtlest(45% 反馈④折中)');
     expectHex(AppThemeSpec.light.colors.success, 0xFF15803D, 'success');
     expectHex(AppThemeSpec.light.colors.destructive, 0xFFE03131, 'destructive');
     expectHex(AppThemeSpec.light.colors.warning, 0xFFB45309, 'warning');
@@ -69,8 +69,8 @@ void main() {
         .map(hex)
         .toList();
     expect(series, [
-      // 官方 zai-light usage-chart-1..6（2026-10-26 对齐轮重冻结——
-      // 原 5 色系 tailwind-600 自选非官方，盘点 audit §六.3 实证）。
+ // 官方 zai-light usage-chart-1..6（2026-10-26 对齐轮重冻结——
+ // 原 5 色系 tailwind-600 自选非官方，盘点 audit §六.3 实证）。
       hex(const Color(0xFF0B7FFF)),
       hex(const Color(0xFF1E8A3E)),
       hex(const Color(0xFF9E77ED)),

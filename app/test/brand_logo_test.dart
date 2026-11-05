@@ -7,18 +7,18 @@ import 'package:zcode_pocket/ui/brand_logo.dart';
 void main() {
   test('各品牌 id 形态命中正确资产', () {
     final cases = <String, String?>{
-      // 智谱（Z 字标）
+ // 智谱（Z 字标）
       'glm-5.3': 'assets/brand_logos/zhipu.svg',
       'glm-5.3-flash': 'assets/brand_logos/zhipu.svg',
       'chatglm-6': 'assets/brand_logos/zhipu.svg',
-      // Kimi：老形态带 kimi/moonshot 字样，K3 系新形态裸 k+数字
+ // Kimi：老形态带 kimi/moonshot 字样，K3 系新形态裸 k+数字
       'kimi-k2.6': 'assets/brand_logos/kimi.svg',
       'kimi-k2.7-code-highspeed': 'assets/brand_logos/kimi.svg',
       'moonshotai/kimi-k2-turbo-preview': 'assets/brand_logos/kimi.svg',
       'k3.1-pro': 'assets/brand_logos/kimi.svg',
       'K3.1-PRO': 'assets/brand_logos/kimi.svg',
       'moonshot-kimi/k3.1': 'assets/brand_logos/kimi.svg',
-      // 其余家抽查
+ // 其余家抽查
       'claude-sonnet-4': 'assets/brand_logos/claude.svg',
       'gemini-2.5-pro': 'assets/brand_logos/googlegemini.svg',
       'deepseek-v3': 'assets/brand_logos/deepseek.svg',
@@ -27,6 +27,19 @@ void main() {
       'o3-mini': 'assets/brand_logos/openai.svg',
       'mistral-large': 'assets/brand_logos/mistralai.svg',
       'llama-3': 'assets/brand_logos/meta.svg',
+ // 2026-11-05 反馈④新增（OCG 等第三方渠道品牌补齐）：
+      'mimo-v2.5': 'assets/brand_logos/xiaomi.svg',
+      'mimo-v2.6-pro': 'assets/brand_logos/xiaomi.svg',
+      'xiaomi/mimo-v2.5': 'assets/brand_logos/xiaomi.svg',
+      'minimax-m3': 'assets/brand_logos/minimax.svg',
+      'minimax/minimax-m3': 'assets/brand_logos/minimax.svg',
+      'grok-4.6': 'assets/brand_logos/x.svg',
+      'x-ai/grok-4.3': 'assets/brand_logos/x.svg',
+      'nemotron-52b': 'assets/brand_logos/nvidia.svg',
+ // 智谱系非 GLM 命名归并（codegeex/charglm/emohaa）。
+      'codegeex-4': 'assets/brand_logos/zhipu.svg',
+      'charglm-4': 'assets/brand_logos/zhipu.svg',
+      'emohaa': 'assets/brand_logos/zhipu.svg',
     };
     for (final e in cases.entries) {
       expect(brandLogoAsset(e.key), e.value, reason: 'id=${e.key}');
@@ -34,11 +47,13 @@ void main() {
   });
 
   test('k+数字词边界不误吞他牌', () {
-    // grok 的 k 前是字母（o）——不得命中 moonshot（xAI 无资产回退 null）。
-    expect(brandLogoAsset('grok-3'), isNull);
-    expect(brandLogoAsset('grok-4'), isNull);
-    // 纯文字回退名单保持不变。
-    expect(brandLogoAsset('minimax-m1'), isNull);
+ // grok 的 k 前是字母（o）——不得命中 moonshot（2026-11-05 反馈④
+ // xAI 已入 Simple Icons slug=x，改断言命中 x 形标而非 kimi）。
+    expect(brandLogoAsset('grok-3'), 'assets/brand_logos/x.svg');
+    expect(brandLogoAsset('grok-4'), 'assets/brand_logos/x.svg');
+ // 纯文字回退名单保持不变（Simple Icons 未收录品牌不硬凑）。
+    expect(brandLogoAsset('hy3'), isNull, reason: '腾讯混元未收录→中性点');
+    expect(brandLogoAsset('step-5-preview'), isNull, reason: 'StepFun 未收录');
     expect(brandLogoAsset(''), isNull);
   });
 
@@ -68,7 +83,7 @@ void main() {
     test('勘误（2026-10-26 用户复核）：智谱/OpenAI 归单色类——官方桌面'
         '图标实测全单色（zai 黑/bigmodel 白/OpenAI 黑），不采公司色',
         () {
-      // 不入色表=两模式都走前景色兜底（浅色近黑可见）。
+ // 不入色表=两模式都走前景色兜底（浅色近黑可见）。
       expect(resolveBrandColor('assets/brand_logos/zhipu.svg',
           Brightness.light), isNull);
       expect(resolveBrandColor('assets/brand_logos/openai.svg',

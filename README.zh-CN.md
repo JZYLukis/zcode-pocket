@@ -38,7 +38,8 @@ ZCode 桌面端的安卓原生客户端（Flutter）：把桌面端的多电脑�
 ## 安装
 
 从 [Releases](https://github.com/JZYLukis/zcode-pocket/releases) 下载预编译 APK
-（多数手机选 `arm64-v8a`），或按下方说明从源码构建。
+（多数手机选 `arm64-v8a`），或按下方说明从源码构建。两种包**签名不同**，
+混用前先读[签名与换包](#签名与换包)：切换必须先卸载，而卸载会清空本地数据。
 
 ## 构建
 
@@ -49,6 +50,28 @@ flutter build apk --split-per-abi
 
 未配置 `app/android/key.properties` 时 release 构建会回退到 debug
 签名（可直接安装自用）；对外分发请自行配置正式签名。
+
+### 签名与换包
+
+预编译 APK 由维护者的正式 keystore 签名；本仓库不带 `app/android/key.properties`
+自构建时使用 Android debug keystore，两者**签名不同**。
+
+Android 不允许用不同签名的 APK 覆盖安装（`INSTALL_FAILED_UPDATE_INCOMPATIBLE`），
+在预编译包与自构建包之间切换时**必须先在系统里卸载旧应用**。**卸载会清空
+本地数据**——已登录账号、已配对电脑、草稿、断网发送队列——且没有云备份
+（`allowBackup=false`）。
+
+想长期自用又保留数据：固定用同一把 keystore 构建并一直使用该构建。
+在 `app/android/key.properties` 中填四项（值按你的 keystore）：
+
+| 键 | 含义 |
+|---|---|
+| `storeFile` | keystore 路径（相对路径以 `app/android/app/` 为基准） |
+| `storePassword` | keystore 口令 |
+| `keyAlias` | 密钥别名 |
+| `keyPassword` | 密钥口令 |
+
+keystore 与本文件都不要提交；仓库 `.gitignore` 已排除。
 
 ### 语音输入
 
@@ -64,6 +87,17 @@ DeepSeek/Kimi，在设置中自行填 key。
   厂商系统如需后台稳定，请在系统设置中允许本应用
   **自启动 / 关联启动 / 后台活动**（各品牌入口不同，一般在
   电池或启动管理内）。
+
+## 隐私
+
+- 无遥测、无第三方统计、无广告；聊天与任务数据只连你配置的 ZCode
+  桌面端 / 官方服务。
+- 账号凭据保存在系统安全存储（Android Keystore）；系统云备份已关闭
+  （`allowBackup=false`），应用数据不会进入云备份。
+- **锁屏**：Android 默认可能在锁屏上显示通知内容。本应用的通知包含
+  任务标题与最近回复的前 60 字；可选的常驻连接通知还会显示正在运行的
+  任务名。要隐藏这些内容：在系统设置中为本应用开启「隐藏敏感通知内容」，
+  或关闭「锁屏通知」。
 
 ## 已知限制
 

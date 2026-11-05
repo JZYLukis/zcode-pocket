@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../state/app_state_scope.dart';
 import '../transport/automation_client.dart';
 import 'app_widgets.dart';
+import 'automation_edit_page.dart';
 
 // 优化批 #3：异常→人话映射（原始异常仍在调用方 debugPrint 留痕）。
 String friendlyError(Object e) {
@@ -18,8 +19,9 @@ String friendlyError(Object e) {
   return '加载失败，请重试';
 }
 
-/// 定时任务列表页（阶段 3 第三段：只读列表 + 启停/立即运行/重启/删除；
-/// 创建/编辑属 parity #31 完整 CRUD，不在本页）。
+/// 定时任务列表页（阶段 3 第三段：列表 + 启停/立即运行/重启/删除；
+/// 2026-11-05 反馈⑤补编辑闭环——整卡点击/菜单进编辑页，官方
+/// updateAutomation 通道；创建仍属桌面端）。
 ///
 /// 交互对照官方 AutomationsSection.tsx：状态筛选（全部/进行中/已完成/
 /// 失败）、失败徽标优先于生命周期徽标、调度摘要 scheduleRule 优先 cron
@@ -68,7 +70,7 @@ class _AutomationPageState extends State<AutomationPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
+ // 优化批 #3：原始异常只进日志，用户可见文案走人话映射。
       debugPrint('[automation] 列表加载失败: $e');
       setState(() => _error = friendlyError(e));
     } finally {
@@ -76,8 +78,8 @@ class _AutomationPageState extends State<AutomationPage> {
     }
   }
 
-  /// 写操作按官方路由到自动化归属的工作区（automationManagementStore
-  /// .ts:118-129 resolveAutomationActionScope）。
+ /// 写操作按官方路由到自动化归属的工作区（automationManagementStore
+ /// .ts:118-129 resolveAutomationActionScope）。
   AutomationClient? _actionClient(AutomationEntry e) {
     final bridge = AppStateScope.of(context).bridge;
     if (bridge == null) return null;
@@ -104,10 +106,10 @@ class _AutomationPageState extends State<AutomationPage> {
   Future<void> _runNow(AutomationEntry e) async {
     final client = _actionClient(e);
     if (client == null) return;
-    // （O2 P2-4/O3 P1-1）：本页唯一未包错误处理的写操作
-    // ——runNow 是 15s 超时的通道 RPC，断网/超时异常逃逸成未处理异步
-    // 错误且零反馈。对齐 _runActions 包裹范式，成功路径保留按 status
-    // 分档提示。
+ // （O2 /O3 ）：本页唯一未包错误处理的写操作
+ // ——runNow 是 15s 超时的通道 RPC，断网/超时异常逃逸成未处理异步
+ // 错误且零反馈。对齐 _runActions 包裹范式，成功路径保留按 status
+ // 分档提示。
     final String status;
     try {
       status = await client.runNow(e.automationId);
@@ -133,6 +135,15 @@ class _AutomationPageState extends State<AutomationPage> {
       ),
     );
     await _load();
+  }
+
+ /// 2026-11-05 反馈⑤：编辑（官方 AutomationsSection.tsx:1700 整卡点击
+ /// + 菜单编辑双入口对位）；保存成功后刷新列表。
+  Future<void> _edit(AutomationEntry e) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => AutomationEditPage(entry: e)),
+    );
+    if (changed == true) await _load();
   }
 
   Future<void> _toggleEnabled(AutomationEntry e) async {
@@ -212,7 +223,7 @@ class _AutomationPageState extends State<AutomationPage> {
       );
     }
     if (entries == null) {
-      // 优化批 #2：裸转圈换带说明的 AppLoading。
+ // 优化批 #2：裸转圈换带说明的 AppLoading。
       return const Center(child: AppLoading('正在加载自动化…'));
     }
     return Column(
@@ -255,6 +266,7 @@ class _AutomationPageState extends State<AutomationPage> {
                       final e = _filteredList(entries)[i];
                       return _AutomationCard(
                         entry: e,
+                        onEdit: () => _edit(e),
                         onRunNow: () => _runNow(e),
                         onToggle: () => _toggleEnabled(e),
                         onRestart: () => _restart(e),
@@ -273,7 +285,7 @@ class _AutomationPageState extends State<AutomationPage> {
       case _AutomationFilter.all:
         return entries;
       case _AutomationFilter.inProgress:
-        // 官方 inProgress=active|paused（进行中含已暂停，未结束）。
+ // 官方 inProgress=active|paused（进行中含已暂停，未结束）。
         return entries
             .where(
               (e) =>
@@ -285,8 +297,8 @@ class _AutomationPageState extends State<AutomationPage> {
             .where((e) => e.lifecycleStatus == 'completed')
             .toList();
       case _AutomationFilter.failed:
-        // 官方 failed 组包含"最近一次运行失败"的循环任务（automationStatus
-        // Filter.ts:41-46）。
+ // 官方 failed 组包含"最近一次运行失败"的循环任务（automationStatus
+ // Filter.ts:41-46）。
         return entries.where((e) => e.hasFailureState).toList();
     }
   }
@@ -337,6 +349,7 @@ class _AutomationPageState extends State<AutomationPage> {
 
 class _AutomationCard extends StatelessWidget {
   final AutomationEntry entry;
+  final VoidCallback onEdit;
   final VoidCallback onRunNow;
   final VoidCallback onToggle;
   final VoidCallback onRestart;
@@ -344,6 +357,7 @@ class _AutomationCard extends StatelessWidget {
 
   const _AutomationCard({
     required this.entry,
+    required this.onEdit,
     required this.onRunNow,
     required this.onToggle,
     required this.onRestart,
@@ -363,14 +377,21 @@ class _AutomationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: context.colors.border),
       ),
-      // 官方：completed 卡整体降透明度。
+ // 官方：completed 卡整体降透明度。
       foregroundDecoration: completedDim
           ? BoxDecoration(
               color: context.colors.background.withValues(alpha: AppAlpha.strong),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             )
           : null,
-      child: Padding(
+ // 2026-11-05 反馈⑤：整卡可点进编辑（官方 AutomationsSection
+ // L1700-1710 onClick 同款）；菜单操作不冒泡（PopupMenu 自带手势域）。
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: ValueKey('automation-card-tap-${e.automationId}'),
+          onTap: onEdit,
+          child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,6 +425,8 @@ class _AutomationCard extends StatelessWidget {
                   ),
                   onSelected: (v) {
                     switch (v) {
+                      case 'edit':
+                        onEdit();
                       case 'run':
                         onRunNow();
                       case 'toggle':
@@ -416,18 +439,22 @@ class _AutomationCard extends StatelessWidget {
                   },
                   itemBuilder: (_) => [
                     const PopupMenuItem(
+                      value: 'edit',
+                      child: Text('编辑'),
+                    ),
+                    const PopupMenuItem(
                       value: 'run',
                       child: Text('立即运行'),
                     ),
-                    // 官方：启停仅 active|paused 展示（AutomationsSection
-                    // .tsx:320-322 canToggleAutomation）。
+ // 官方：启停仅 active|paused 展示（AutomationsSection
+ // .tsx:320-322 canToggleAutomation）。
                     if (e.lifecycleStatus == 'active' ||
                         e.lifecycleStatus == 'paused')
                       PopupMenuItem(
                         value: 'toggle',
                         child: Text(e.enabled ? '暂停' : '恢复'),
                       ),
-                    // 官方：重启仅 failed（其余状态服务端静默 no-op）。
+ // 官方：重启仅 failed（其余状态服务端静默 no-op）。
                     if (e.lifecycleStatus == 'failed')
                       const PopupMenuItem(
                         value: 'restart',
@@ -506,12 +533,14 @@ class _AutomationCard extends StatelessWidget {
           ],
         ),
       ),
+      ),
+      ),
     );
   }
 
   String _metaLine() {
     final parts = <String>[];
-    // 官方："下次运行 {相对时间}"仅 active 且无失败时展示。
+ // 官方："下次运行 {相对时间}"仅 active 且无失败时展示。
     if (entry.lifecycleStatus == 'active' &&
         entry.nextRunAt != null &&
         !entry.hasFailureState) {
@@ -528,12 +557,12 @@ class _AutomationCard extends StatelessWidget {
 
   (Color, String, IconData) _statusBadge(BuildContext context) {
     final e = entry;
-    // 官方：失败态优先于生命周期徽标（hasAutomationFailureState）。
+ // 官方：失败态优先于生命周期徽标（hasAutomationFailureState）。
     if (e.hasFailureState) {
       return (context.colors.destructive, '失败', Icons.warning_amber_rounded);
     }
     return switch (e.lifecycleStatus) {
-      // 视觉审查①：与筛选词"进行中"统一（官方 inProgress 组=active+paused）。
+ // 视觉审查①：与筛选词"进行中"统一（官方 inProgress 组=active+paused）。
       'active' => (
         context.colors.running,
         '进行中',

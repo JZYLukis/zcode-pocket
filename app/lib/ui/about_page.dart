@@ -12,7 +12,7 @@ import 'markdown_view.dart';
 /// 服务条款提示、隐私说明、项目许可证、第三方来源声明、依赖许可。
 /// 文档内容不改写（许可证/声明原文照搬资产文件），只做呈现。
 class AboutZcodePocketPage extends StatefulWidget {
-  /// 测试/游览缝：跳过原生版本通道，固定展示值。
+ /// 测试/游览缝：跳过原生版本通道，固定展示值。
   final String? versionOverride;
 
   const AboutZcodePocketPage({super.key, this.versionOverride});
@@ -78,6 +78,12 @@ class _AboutZcodePocketPageState extends State<AboutZcodePocketPage> {
             tr('本应用无遥测、无第三方统计；聊天与任务数据只连你配置的 '
                 'ZCode 桌面端 / 官方服务。凭据保存在系统安全存储，'
                 '系统云备份已关闭。'),
+          ),
+          const SizedBox(height: 8),
+          _paragraph(
+            context,
+            tr('锁屏默认可能显示通知内容：任务标题与最近回复的前 60 字；'
+                '可在系统设置中隐藏敏感通知或关闭锁屏通知。'),
           ),
           const AppSectionHeader('开源'),
           ListTile(
@@ -172,9 +178,9 @@ class _AboutZcodePocketPageState extends State<AboutZcodePocketPage> {
               color: context.colors.brand,
               borderRadius: BorderRadius.circular(AppRadius.block),
             ),
-            // 字阶守卫（R3）：标记字号走 uiXl；Container 宽高给出紧约束，
-            // Padding 内收后 FittedBox 真正放大到约 50% 块宽（视觉代理
-            // 复核：此前 FittedBox 在松约束下只守字号、实际未放大）。
+ // 字阶守卫（R3）：标记字号走 uiXl；Container 宽高给出紧约束，
+ // Padding 内收后 FittedBox 真正放大到约 50% 块宽（视觉代理
+ // 复核：此前 FittedBox 在松约束下只守字号、实际未放大）。
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: FittedBox(

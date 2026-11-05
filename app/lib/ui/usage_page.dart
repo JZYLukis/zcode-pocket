@@ -24,7 +24,7 @@ class UsageSnapshotCache<T> {
   final Duration ttl;
   final Map<String, (T, DateTime)> _entries = {};
 
-  /// 命中返回未过期值；过期/缺失返回 null（调用方重拉）。
+ /// 命中返回未过期值；过期/缺失返回 null（调用方重拉）。
   T? get(String key, DateTime now) {
     final e = _entries[key];
     if (e == null) return null;
@@ -32,15 +32,15 @@ class UsageSnapshotCache<T> {
     return e.$1;
   }
 
-  /// 不看 TTL 的渲染兜底（SWR：刷新窗口期继续显示旧值，不闪空页）。
+ /// 不看 TTL 的渲染兜底（SWR：刷新窗口期继续显示旧值，不闪空页）。
   T? peek(String key) => _entries[key]?.$1;
 
   void put(String key, T value, DateTime now) {
     _entries[key] = (value, now);
   }
 
-  /// 全量清空（ N2-7：系统时区变化后缓存键整体失效——按键
-  /// 隔离的旧时区条目不会再被命中，但清掉省内存且防 peek 兜底取旧时区值）。
+ /// 全量清空（N2-7：系统时区变化后缓存键整体失效——按键
+ /// 隔离的旧时区条目不会再被命中，但清掉省内存且防 peek 兜底取旧时区值）。
   void clear() => _entries.clear();
 }
 
@@ -48,9 +48,9 @@ class UsageSnapshotCache<T> {
 ///
 /// 数据源（全部经 usage-stats 通道，官方 refs/ZCode 源码核实）：
 /// - getEntitlementSnapshot：须带 preferredProviderId+accountAccess（静态访问
-///   类别 {type:zhipu-account, accountType, mode, entitled}）——缺失时官方
-///   resolveAuthorization 对 coding plan provider 直接返回 null（此前
-///   not_configured 的根因，bigmodelUsageQuotaProvider.ts:861）。
+/// 类别 {type:zhipu-account, accountType, mode, entitled}）——缺失时官方
+/// resolveAuthorization 对 coding plan provider 直接返回 null（此前
+/// not_configured 的根因，bigmodelUsageQuotaProvider.ts:861）。
 /// - getCodingPlanUsageSnapshot：活跃度/热力图/模型趋势（monitor 接口）。
 /// - getAppUsageSnapshot：agent 数据库真实统计（累计/峰值/连续天数等）。
 ///
@@ -67,39 +67,39 @@ class _UsagePageState extends State<UsagePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final TabController _tabs = TabController(length: 2, vsync: this);
 
-  // ── 个人套餐 tab ──
+ // ── 个人套餐 tab ──
   Map<String, dynamic>? _ent;
   Map<String, dynamic>? _cp;
 
-  /// 额度卡成功但图表聚合拉取失败且无旧图可保留（首载即失败）时置位，
-  /// 出内联提示而非静默空白（H15-2，2026-10-29 批次）。
+ /// 额度卡成功但图表聚合拉取失败且无旧图可保留（首载即失败）时置位，
+ /// 出内联提示而非静默空白（2026-10-29 批次）。
   bool _cpChartFailed = false;
   bool _cpLoading = true;
   String? _cpError;
   String _family = 'bigmodel';
   bool _familyFallbackTried = false;
 
-  /// 套餐来源（2026-10-27 用户其他需求④）：个人套餐 / Start Plan。
+ /// 套餐来源（2026-10-27 用户其他需求④）：个人套餐 / Start Plan。
   String _planKind = 'individual-coding-plan';
 
-  /// A4（2026-10-24 修复批）stale-while-revalidate：已有数据时切档/
-  /// 刷新不整页转圈——保留旧值渲染，列表顶部细进度条示刷新中；
-  /// entitlement 成功态短期缓存（2min 内切档复用，只拉档聚合）。
+ /// A4（2026-10-24 修复批）stale-while-revalidate：已有数据时切档/
+ /// 刷新不整页转圈——保留旧值渲染，列表顶部细进度条示刷新中；
+ /// entitlement 成功态短期缓存（2min 内切档复用，只拉档聚合）。
   bool _cpRefreshing = false;
   DateTime? _entLoadedAt;
   static const _entCacheTtl = Duration(minutes: 2);
 
-  /// 批①（2026-10-23）：个人套餐范围三档（官方 CodingPlanUsageRange
-  /// today/7d/30d——原写死 30d，用户想看今日/近一周被堵死）；按档缓存。
-  /// ④（2026-10-26 真机验收）：改 60s TTL——旧实现按档永久命中，统计
-  /// 不再更新（"不是实时的"根因）；SWR 语义不变（命中渲染旧值不转圈）。
+ /// （2026-10-23）：个人套餐范围三档（官方 CodingPlanUsageRange
+ /// today/7d/30d——原写死 30d，用户想看今日/近一周被堵死）；按档缓存。
+ /// ④（2026-10-26 真机验收）：改 60s TTL——旧实现按档永久命中，统计
+ /// 不再更新（"不是实时的"根因）；SWR 语义不变（命中渲染旧值不转圈）。
   final UsageSnapshotCache<Map<String, dynamic>> _cpCache = UsageSnapshotCache(
     const Duration(seconds: 60),
   );
   String _cpRange = '30d';
   String get _cpCacheKey => usageCacheKey('$_cpRange-$_planKind', _timeZone);
 
-  // ── 应用用量 tab ──
+ // ── 应用用量 tab ──
   final UsageSnapshotCache<Map<String, dynamic>> _appCache = UsageSnapshotCache(
     const Duration(seconds: 60),
   );
@@ -108,54 +108,54 @@ class _UsagePageState extends State<UsagePage>
   bool _appLoading = true;
   String? _appError;
 
-  /// 请求代际号（ N2-2）：_loadPlan/_loadApp 各自单调递增，在途
-  /// 响应携带的代际落后当前时整体丢弃（防旧档数据落新档缓存/覆盖 UI）。
+ /// 请求代际号（N2-2）：_loadPlan/_loadApp 各自单调递增，在途
+ /// 响应携带的代际落后当前时整体丢弃（防旧档数据落新档缓存/覆盖 UI）。
   int _planGeneration = 0;
   int _appGeneration = 0;
 
-  /// ④：页面停留期周期刷新（60s 与缓存 TTL 同频——非强制，命中缓存时
-  /// 是空操作，过期才真拉；SWR 不打断阅读）。手动下拉仍 force 立即拉。
+ /// ④：页面停留期周期刷新（60s 与缓存 TTL 同频——非强制，命中缓存时
+ /// 是空操作，过期才真拉；SWR 不打断阅读）。手动下拉仍 force 立即拉。
   Timer? _refreshTimer;
 
-  // ── 重置额度礼包（2026-10-26 用户："手机端现在是看不见重置的"）──
-  /// 桌面 quota-reset 复刻：状态 60s TTL + 单机会倒计时秒针（仅页面
-  /// 打开期间走表）；申领新机会只在开页时问一次（10min 节流对齐官方
-  /// 协调器冷却档——桌面常驻轮询挂机收礼包的形态不搬，电量红线）。
+ // ── 重置额度礼包（2026-10-26 用户："手机端现在是看不见重置的"）──
+ /// 桌面 quota-reset 复刻：状态 60s TTL + 单机会倒计时秒针（仅页面
+ /// 打开期间走表）；申领新机会只在开页时问一次（10min 节流对齐官方
+ /// 协调器冷却档——桌面常驻轮询挂机收礼包的形态不搬，电量红线）。
   CodingPlanResetStatus? _resetStatus;
   DateTime? _resetLoadedAt;
   static const _resetCacheTtl = Duration(seconds: 60);
   DateTime? _opportunityAskedAt;
 
-  /// 使用中忙态（ValueNotifier：底部弹层与确认框都在别的 route 上，
-  /// 页面 setState 不会重建它们——按钮禁用走 notifier 监听）。
+ /// 使用中忙态（ValueNotifier：底部弹层与确认框都在别的 route 上，
+ /// 页面 setState 不会重建它们——按钮禁用走 notifier 监听）。
   final ValueNotifier<bool> _resetBusy = ValueNotifier(false);
 
-  /// 每日趋势柱状图点选：null=默认末柱（最新一天）；_trendShowTotal=true
-  /// 为取消选中态（明细行显示区间合计）。切换时间范围时两者一并重置。
+ /// 每日趋势柱状图点选：null=默认末柱（最新一天）；_trendShowTotal=true
+ /// 为取消选中态（明细行显示区间合计）。切换时间范围时两者一并重置。
   int? _trendSelected;
   bool _trendShowTotal = false;
 
-  /// 应用用量「按模型趋势」点选：末点默认/再点同点=区间合计。
+ /// 应用用量「按模型趋势」点选：末点默认/再点同点=区间合计。
   int? _modelTrendSelected;
   bool _modelTrendShowTotal = false;
 
-  /// 批①：个人套餐折线图点选（默认末点/取消=区间合计）与应用用量
-  /// 饼图切片点选（null=合计提示行）。随范围切换重置。
+ /// 个人套餐折线图点选（默认末点/取消=区间合计）与应用用量
+ /// 饼图切片点选（null=合计提示行）。随范围切换重置。
   int? _lineSelected;
   bool _lineShowTotal = false;
   int? _pieSelected;
 
   bool _initialLoadPending = true;
 
-  /// 本地 IANA 时区（应用用量/个人套餐按自然日归桶；缓存同键隔离）。
+ /// 本地 IANA 时区（应用用量/个人套餐按自然日归桶；缓存同键隔离）。
   String? _timeZone;
 
-  // AppStateScope.of 不能在 initState 里同步调用（阶段 1 根因陷阱）。
+ // AppStateScope.of 不能在 initState 里同步调用（阶段 1 根因陷阱）。
   @override
   void initState() {
     super.initState();
-    // 电量速赢（battery-measure 2026-10-28 静态排查嫌疑②）：退后台暂停
-    // 60s 刷新/秒针定时器——桥活着时每次刷新都是一次 radio 唤醒。
+ // 电量速赢（battery-measure 2026-10-28 静态排查嫌疑②）：退后台暂停
+ // 60s 刷新/秒针定时器——桥活着时每次刷新都是一次 radio 唤醒。
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -167,12 +167,12 @@ class _UsagePageState extends State<UsagePage>
       _deriveFamily();
       unawaited(_initializeUsagePage());
     }
-    // 18077 验收#18（Bug R）：网络恢复自动重试——错误态下连接回到
-      // online 边沿即重拉两档，不再要求用户退出重进。
+ // 验收#18（Bug R）：网络恢复自动重试——错误态下连接回到
+ // online 边沿即重拉两档，不再要求用户退出重进。
     _armRecoveryWatch();
   }
 
-  // ── 恢复重试（Bug R）──────────────────────────────────────────
+ // ── 恢复重试（Bug R）──────────────────────────────────────────
   AppState? _recoveryAppRef;
   LinkPhase? _lastSeenPhase;
 
@@ -192,9 +192,9 @@ class _UsagePageState extends State<UsagePage>
         _lastSeenPhase != LinkPhase.online && phase == LinkPhase.online;
     _lastSeenPhase = phase;
     if (!backOnline) return;
-    // N1 P3-8：后台的重连边沿不 force 双拉（每次 4 个 RPC 绕过
-    // 两级缓存=无线电唤醒，电量红线同族漏网口）——回前台时 resumed 分支
-    // 的常规刷新已兜住错误态重试（失败态不落缓存，非 force 也会真拉）。
+ // N1 ：后台的重连边沿不 force 双拉（每次 4 个 RPC 绕过
+ // 两级缓存=无线电唤醒，电量红线同族漏网口）——回前台时 resumed 分支
+ // 的常规刷新已兜住错误态重试（失败态不落缓存，非 force 也会真拉）。
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
@@ -212,7 +212,7 @@ class _UsagePageState extends State<UsagePage>
     if (state == AppLifecycleState.resumed) {
       _armRefreshTimers();
       unawaited(_maybeRefreshTimeZone());
-      // 回前台立即刷一轮（SWR：用户回来看新数据，不等下一个 60s 拍）。
+ // 回前台立即刷一轮（SWR：用户回来看新数据，不等下一个 60s 拍）。
       _loadPlan();
       _loadApp();
     } else if (state == AppLifecycleState.paused) {
@@ -221,9 +221,9 @@ class _UsagePageState extends State<UsagePage>
     }
   }
 
-  /// 回前台重读系统时区（ N2-7）：页面在导航栈长驻时 _timeZone
-  /// 此前终身只读一次——出差改时区后缓存键与请求仍用旧时区（归桶偏移
-  /// 与时区隔离修复都被绕过）。变化时清缓存 force 重拉。
+ /// 回前台重读系统时区（N2-7）：页面在导航栈长驻时 _timeZone
+ /// 此前终身只读一次——出差改时区后缓存键与请求仍用旧时区（归桶偏移
+ /// 与时区隔离修复都被绕过）。变化时清缓存 force 重拉。
   Future<void> _maybeRefreshTimeZone() async {
     final tz = await readDeviceTimeZone();
     if (!mounted || tz == _timeZone) return;
@@ -235,13 +235,13 @@ class _UsagePageState extends State<UsagePage>
     _loadApp(force: true);
   }
 
-  /// 重建周期定时器（首载与回前台共用；重复调用前先取消旧定时器）。
+ /// 重建周期定时器（首载与回前台共用；重复调用前先取消旧定时器）。
   void _armRefreshTimers() {
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (!mounted) return;
-      // N2-4：页面被其他路由覆盖时（State 不 dispose、mounted
-      // 恒真）不空转双路 RPC——电量红线同族漏网档。
+ // N2-4：页面被其他路由覆盖时（State 不 dispose、mounted
+ // 恒真）不空转双路 RPC——电量红线同族漏网档。
       final route = ModalRoute.of(context);
       if (route != null && !route.isCurrent) return;
       _loadPlan();
@@ -262,8 +262,8 @@ class _UsagePageState extends State<UsagePage>
     WidgetsBinding.instance.removeObserver(this);
     _recoveryAppRef?.removeListener(_onAppChangedForRecovery);
     _refreshTimer?.cancel();
-    // N3 P3-7：ChangeNotifier 处置惯例（监听者随弹层卸载，无
-    // 实际泄漏，补齐 dispose 契约）。
+ // N3 ：ChangeNotifier 处置惯例（监听者随弹层卸载，无
+ // 实际泄漏，补齐 dispose 契约）。
     _resetBusy.dispose();
     _tabs.dispose();
     super.dispose();
@@ -279,15 +279,15 @@ class _UsagePageState extends State<UsagePage>
       _entLoadedAt = null;
       _resetStatus = null;
       _resetLoadedAt = null;
-      // N1 P3-7/N3 P3-8：切换套餐来源复位家族回退标记——否则
-      // 一次回退后终身置位，换档后应换族重试的场景被拦死成「未开通」。
+ // N1 /N3 ：切换套餐来源复位家族回退标记——否则
+ // 一次回退后终身置位，换档后应换族重试的场景被拦死成「未开通」。
       _familyFallbackTried = false;
     });
     _loadPlan(force: true);
   }
 
-  /// 从活跃会话的 config.provider 推断家族（zai/bigmodel），无会话时默认
-  /// bigmodel；entitlement 不可用时再回退尝试另一家族。
+ /// 从活跃会话的 config.provider 推断家族（zai/bigmodel），无会话时默认
+ /// bigmodel；entitlement 不可用时再回退尝试另一家族。
   void _deriveFamily() {
     final app = AppStateScope.of(context);
     for (final state in app.conversationStates.values) {
@@ -311,33 +311,33 @@ class _UsagePageState extends State<UsagePage>
           as Map<String, dynamic>;
 
   Future<void> _loadPlan({bool force = false}) async {
-    // 请求代际（ N2-2）：弱网在途窗口（12s 超时）内切档，旧档
-    // 响应按"新档缓存键"落盘会把 7 天数据写进 30 天桶——代际号+缓存键
-    // 在 await 前捕获，过期响应整体丢弃。
+ // 请求代际（N2-2）：弱网在途窗口（12s 超时）内切档，旧档
+ // 响应按"新档缓存键"落盘会把 7 天数据写进 30 天桶——代际号+缓存键
+ // 在 await 前捕获，过期响应整体丢弃。
     final gen = ++_planGeneration;
     final cacheKey = _cpCacheKey;
     final app = AppStateScope.of(context);
     final bridge = app.bridge;
     if (!mounted || bridge == null) {
       setState(() {
-        // SWR 保旧值（对齐失败分支 H15-2 语义）：栈被拆时已有数据不翻
-        // 「未连接电脑」错误页顶掉在屏内容；仅首载无数据才出错误页。
+ // SWR 保旧值（对齐失败分支 语义）：栈被拆时已有数据不翻
+ // 「未连接电脑」错误页顶掉在屏内容；仅首载无数据才出错误页。
         if (_ent == null) _cpError = '未连接电脑';
         _cpLoading = false;
         _cpRefreshing = false;
       });
       return;
     }
-    // A4：entitlement 短期缓存命中（成功态且 2min 内）不重拉——切档
-    // 只取档聚合；force（手动刷新/下拉）绕过。
+ // A4：entitlement 短期缓存命中（成功态且 2min 内）不重拉——切档
+ // 只取档聚合；force（手动刷新/下拉）绕过。
     final entCached =
         !force &&
         _ent != null &&
         _entLoadedAt != null &&
         DateTime.now().difference(_entLoadedAt!) < _entCacheTtl;
     setState(() {
-      // A4 SWR：已有数据不整页转圈（修复前档缓存命中也全页 spinner
-      // 挡住已渲染内容）；仅首载无数据时全页 spinner。
+ // A4 SWR：已有数据不整页转圈（修复前档缓存命中也全页 spinner
+ // 挡住已渲染内容）；仅首载无数据时全页 spinner。
       _cpLoading = _ent == null && _cp == null;
       _cpRefreshing = true;
       _cpError = null;
@@ -356,13 +356,13 @@ class _UsagePageState extends State<UsagePage>
           '[usage] entitlement family=$_family reason=$reason '
           'provider=${ent?['provider']}',
         );
-        // N3 P2-3：entitlement 最长 12s，期间用户可能已退出页面
-        // ——回退递归前先查 mounted（递归入口的 AppStateScope.of 会作用于
-        // defunct element）。
+ // N3 ：entitlement 最长 12s，期间用户可能已退出页面
+ // ——回退递归前先查 mounted（递归入口的 AppStateScope.of 会作用于
+ // defunct element）。
         if (!mounted) return;
         if ((reason == 'not_configured' || reason == 'no_plan') &&
             !_familyFallbackTried) {
-          // 家族猜错（如 zai 账号但活跃会话在 bigmodel provider 上）→ 换族重试一次。
+ // 家族猜错（如 zai 账号但活跃会话在 bigmodel provider 上）→ 换族重试一次。
           _family = _family == 'bigmodel' ? 'zai' : 'bigmodel';
           _familyFallbackTried = true;
           debugPrint(
@@ -377,11 +377,11 @@ class _UsagePageState extends State<UsagePage>
         cp =
             (!force ? _cpCache.get(cacheKey, DateTime.now()) : null) ??
             await _callCodingPlanUsage(bridge, range: _cpRange);
-        // 只缓存成功态（问题② 2026-10-25）：失败 null 也落缓存时，一次
-        // 瞬时失败（中继超时等）后该档永远空图表，切档也不会重试，只能
-        // 手动下拉——个人套餐热力图「不显示」的持久化路径。
-        // put 用捕获键+完成时刻（ N2-2/N1：避免慢响应按请求时刻
-        // 计 TTL 缩短有效新鲜度）。
+ // 只缓存成功态（问题② 2026-10-25）：失败 null 也落缓存时，一次
+ // 瞬时失败（中继超时等）后该档永远空图表，切档也不会重试，只能
+ // 手动下拉——个人套餐热力图「不显示」的持久化路径。
+ // put 用捕获键+完成时刻（N2-2/N1：避免慢响应按请求时刻
+ // 计 TTL 缩短有效新鲜度）。
         if (cp != null && gen == _planGeneration) {
           _cpCache.put(cacheKey, cp, DateTime.now());
         }
@@ -392,13 +392,13 @@ class _UsagePageState extends State<UsagePage>
         if (reason.isEmpty) {
           _ent = ent;
           _entLoadedAt = entCached ? _entLoadedAt : DateTime.now();
-          // N2-10/N3 P3-8：成功态复位家族回退标记——下次失败
-          // （换 provider 后猜错家族）允许再回退一次，而非页面终身一次。
+ // N2-10/N3 ：成功态复位家族回退标记——下次失败
+ // （换 provider 后猜错家族）允许再回退一次，而非页面终身一次。
           _familyFallbackTried = false;
-          // H15-2（2026-10-29 批次）：额度卡成功但图表聚合失败（cp=null，
-          // _callCodingPlanUsage 吞异常降级）时保留旧图，对齐 _ent 的
-          // 失败保留策略——强刷失败不再清空已渲染的图表；仅首载无旧图
-          // 才置图表失败位出内联提示。
+ // （2026-10-29 批次）：额度卡成功但图表聚合失败（cp=null，
+ // _callCodingPlanUsage 吞异常降级）时保留旧图，对齐 _ent 的
+ // 失败保留策略——强刷失败不再清空已渲染的图表；仅首载无旧图
+ // 才置图表失败位出内联提示。
           if (cp != null) {
             _cp = cp;
             _cpChartFailed = false;
@@ -407,8 +407,8 @@ class _UsagePageState extends State<UsagePage>
           }
           _cpError = null;
         } else {
-          // 失败态不缓存；已有旧数据时保留旧值（SWR 不翻错误页遮内容），
-          // 仅首载失败出错误页。
+ // 失败态不缓存；已有旧数据时保留旧值（SWR 不翻错误页遮内容），
+ // 仅首载失败出错误页。
           _entLoadedAt = null;
           if (_ent == null) {
             _cpError = switch (reason) {
@@ -426,19 +426,20 @@ class _UsagePageState extends State<UsagePage>
         _cpLoading = false;
         _cpRefreshing = false;
       });
-      // 重置额度礼包与套餐档同源同路（bridge 已在上方非空短路；失败
-      // 静默不扰套餐面）。 N2-6：礼包是增益面（自带静默失败），
-      // 不再 await 拖住 RefreshIndicator——force 下两段 RPC 各 15s 超时
-      // 会让转圈在额度卡就绪后再挂 15-30s。
+ // 重置额度礼包与套餐档同源同路（bridge 已在上方非空短路；失败
+ // 静默不扰套餐面）。 N2-6：礼包是增益面（自带静默失败），
+ // 不再 await 拖住 RefreshIndicator——force 下两段 RPC 各 15s 超时
+ // 会让转圈在额度卡就绪后再挂 15-30s。
       unawaited(_loadResetStatus(bridge, force: force));
     } catch (e) {
       debugPrint('[usage] plan load error: $e');
-      if (mounted) {
+ // （D-8 ）：失败分支同判代际。
+      if (mounted && gen == _planGeneration) {
         setState(() {
-          // SWR：已有数据保留旧值+顶部指示消失，不整页翻错。
+ // SWR：已有数据保留旧值+顶部指示消失，不整页翻错。
           if (_ent == null) {
-            // 18077 验收#18 + N2-12/N3 P3-6：超时/断连/其它异常
-            // 统一人话分类，原始异常只进日志。
+ // 验收#18 + N2-12/N3 ：超时/断连/其它异常
+ // 统一人话分类，原始异常只进日志。
             _cpError =
                 '${_friendlyLoadError(e)}\n'
                 '${tr('（桌面需访问账号服务获取用量，网络不佳时会超时）')}';
@@ -450,8 +451,8 @@ class _UsagePageState extends State<UsagePage>
     }
   }
 
-  /// 加载异常→人话（ N2-12/N3 P3-6）：TimeoutException/断连/
-  /// ChannelRpcError 分档；原始异常串只进 debugPrint，不上屏。
+ /// 加载异常→人话（N2-12/N3 ）：TimeoutException/断连/
+ /// ChannelRpcError 分档；原始异常串只进 debugPrint，不上屏。
   String _friendlyLoadError(Object e) {
     if (e is TimeoutException) return tr('网络不佳，加载超时');
     if (e is ChannelRpcError) return tr('额度服务暂不可用，稍后重试。');
@@ -467,8 +468,8 @@ class _UsagePageState extends State<UsagePage>
     'accountAccess': _accountAccess,
   };
 
-  /// 重置额度礼包：申领（开页一次，10min 节流）→ 状态（60s TTL）。
-  /// 两步都失败静默——礼包是增益面，不出错误页不扰套餐主内容。
+ /// 重置额度礼包：申领（开页一次，10min 节流）→ 状态（60s TTL）。
+ /// 两步都失败静默——礼包是增益面，不出错误页不扰套餐主内容。
   Future<void> _loadResetStatus(
     BridgeSession bridge, {
     required bool force,
@@ -493,9 +494,9 @@ class _UsagePageState extends State<UsagePage>
           ],
           timeout: const Duration(seconds: 15),
         );
-        // N3 P3-10：成功后才吃掉 10min 节流——请求发出前置位时，
-        // 瞬时失败（超时/断连）也会错过整个礼品窗；服务端本有 next_try_at
-        // 冷却兜底，失败重发无害。
+ // N3 ：成功后才吃掉 10min 节流——请求发出前置位时，
+ // 瞬时失败（超时/断连）也会错过整个礼品窗；服务端本有 next_try_at
+ // 冷却兜底，失败重发无害。
         _opportunityAskedAt = DateTime.now();
       } catch (_) {}
     }
@@ -516,10 +517,10 @@ class _UsagePageState extends State<UsagePage>
     } catch (_) {}
   }
 
-  /// 使用一次重置（官方 useCodingPlanReset：幂等键防重，resetType 二值）。
-  /// N1/N2/N3（P1）：RPC 在飞最长 15s——期间确认框被系统返回键等关掉后，
-  /// 旧实现的无条件双 pop 会把底部弹层连同用量页本体一起弹穿；改为按
-  /// 路由栈实际形态逐层收口（只弹自己打开的那两层）。
+ /// 使用一次重置（官方 useCodingPlanReset：幂等键防重，resetType 二值）。
+ /// N1/N2/N3（P1）：RPC 在飞最长 15s——期间确认框被系统返回键等关掉后，
+ /// 旧实现的无条件双 pop 会把底部弹层连同用量页本体一起弹穿；改为按
+ /// 路由栈实际形态逐层收口（只弹自己打开的那两层）。
   Future<void> _useReset(
     String resetType,
     BuildContext dialogContext,
@@ -560,12 +561,14 @@ class _UsagePageState extends State<UsagePage>
       _popRouteIfCurrent(dialogContext); // 关确认框
       messenger.showSnackBar(const SnackBar(content: Text('重置失败，请重试')));
     } finally {
-      _resetBusy.value = false;
+ // （D-8 ）：页面可能已 dispose（返回键关弹层再退出）——
+ // 已 dispose 的 ValueNotifier 写值在 debug 会 assert。
+      if (mounted) _resetBusy.value = false;
     }
   }
 
-  /// 只在该 context 的路由仍是栈顶时才 pop——路由已被关掉（返回键/
-  /// 手势）或页面已弹走时不误弹别的层（N1/N2/N3 双 pop 修复的收口）。
+ /// 只在该 context 的路由仍是栈顶时才 pop——路由已被关掉（返回键/
+ /// 手势）或页面已弹走时不误弹别的层（N1/N2/N3 双 pop 修复的收口）。
   void _popRouteIfCurrent(BuildContext routeContext) {
     if (!routeContext.mounted) return;
     final route = ModalRoute.of(routeContext);
@@ -581,8 +584,8 @@ class _UsagePageState extends State<UsagePage>
     final label = tr(typeLabel);
     showDialog<void>(
       context: context,
-      // N1/N2/N3：RPC 在飞期（最长 15s）确认框不可点屏障关闭——barrier
-      // 关掉后成功路径的 pop 会与栈形态错位；取消钮同接 busy 态禁点。
+ // N1/N2/N3：RPC 在飞期（最长 15s）确认框不可点屏障关闭——barrier
+ // 关掉后成功路径的 pop 会与栈形态错位；取消钮同接 busy 态禁点。
       barrierDismissible: false,
       builder: (dialogContext) => ListenableBuilder(
         listenable: _resetBusy,
@@ -704,7 +707,7 @@ class _UsagePageState extends State<UsagePage>
                 sheetContext,
               )
             : null,
-        // N3 P3-9：40<44dp 触控纪律下限。
+ // N3 ：40<44dp 触控纪律下限。
         style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
         child: const Text('重置'),
       ),
@@ -712,8 +715,8 @@ class _UsagePageState extends State<UsagePage>
   }
 
   Future<Map<String, dynamic>?> _callEntitlement(BridgeSession bridge) async {
-    // 18077 验收#18（Bug Q）：页面级 12s 超时——断网时 transport 层
-    // 挂死不抛错（RPC 30s 也不触发），用户永远转圈。
+ // 验收#18（Bug Q）：页面级 12s 超时——断网时 transport 层
+ // 挂死不抛错（RPC 30s 也不触发），用户永远转圈。
     final res = await bridge.channels
         .call(
           Channels.usageStats,
@@ -737,7 +740,7 @@ class _UsagePageState extends State<UsagePage>
     String range = '30d',
   }) async {
     try {
-      // 18077 验收#18（Bug Q）：同 _callEntitlement 的页面级超时。
+ // 验收#18（Bug Q）：同 _callEntitlement 的页面级超时。
       final res = await bridge.channels
           .call(
             Channels.usageStats,
@@ -755,21 +758,21 @@ class _UsagePageState extends State<UsagePage>
           .timeout(const Duration(seconds: 12));
       return res is Map ? res.cast<String, dynamic>() : null;
     } catch (e) {
-      // 额度卡可用而图表聚合失败时只降级图表，不拖垮整页。
+ // 额度卡可用而图表聚合失败时只降级图表，不拖垮整页。
       debugPrint('[usage] coding plan usage failed: $e');
       return null;
     }
   }
 
   Future<void> _loadApp({bool force = false}) async {
-    // 请求代际+缓存键捕获（ N2-2：在途切档防旧档数据落新档桶）。
+ // 请求代际+缓存键捕获（N2-2：在途切档防旧档数据落新档桶）。
     final gen = ++_appGeneration;
     final cacheKey = _appCacheKey;
-    // ④：60s TTL 内非强制命中直接返回（旧实现永久命中——统计不更新根因）。
+ // ④：60s TTL 内非强制命中直接返回（旧实现永久命中——统计不更新根因）。
     if (!force && _appCache.get(cacheKey, DateTime.now()) != null) {
-      // N1 P3-11：命中早退顺带清残留错误行——错误态下缓存条目
-      // 仍在 TTL 内时（重试成功过一档），周期 tick 早退会让旧错误行挂到
-      // 下一拍。
+ // N1 ：命中早退顺带清残留错误行——错误态下缓存条目
+ // 仍在 TTL 内时（重试成功过一档），周期 tick 早退会让旧错误行挂到
+ // 下一拍。
       if (_appError != null) setState(() => _appError = null);
       return;
     }
@@ -777,10 +780,10 @@ class _UsagePageState extends State<UsagePage>
     final bridge = app.bridge;
     if (!mounted || bridge == null) {
       setState(() {
-        // 错误行由 build 内联在旧数据下方（SWR 保旧值，对齐套餐 tab）
-        // ——栈被拆时不整段顶掉已在屏的图表。
-        // N1 P2-1：预译（渲染端 '加载失败：{x}' 走 pattern，
-        // 占位不递归——赋值处先 tr 防止捕获段残留中文）。
+ // 错误行由 build 内联在旧数据下方（SWR 保旧值，对齐套餐 tab）
+ // ——栈被拆时不整段顶掉已在屏的图表。
+ // N1 ：预译（渲染端 '加载失败：{x}' 走 pattern，
+ // 占位不递归——赋值处先 tr 防止捕获段残留中文）。
         _appError = tr('未连接电脑');
         _appLoading = false;
       });
@@ -791,8 +794,8 @@ class _UsagePageState extends State<UsagePage>
       _appError = null;
     });
     try {
-      // 18077 验收#18（Bug Q）：页面级 12s 超时——断网时 transport 挂死
-      // 连 RPC 30s 都不触发，永远转圈；超时进错误态（人话+重试钮）。
+ // 验收#18（Bug Q）：页面级 12s 超时——断网时 transport 挂死
+ // 连 RPC 30s 都不触发，永远转圈；超时进错误态（人话+重试钮）。
       final res = await bridge.channels
           .call(
             Channels.usageStats,
@@ -809,25 +812,27 @@ class _UsagePageState extends State<UsagePage>
       );
       if (!mounted || gen != _appGeneration) return;
       setState(() {
-        // 只缓存成功态（对齐个人套餐档：失败态落缓存会把一次瞬时失败
-        // 钉成永久空页）。
+ // 只缓存成功态（对齐个人套餐档：失败态落缓存会把一次瞬时失败
+ // 钉成永久空页）。
         if (data != null) {
           _appCache.put(cacheKey, data, DateTime.now());
         } else if (_appCache.peek(cacheKey) == null) {
-          // N2-11：空体/非 Map 响应不再静默——无旧值可渲染时
-          // 给人话错误（此前页面只剩档位 chip 的静默空白）。
+ // N2-11：空体/非 Map 响应不再静默——无旧值可渲染时
+ // 给人话错误（此前页面只剩档位 chip 的静默空白）。
           _appError = tr('数据为空，请稍后重试');
         }
         _appLoading = false;
       });
     } catch (e) {
       debugPrint('[usage] app load error: $e');
-      if (mounted) {
+ // （D-8 ）：失败分支同样判代际——resume 常规拉与时区 force
+ // 并发时，旧请求超时会把错误行写到新数据上。
+      if (mounted && gen == _appGeneration) {
         setState(() {
-          // N1/N2/N3（SWR 对齐套餐 tab H15-2）：重验失败不整段顶掉在屏
-          // 内容——错误行由 build 内联在 peek 旧值下方，仅首载无旧值时
-          // 独占展示。
-          // 18077 验收#18 + N2-12/N3 P3-6：异常人话分类。
+ // N1/N2/N3（SWR 对齐套餐 tab ）：重验失败不整段顶掉在屏
+ // 内容——错误行由 build 内联在 peek 旧值下方，仅首载无旧值时
+ // 独占展示。
+ // 验收#18 + N2-12/N3 ：异常人话分类。
           _appError = _friendlyLoadError(e);
           _appLoading = false;
         });
@@ -868,7 +873,7 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  // ── 个人套餐 ────────────────────────────────────────────────
+ // ── 个人套餐 ────────────────────────────────────────────────
 
   Widget _buildPlanTab() {
     if (_cpLoading) {
@@ -901,9 +906,9 @@ class _UsagePageState extends State<UsagePage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                // N1 P2-1：去掉 translate:false——五条 reason
-                // 人话均已入词典（超时分支赋值处已预译为纯英文，tr 对无
-                // CJK 串原样返回，不受影响）。
+ // N1 ：去掉 translate:false——五条 reason
+ // 人话均已入词典（超时分支赋值处已预译为纯英文，tr 对无
+ // CJK 串原样返回，不受影响）。
                 _cpError!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -924,14 +929,14 @@ class _UsagePageState extends State<UsagePage>
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(16),
         children: [
-          // A4 SWR 局部刷新指示：切档/重验证期细进度条（旧值仍在下方渲染）。
+ // A4 SWR 局部刷新指示：切档/重验证期细进度条（旧值仍在下方渲染）。
           if (_cpRefreshing)
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: LinearProgressIndicator(minHeight: 2),
             ),
-          // 批①：范围三档（官方 CodingPlanUsageRange；今日档下折线为
-          // 小时粒度）。切换即取档缓存/拉取，折线点选重置。
+ // 范围三档（官方 CodingPlanUsageRange；今日档下折线为
+ // 小时粒度）。切换即取档缓存/拉取，折线点选重置。
           Wrap(
             spacing: 8,
             runSpacing: 4,
@@ -984,9 +989,9 @@ class _UsagePageState extends State<UsagePage>
           if (_resetStatus?.hasAny == true) ...[
             const SizedBox(height: 8),
             Center(
-              // N1 P3-4/N3 P3-1：秒针收进徽标自带 Timer——此前
-              // 页面级 1Hz setState 重建整页（双 tab 全部子树）；多机会/
-              // 小时以上档每秒产物相同，30s 一拍足够。
+ // N1 /N3 ：秒针收进徽标自带 Timer——此前
+ // 页面级 1Hz setState 重建整页（双 tab 全部子树）；多机会/
+ // 小时以上档每秒产物相同，30s 一拍足够。
               child: _ResetBadge(status: _resetStatus!, onPressed: _showResetSheet),
             ),
           ],
@@ -1019,8 +1024,8 @@ class _UsagePageState extends State<UsagePage>
               ),
             ),
           ],
-          // N1 P3-3：section 构建函数只调一次（原 null 检查+
-          // 取值各调一次，解析/排序/建序列全部翻倍）。
+ // N1 ：section 构建函数只调一次（原 null 检查+
+ // 取值各调一次，解析/排序/建序列全部翻倍）。
           if (_activitySection() case final activity?) ...[
             const SizedBox(height: 14),
             activity,
@@ -1036,8 +1041,8 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 剩余额度四卡：5 小时窗口 / 每周 / 每月工具 / ZCode MCP
-  /// （官方 CodingPlanUsagePanel cards + resolveMcpQuotaLimit 同构）。
+ /// 剩余额度四卡：5 小时窗口 / 每周 / 每月工具 / ZCode MCP
+ /// （官方 CodingPlanUsagePanel cards + resolveMcpQuotaLimit 同构）。
   Widget _buildQuotaCards() {
     final quota = _ent?['quota'];
     final limits = quota is Map ? listOf(quota['limits']) : null;
@@ -1113,12 +1118,12 @@ class _UsagePageState extends State<UsagePage>
   }
 
   String _refreshedAt() {
-    // 数字守卫（ N2-5）：serverTime/generatedAt 漂移成 ISO 字符串
-    // 时不再整段抛错，安全退 '-'。
+ // 数字守卫（N2-5）：serverTime/generatedAt 漂移成 ISO 字符串
+ // 时不再整段抛错，安全退 '-'。
     final ms =
         numOf(_ent?['serverTime']) ?? numOf(_ent?['generatedAt']);
-    // 上界守卫（ N1 P3-5）：超 Dart epoch 合法域（±8.64e15ms）
-    // 的畸形值在 build 链上抛 ArgumentError——退 '-'。
+ // 上界守卫（N1 ）：超 Dart epoch 合法域（±8.64e15ms）
+ // 的畸形值在 build 链上抛 ArgumentError——退 '-'。
     if (ms == null || ms < 0 || ms > 8640000000000000) return '-';
     final t = DateTime.fromMillisecondsSinceEpoch(ms.toInt()).toLocal();
     String two(int v) => v.toString().padLeft(2, '0');
@@ -1184,10 +1189,10 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 订阅行：完整套餐信息。details[] 是 productName/billingCycle/renewTime/
-  /// expireTime 的官方载体（refs usage-stats.ts:132-152），逐条列出（最多
-  /// 2 条，更多"等 N 项"）；套餐名按官方规则 quota.level 优先、productName
-  /// 回退（formatPlanName）。无订阅/无可展示字段 → 不渲染（兜底分支不变）。
+ /// 订阅行：完整套餐信息。details[] 是 productName/billingCycle/renewTime/
+ /// expireTime 的官方载体（refs usage-stats.ts:132-152），逐条列出（最多
+ /// 2 条，更多"等 N 项"）；套餐名按官方规则 quota.level 优先、productName
+ /// 回退（formatPlanName）。无订阅/无可展示字段 → 不渲染（兜底分支不变）。
   Widget? _subscriptionLine() {
     final sub = _ent?['subscription'];
     if (sub is! Map) return null;
@@ -1223,7 +1228,7 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 活跃度统计（官方 CodingPlanActivitySummary：累计/峰值/时长/连续天数）。
+ /// 活跃度统计（官方 CodingPlanActivitySummary：累计/峰值/时长/连续天数）。
   Widget? _activitySection() {
     final activity = _cp?['activity'];
     final summary = activity is Map ? activity['summary'] : null;
@@ -1261,13 +1266,13 @@ class _UsagePageState extends State<UsagePage>
     return _sectionCard('Token 活动热力图', UsageHeatmapView(heatmap));
   }
 
-  /// 用量趋势：modelUsage.modelDataList top3 多折线。
+ /// 用量趋势：modelUsage.modelDataList top3 多折线。
   Widget? _cpTrend() {
     final mu = _cp?['modelUsage'];
     if (mu is! Map) return null;
-    // xTime 守卫（ N2-5/N3-P2-1）：cast<String>() 是懒转换，
-    // 非 String 元素的异常推迟到 painter 访问处（paint 期崩）——改
-    // whereType 即时过滤。
+ // xTime 守卫（N2-5/N3-）：cast<String>() 是懒转换，
+ // 非 String 元素的异常推迟到 painter 访问处（paint 期崩）——改
+ // whereType 即时过滤。
     final xTime =
         listOf(mu['xTime'])?.whereType<String>().toList() ?? const [];
     final rawModels = mu['modelDataList'];
@@ -1300,27 +1305,38 @@ class _UsagePageState extends State<UsagePage>
         ? _lineSelected
         : lastIdx;
     final selected = _lineShowTotal ? null : explicit;
-    // 批①：点选明细行（默认末点；再点同点=取消，显示区间合计）。
-    final detailText = selected == null
-        ? barRangeTotalText(lineRangeTotal(series), formatTokens)
-        : linePointDetailLine(
-            date: xTime[selected],
-            index: selected,
-            series: series,
-            formatter: formatTokens,
+ // 点选明细行（默认末点；再点同点=取消，显示区间合计）。
+ // 2026-11-05 反馈①：摘要改结构化（头部+模型行），弃整段纯文字。
+    final summary = selected == null
+        ? _TrendSummary(
+            header: tr('区间合计'),
+            total: tr(formatTokens(lineRangeTotal(series))),
+            rows: const [],
+            emptyHint: tr('点击图表查看当日明细'),
+          )
+        : _TrendSummary(
+            header: tr(chartXLabel(xTime[selected])),
+            total: tr(formatTokens(
+              series.fold<double>(0, (a, s) {
+                return a + (selected < s.values.length ? s.values[selected] : 0);
+              }),
+            )),
+            rows: [
+              for (final s in series)
+                if (selected < s.values.length && s.values[selected] > 0)
+                  (
+                    name: s.name,
+                    value: tr(formatTokens(s.values[selected])),
+                    color: s.color,
+                  ),
+            ],
           );
     return _sectionCard(
       '用量趋势',
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            detailText,
-            style: TextStyle(
-              fontSize: AppType.uiSm,
-              color: context.colors.foregroundSubtle,
-            ),
-          ),
+          summary,
           const SizedBox(height: 6),
           UsageLineChartView(
             series: series,
@@ -1348,10 +1364,10 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  // ── 应用用量 ────────────────────────────────────────────────
+ // ── 应用用量 ────────────────────────────────────────────────
 
   Widget _buildAppTab() {
-    // 渲染用 peek（SWR 旧值兜底）；刷新判定走 get（TTL）。
+ // 渲染用 peek（SWR 旧值兜底）；刷新判定走 get（TTL）。
     final data = _appCache.peek(_appCacheKey);
     return RefreshIndicator(
       onRefresh: () => _loadApp(force: true),
@@ -1390,12 +1406,12 @@ class _UsagePageState extends State<UsagePage>
             ],
           ),
           const SizedBox(height: 14),
-          // A4 一致化：无数据加载中才占位 spinner；有数据切档顶部细进度条。
-          // N1/N2/N3（P1/P2，SWR 对齐套餐 tab）：重验期（60s 周期==TTL，
-          // 每 tick 都会进 loading）与失败期都保留 peek 旧值渲染——进度
-          // 条前置叠加、错误行内联在数据下方（同套餐 tab 图表失败提示的
-          // 位置语义），不再整段替换已在屏的统计卡（旧 if/else-if 互斥链
-          // 约每分钟让内容消失一次）。
+ // A4 一致化：无数据加载中才占位 spinner；有数据切档顶部细进度条。
+ // N1/N2/N3（P1/P2，SWR 对齐套餐 tab）：重验期（60s 周期==TTL，
+ // 每 tick 都会进 loading）与失败期都保留 peek 旧值渲染——进度
+ // 条前置叠加、错误行内联在数据下方（同套餐 tab 图表失败提示的
+ // 位置语义），不再整段替换已在屏的统计卡（旧 if/else-if 互斥链
+ // 约每分钟让内容消失一次）。
           if (_appLoading && data == null)
             const Padding(
               padding: EdgeInsets.only(top: 48),
@@ -1415,15 +1431,15 @@ class _UsagePageState extends State<UsagePage>
               ),
             if (data != null) ..._buildAppSections(data),
             if (!_appLoading && _appError != null)
-              // 优化批 #4：错误行尾补重试按钮（原内联红字无出路）。
+ // 优化批 #4：错误行尾补重试按钮（原内联红字无出路）。
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Row(
                   children: [
                     Expanded(
-                      // N1 P2-1：整串交词典走
-                      // `^加载失败：([\s\S]+)$` pattern（裸前缀 tr 不命中
-                      // 词条；_appError 赋值处已预译）。
+ // N1 ：整串交词典走
+ // `^加载失败：([\s\S]+)$` pattern（裸前缀 tr 不命中
+ // 词条；_appError 赋值处已预译）。
                       child: Text(
                         '加载失败：$_appError',
                         style: TextStyle(
@@ -1479,7 +1495,7 @@ class _UsagePageState extends State<UsagePage>
           ),
         ),
       ],
-      // N1 P3-3：section 构建函数只调一次（原双调用翻倍重算）。
+ // N1 ：section 构建函数只调一次（原双调用翻倍重算）。
       if (_appTrend(data) case final trend?) ...[
         const SizedBox(height: 14),
         trend,
@@ -1495,8 +1511,8 @@ class _UsagePageState extends State<UsagePage>
     ];
   }
 
-  /// 按模型趋势（拍板④B，官方 AppUsageDailyModelTrendChart 对位）：
-  /// Top6 模型多序列日折线 + 图例（点+名+区间总量）。
+ /// 按模型趋势（拍板④B，官方 AppUsageDailyModelTrendChart 对位）：
+ /// Top6 模型多序列日折线 + 图例（点+名+区间总量）。
   Widget? _appModelTrend(Map<String, dynamic> data) {
     final models =
         listOf(data['models'])
@@ -1522,26 +1538,37 @@ class _UsagePageState extends State<UsagePage>
         ? _modelTrendSelected
         : lastIdx;
     final selected = _modelTrendShowTotal ? null : explicit;
-    final detailText = selected == null
-        ? barRangeTotalText(lineRangeTotal(built.series), formatTokens)
-        : linePointDetailLine(
-            date: built.dates[selected],
-            index: selected,
-            series: built.series,
-            formatter: formatTokens,
+ // 2026-11-05 反馈①：摘要改结构化（头部+模型行），弃整段纯文字。
+    final summary = selected == null
+        ? _TrendSummary(
+            header: tr('区间合计'),
+            total: tr(formatTokens(lineRangeTotal(built.series))),
+            rows: const [],
+            emptyHint: tr('点击图表查看当日明细'),
+          )
+        : _TrendSummary(
+            header: tr(chartXLabel(built.dates[selected])),
+            total: tr(formatTokens(
+              built.series.fold<double>(0, (a, s) {
+                return a + (selected < s.values.length ? s.values[selected] : 0);
+              }),
+            )),
+            rows: [
+              for (final s in built.series)
+                if (selected < s.values.length && s.values[selected] > 0)
+                  (
+                    name: s.name,
+                    value: tr(formatTokens(s.values[selected])),
+                    color: s.color,
+                  ),
+            ],
           );
     return _sectionCard(
       '按模型趋势',
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            detailText,
-            style: TextStyle(
-              fontSize: AppType.uiSm,
-              color: context.colors.foregroundSubtle,
-            ),
-          ),
+          summary,
           const SizedBox(height: 6),
           _chartLegend(built.series),
           const SizedBox(height: 8),
@@ -1570,8 +1597,8 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 每日趋势：dailyModelUsage 按日聚合柱状图 + 点选单日明细。
-  /// 默认选中最后一天（最新）；再点同一柱=取消选中，明细行显示区间合计。
+ /// 每日趋势：dailyModelUsage 按日聚合柱状图 + 点选单日明细。
+ /// 默认选中最后一天（最新）；再点同一柱=取消选中，明细行显示区间合计。
   Widget? _appTrend(Map<String, dynamic> data) {
     final raw = data['dailyModelUsage'];
     if (raw is! List || raw.isEmpty) return null;
@@ -1607,26 +1634,33 @@ class _UsagePageState extends State<UsagePage>
         ? _trendSelected
         : lastIdx;
     final selected = _trendShowTotal ? null : explicit;
-    final detailText = selected == null
-        ? barRangeTotalText(values.fold(0.0, (a, b) => a + b), formatTokens)
-        : barDayDetailLine(
-            date: dates[selected],
-            total: values[selected],
-            topModels: days[selected].topModels,
-            formatter: formatTokens,
+ // 2026-11-05 反馈①：摘要改结构化（头部+模型行），弃整段纯文字。
+    final palette = context.charts.series;
+    final summary = selected == null
+        ? _TrendSummary(
+            header: tr('区间合计'),
+            total: tr(formatTokens(values.fold(0.0, (a, b) => a + b))),
+            rows: const [],
+            emptyHint: tr('点击图表查看当日明细'),
+          )
+        : _TrendSummary(
+            header: tr(chartDayLabel(dates[selected])),
+            total: tr(formatTokens(values[selected])),
+            rows: [
+              for (var i = 0; i < days[selected].topModels.length; i++)
+                (
+                  name: days[selected].topModels[i].name,
+                  value: tr(formatTokens(days[selected].topModels[i].tokens)),
+                  color: palette[i % palette.length],
+                ),
+            ],
           );
     return _sectionCard(
       '每日 Token 趋势',
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            detailText,
-            style: TextStyle(
-              fontSize: AppType.uiSm,
-              color: context.colors.foregroundSubtle,
-            ),
-          ),
+          summary,
           const SizedBox(height: 6),
           UsageBarChartView(
             values: values,
@@ -1637,7 +1671,7 @@ class _UsagePageState extends State<UsagePage>
               final cur = _trendShowTotal ? null : (_trendSelected ?? lastIdx);
               setState(() {
                 if (cur == i) {
-                  // 再点同一柱 → 取消选中，明细行显示区间合计。
+ // 再点同一柱 → 取消选中，明细行显示区间合计。
                   _trendShowTotal = true;
                   _trendSelected = null;
                 } else {
@@ -1652,9 +1686,9 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 模型用量环形图（官方范式：totalTokens>0 过滤 → 降序 → 超 6 片合并
-  /// "其他"；切片值=totalTokens 实际量，占比由 painter 按值比例计算。
-  /// 图例显示实际量而非百分比）。
+ /// 模型用量环形图（官方范式：totalTokens>0 过滤 → 降序 → 超 6 片合并
+ /// "其他"；切片值=totalTokens 实际量，占比由 painter 按值比例计算。
+ /// 图例显示实际量而非百分比）。
   Widget? _appModels(Map<String, dynamic> data) {
     final raw = data['models'];
     if (raw is! List || raw.isEmpty) return null;
@@ -1668,8 +1702,8 @@ class _UsagePageState extends State<UsagePage>
       otherColor: context.colors.foregroundSubtle,
     );
     if (pie.slices.isEmpty) return null;
-    // 批①：切片点选（null=合计提示；再点同片=取消）。占比按过滤后
-    // 总量重算（官方同口径）。
+ // 切片点选（null=合计提示；再点同片=取消）。占比按过滤后
+ // 总量重算（官方同口径）。
     final sel = _pieSelected != null && _pieSelected! < pie.slices.length
         ? _pieSelected
         : null;
@@ -1681,10 +1715,10 @@ class _UsagePageState extends State<UsagePage>
             return '${pie.slices[sel].name} · ${tr(formatTokens(v))} · '
                 '${pct >= 10 ? pct.toStringAsFixed(0) : pct.toStringAsFixed(1)}%';
           }();
-    // 18074 验收（桌面对位）：环形图数值全进清单（圆点+模型名+右对齐
-    // 百分比 / 第二行数值，行可点=同切片点选，薄切片的触控兜底）；环心
-    // 显示总量；宽屏（≥480dp，展开态）环与清单左右分栏（桌面同款内部
-    // 结构），窄屏上下排。
+ // 验收（桌面对位）：环形图数值全进清单（圆点+模型名+右对齐
+ // 百分比 / 第二行数值，行可点=同切片点选，薄切片的触控兜底）；环心
+ // 显示总量；宽屏（≥480dp，展开态）环与清单左右分栏（桌面同款内部
+ // 结构），窄屏上下排。
     void pick(int i) {
       setState(() {
         _pieSelected = sel == i ? null : i;
@@ -1704,8 +1738,8 @@ class _UsagePageState extends State<UsagePage>
           if (i > 0)
             Divider(height: 1, thickness: 0.5, color: context.colors.border),
           InkWell(
-            // N3 P2-2：键拼入索引——重名切片（modelId 缺失/重复
-            // 统一落「未知」）不再产生兄弟重复 key（debug 断言崩溃）。
+ // N3 ：键拼入索引——重名切片（modelId 缺失/重复
+ // 统一落「未知」）不再产生兄弟重复 key（debug 断言崩溃）。
             key: ValueKey('donut-legend-$i-${pie.slices[i].name}'),
             onTap: () => pick(i),
             child: Padding(
@@ -1806,7 +1840,7 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  // ── 通用件 ──────────────────────────────────────────────────
+ // ── 通用件 ──────────────────────────────────────────────────
 
   Widget _sectionCard(String title, Widget child) {
     return Container(
@@ -1887,44 +1921,188 @@ class _UsagePageState extends State<UsagePage>
     );
   }
 
-  /// 图例：圆点+名称单行横滑（18074 验收，桌面对位）——数值由点选明细
-  /// 行与环形清单承载，不内联。 N1 P3-1/N2-9/N3 P3-2：退役的
-  /// unit/decimals/valueFormatter/rangeTotals 参数与调用方的无效实参
-  /// （rangeTotals 每帧构建后即被丢弃）一并删除。
+ /// 图例：圆点+名称单行横滑（验收，桌面对位）——数值由点选明细
+ /// 行与环形清单承载，不内联。 N1 /N2-9/N3 ：退役的
+ /// unit/decimals/valueFormatter/rangeTotals 参数与调用方的无效实参
+ /// （rangeTotals 每帧构建后即被丢弃）一并删除。
+ /// 2026-11-05 反馈①：右缘渐隐提示可横滑（修「词中间硬截断无提示」）；
+ /// 去掉定高 22（1.3× 字号下文字纵向被裁）改内容自适应。
   Widget _chartLegend(List<ChartSeries> series) {
-    return SizedBox(
-      height: 22,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (var i = 0; i < series.length; i++) ...[
-              if (i > 0) const SizedBox(width: 14),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: series[i].color,
-                      shape: BoxShape.circle,
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (var i = 0; i < series.length; i++) ...[
+                if (i > 0) const SizedBox(width: 14),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: series[i].color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    series[i].name,
-                    translate: false,
-                    style: TextStyle(
-                      fontSize: AppType.uiCaption,
-                      color: context.colors.foregroundSubtle,
+                    const SizedBox(width: 5),
+                    Text(
+                      series[i].name,
+                      translate: false,
+                      style: TextStyle(
+                        fontSize: AppType.uiCaption,
+                        color: context.colors.foregroundSubtle,
+                      ),
                     ),
+                  ],
+                ),
+              ],
+ // 末尾垫位：渐隐带不压最后一个名称。
+              const SizedBox(width: 16),
+            ],
+          ),
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                width: 20,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      context.colors.card.withValues(alpha: 0),
+                      context.colors.card,
+                    ],
                   ),
-                ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 2026-11-05 反馈①：趋势卡摘要结构化（用户拍板「纯文字模型+用量排列
+/// 可读性差」）——头部行（日期/区间合计 + 右对齐总量）+ 模型行（色点+
+/// 名称 ellipsis+右对齐数值），范式与热力图日明细（heat-day-detail）一致；
+/// 色点与图表同源（调用方传对应 ChartSeries.color / 调色板名次）。
+class _TrendSummary extends StatelessWidget {
+  const _TrendSummary({
+    required this.header,
+    required this.total,
+    required this.rows,
+    this.emptyHint,
+  });
+
+ /// 头部左侧（已本地化的日期标签或「区间合计」）。
+  final String header;
+
+ /// 头部右侧总量（已格式化并本地化）。
+  final String total;
+
+ /// 模型行；空=未选中态（区间合计），显示 [emptyHint]。
+  final List<({String name, String value, Color color})> rows;
+
+ /// 未选中态提示（与热力图「点击格子」同款语义）。
+  final String? emptyHint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('trend-summary'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: context.colors.borderFaint),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  header,
+                  style: const TextStyle(
+                    fontSize: AppType.uiSm,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                total,
+                style: const TextStyle(
+                  fontSize: AppType.uiBase,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
+          ),
+          if (rows.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                emptyHint ?? '',
+                style: TextStyle(
+                  fontSize: AppType.uiSm,
+                  color: context.colors.foregroundSubtlest,
+                ),
+              ),
+            )
+          else ...[
+            const SizedBox(height: 10),
+            Text(
+              '模型用量',
+              style: TextStyle(
+                fontSize: AppType.uiXs,
+                color: context.colors.foregroundSubtlest,
+              ),
+            ),
+            const SizedBox(height: 4),
+            for (var i = 0; i < rows.length; i++)
+              Padding(
+                padding: EdgeInsets.only(top: i == 0 ? 0 : 4),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: rows[i].color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        rows[i].name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: AppType.uiXs),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      rows[i].value,
+                      style: const TextStyle(
+                        fontSize: AppType.uiXs,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -1936,7 +2114,7 @@ class _Metric {
   const _Metric(this.label, this.value);
 }
 
-/// 重置礼包徽标（ N1 P3-4：自带倒计时 Timer，秒针只重建本行
+/// 重置礼包徽标（N1 ：自带倒计时 Timer，秒针只重建本行
 /// 而非整页）。多机会/小时以上档倒计时产物每秒相同——降为 30s 一拍；
 /// 分秒档（单机会<1h）才逐秒走表。
 class _ResetBadge extends StatefulWidget {
@@ -1956,13 +2134,13 @@ class _ResetBadgeState extends State<_ResetBadge> {
     super.initState();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      // 被其他路由覆盖/退后台时不空转 setState（同页级定时器闸门）。
+ // 被其他路由覆盖/退后台时不空转 setState（同页级定时器闸门）。
       if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
         return;
       }
       final route = ModalRoute.of(context);
       if (route != null && !route.isCurrent) return;
-      // 分秒档（单机会且最早过期<1h）才逐秒重建；否则 30s 一拍。
+ // 分秒档（单机会且最早过期<1h）才逐秒重建；否则 30s 一拍。
       final st = widget.status;
       final soonest = st.soonestExpireAt;
       final secondly = st.totalCount == 1 &&
@@ -2004,7 +2182,7 @@ class _ResetBadgeState extends State<_ResetBadge> {
 /// 官方 formatCodingPlanRate 量纲兼容：>1 视为已是百分数。
 double _ratePercent(num v) => (v > 1 ? v : v * 100).toDouble();
 
-/// 热力图：weeks×7 天格子，横向滚动。批①（2026-10-23）：点选格子→
+/// 热力图：weeks×7 天格子，横向滚动。（2026-10-23）：点选格子→
 /// 选中描边+下方明细行（官方 schema 格子带 date/totalTokens/turnCount/
 /// toolCallCount，usage-stats.ts:208-214）；再点同格取消。months 不标注
 /// ——保持最小。
@@ -2015,8 +2193,8 @@ double _ratePercent(num v) => (v > 1 ? v : v * 100).toDouble();
 class UsageHeatmapView extends StatefulWidget {
   final Map<dynamic, dynamic> heatmap;
 
-  /// 按模型日用量（2026-10-26 拍板④：点选日明细追加按模型拆分；仅
-  /// 应用用量快照携带，个人套餐 monitor 接口无此数据）。
+ /// 按模型日用量（2026-10-26 拍板④：点选日明细追加按模型拆分；仅
+ /// 应用用量快照携带，个人套餐 monitor 接口无此数据）。
   final List<dynamic>? dailyModelUsage;
   const UsageHeatmapView(this.heatmap, {this.dailyModelUsage, super.key});
 
@@ -2031,14 +2209,14 @@ class UsageHeatmapView extends StatefulWidget {
 enum _Heatmode { total, model }
 
 class _UsageHeatmapViewState extends State<UsageHeatmapView> {
-  /// 选中格 (weekIndex, dayIndex)；null=未选（提示行）。
+ /// 选中格 (weekIndex, dayIndex)；null=未选（提示行）。
   (int, int)? _sel;
 
   _Heatmode _mode = _Heatmode.total;
 
-  /// 横向滚动：默认停在最右（最近几周）——2026-10-26 真机验收②b：时间
-  /// 轴左旧右新，初始停最左要划半屏才见最近用量，不合理。数据换档后
-  /// 周数变长也保持贴右。
+ /// 横向滚动：默认停在最右（最近几周）——2026-10-26 真机验收②b：时间
+ /// 轴左旧右新，初始停最左要划半屏才见最近用量，不合理。数据换档后
+ /// 周数变长也保持贴右。
   final _hScroll = ScrollController();
   int _weeksCount = 0;
 
@@ -2053,7 +2231,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
     super.didUpdateWidget(oldWidget);
     final weeks = listOf(widget.heatmap['weeks'])?.length ?? 0;
     if (weeks != _weeksCount) _jumpToLatest();
-    // 换范围/换时区后旧选中可能已不存在：清掉而不是残留旧明细。
+ // 换范围/换时区后旧选中可能已不存在：清掉而不是残留旧明细。
     if (_sel != null) {
       final (w, d) = _sel!;
       final weekList = listOf(widget.heatmap['weeks']) ?? const [];
@@ -2091,20 +2269,32 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
       );
     }
     final gap = 2.5;
-    // 无用量格底色（2026-10-26 真机验收②a）：深色下 0 级绿（#252B28）
-    // 与空格全透明都近乎不可见——参考桌面端：无用量=可辨识的淡灰。
-    // 18074 验收：withValues(alpha:) 是覆写不是叠乘——border 自带 10%
-    // 透明度被直接改成 50%，实机"灰格太亮"；桌面实测不活跃格仅比底亮
-    // 一档（#2B2E33 vs #26282B≈2%白）——取 border 色 6% 贴同档。
+ // 无用量格底色（2026-10-26 真机验收②a）：深色下 0 级绿（#252B28）
+ // 与空格全透明都近乎不可见——参考桌面端：无用量=可辨识的淡灰。
+ // 验收：withValues(alpha:) 是覆写不是叠乘——border 自带 10%
+ // 透明度被直接改成 50%，实机"灰格太亮"；桌面实测不活跃格仅比底亮
+ // 一档（#2B2E33 vs #26282B≈2%白）——取 border 色 6% 贴同档。
     final emptyCell = context.colors.border.withValues(alpha: 0.06);
     _weeksCount = weeks.length;
-    // 按模型档：日期 → (top 模型, 该日模型总量占比强度)。
-    // 同日多模型取 tokens 最大者为该日代表色（手机窄屏下不做叠色）。
+ // 按模型档：日期 → (top 模型, 该日模型总量占比强度)。
+ // 同日多模型取 tokens 最大者为该日代表色（手机窄屏下不做叠色）。
     final modelPalette = context.charts.series;
     final topModelByDate = <String, ({String name, int colorIndex, double share})>{};
+ // （D-8 ）：日期键归一——两侧格式不一致（补零/时区后缀）时
+ // 整档会静默退化为总用量色阶；DateTime.tryParse 归一到 yyyy-MM-dd。
+    String normDate(dynamic v) {
+      final raw = '$v'.trim();
+      final parsed = DateTime.tryParse(raw);
+      return parsed == null
+          ? raw
+          : '${parsed.year.toString().padLeft(4, '0')}-'
+              '${parsed.month.toString().padLeft(2, '0')}-'
+              '${parsed.day.toString().padLeft(2, '0')}';
+    }
+
     for (final entry in widget.dailyModelUsage ?? const []) {
       if (entry is! Map) continue;
-      final date = '${entry['date'] ?? ''}';
+      final date = normDate(entry['date']);
       if (date.isEmpty) continue;
       var bestName = '';
       var bestTokens = 0.0;
@@ -2121,33 +2311,39 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
         names.add('${m['modelId'] ?? '未知'}');
       }
       if (bestName.isEmpty) continue;
-      // 模型 → 调色板下标（按名字稳定排序，同一模型跨日同色）。
+ // 模型 → 调色板下标（同日内按字典序稳定取色；跨日集合不同则同
+ // 一模型可能换色，注释此前承诺的跨日同色不成立）。
       names.sort();
-      final idx = names.toSet().toList().indexOf(bestName) % modelPalette.length;
+ // （D-8 ）：isEmpty 守卫提到取模之前——原顺序先除零，
+ // 守卫是死代码（今天调色板恒非空，但主题加空调色板即崩）。
+      final paletteLen = modelPalette.length;
+      final idx = paletteLen == 0
+          ? 0
+          : names.toSet().toList().indexOf(bestName) % paletteLen;
       topModelByDate[date] = (
         name: bestName,
-        colorIndex: modelPalette.isEmpty ? 0 : idx,
+        colorIndex: idx,
         share: total <= 0 ? 0 : bestTokens / total,
       );
     }
-    // 容器高按触控命中盒（22）计而非视觉格（11）——B4 触控外扩后每格
-    // 实占 24.5（命中盒+下边距），7 行共 171.5；此前按 11 计得 94.5，
-    // 内容溢出 77px 且横向滚动视图不裁纵向溢出，格子盖到下方内容
-    // （2026-10-25 问题②真机实锤）。
+ // 容器高按触控命中盒（22）计而非视觉格（11）——B4 触控外扩后每格
+ // 实占 24.5（命中盒+下边距），7 行共 171.5；此前按 11 计得 94.5，
+ // 内容溢出 77px 且横向滚动视图不裁纵向溢出，格子盖到下方内容
+ // （2026-10-25 问题②真机实锤）。
     final hit = 22.0;
     final gridHeight = hit * 7 + gap * 7;
     Map<String, dynamic>? selDay;
     if (_sel != null) {
       final (w, d) = _sel!;
-      // 双侧越界守卫（对抗审查 A2）：档间切换周数缩档（已缓存档的
-      // State 存活、_sel 残留），week 侧此前无守卫——weeks[w] 直接
-      // RangeError 崩溃（release 同崩）。
+ // 双侧越界守卫（A2）：档间切换周数缩档（已缓存档的
+ // State 存活、_sel 残留），week 侧此前无守卫——weeks[w] 直接
+ // RangeError 崩溃（release 同崩）。
       final days = w < weeks.length ? weeks[w]['days'] : null;
       final day = days is List && d < days.length ? days[d] : null;
       selDay = day is Map ? day.cast<String, dynamic>() : null;
     }
-    // 当日按模型明细（top3，与趋势柱明细同口径）；结构化行展示，
-    // 不再把“日期/总量/轮次/模型”挤成两行小字。
+ // 当日按模型明细（top3，与趋势柱明细同口径）；结构化行展示，
+ // 不再把“日期/总量/轮次/模型”挤成两行小字。
     final dayModels = <({String name, num tokens})>[];
     if (selDay != null) {
       final date = '${selDay['date'] ?? ''}';
@@ -2167,8 +2363,8 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
     final topModels = dayModels.take(3).toList();
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 列宽随可用宽度分配：30d/7d 不再挤在左边；53 周仍按 22px
-        // 命中盒横向滚动。视觉格最大 28px，命中区不缩小。
+ // 列宽随可用宽度分配：30d/7d 不再挤在左边；53 周仍按 22px
+ // 命中盒横向滚动。视觉格最大 28px，命中区不缩小。
         final available = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : weeks.length * 24.5;
@@ -2178,8 +2374,8 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
         );
         final visualCell = (hitWidth - 4).clamp(
           11.0,
-          // 少周数允许大格子铺满（用户⑤：右侧不再大片空白）；
-          // 多周数仍保持小格+横滚。
+ // 少周数允许大格子铺满（用户⑤：右侧不再大片空白）；
+ // 多周数仍保持小格+横滚。
           weeks.length <= 8 ? double.infinity : 28.0,
         );
         final contentWidth = available > weeks.length * (hitWidth + gap)
@@ -2220,12 +2416,13 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                                       final lvl = level is int ? level : 0;
                                       Color color;
                                       if (_mode == _Heatmode.model) {
-                                        final date =
-                                            day is Map ? '${day['date'] ?? ''}' : '';
+                                        final date = day is Map
+                                            ? normDate(day['date'])
+                                            : '';
                                         final top = topModelByDate[date];
-                                        // 有活动但无按模型明细（个人套餐
-                                        // monitor 接口不携带该维度）→ 退回
-                                        // 总用量色阶，不显示假色。
+ // 有活动但无按模型明细（个人套餐
+ // monitor 接口不携带该维度）→ 退回
+ // 总用量色阶，不显示假色。
                                         if (lvl >= 1 && lvl < 5 && top != null) {
                                           color = modelPalette[top.colorIndex]
                                               .withValues(
@@ -2244,12 +2441,12 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                                             : emptyCell;
                                       }
                                       final selected = _sel == (wi, d);
-                                      // 命中盒外扩（对抗审查 B4）：视觉格子
-                                      // 11px 低于 44 触控纪律——命中区扩大到
-                                      // 22×22（含邻缝），视觉尺寸不变。
+ // 命中盒外扩（B4）：视觉格子
+ // 11px 低于 44 触控纪律——命中区扩大到
+ // 22×22（含邻缝），视觉尺寸不变。
                                       return GestureDetector(
                                         behavior: HitTestBehavior.opaque,
-                                        // 空格子（day=null）不可选。
+ // 空格子（day=null）不可选。
                                         onTap: day is! Map
                                             ? null
                                             : () => setState(() {
@@ -2265,8 +2462,8 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                                               width: visualCell,
                                               height: visualCell,
                                               decoration: BoxDecoration(
-                                                // 无数据格与 0 级格统一淡灰底
-                                                //（②a：不再与背景融为一体）。
+ // 无数据格与 0 级格统一淡灰底
+ //（②a：不再与背景融为一体）。
                                                 color: day == null
                                                     ? emptyCell
                                                     : color,
@@ -2297,9 +2494,9 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
               ),
             ),
             const SizedBox(height: 6),
-            // 手机紧凑档位切换（用户拍板：针对窄屏优化）——单行、
-            // 小尺寸胶囊，不挤压图例与明细；协议无「按来源」维度故
-            // 只提供两档（不伪造第三档）。
+ // 手机紧凑档位切换（用户拍板：针对窄屏优化）——单行、
+ // 小尺寸胶囊，不挤压图例与明细；协议无「按来源」维度故
+ // 只提供两档（不伪造第三档）。
             Row(
               children: [
                 for (final m in _Heatmode.values) ...[
@@ -2469,9 +2666,9 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // N2-8：0 级/空格实际渲染 emptyCell（18074 验收
-                // 调灰），greens[0] 在图上永不出现——图例首格同步用
-                // emptyCell，色样与图面一致。
+ // N2-8：0 级/空格实际渲染 emptyCell（验收
+ // 调灰），greens[0] 在图上永不出现——图例首格同步用
+ // emptyCell，色样与图面一致。
                 for (final c in [
                   emptyCell,
                   ...context.charts.heatmapGreens.skip(1),
@@ -2504,7 +2701,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
 }
 
 /// 折线图（多序列）：3 条横向网格线 + 序列折线 + 首末 x 标签。
-/// 批①：点选某点→竖线+圆点高亮（onPointTap 回调下标，命中换算与
+/// 点选某点→竖线+圆点高亮（onPointTap 回调下标，命中换算与
 /// painter 同款 slot 公式——linePointHitIndex）。
 class UsageLineChartView extends StatelessWidget {
   final List<ChartSeries> series;
@@ -2634,15 +2831,15 @@ class _DailyUsage {
 }
 
 /// 环形图：模型实际用量（totalTokens）分布，占比由 painter 按值比例计算。
-/// 批①：点选切片高亮加粗+明细行（onSliceTap；命中=角度弧段+环带判定
+/// 点选切片高亮加粗+明细行（onSliceTap；命中=角度弧段+环带判定
 /// ——donutHitIndex，与 painter 铺片同款）。
 class _DonutView extends StatelessWidget {
   final List<ChartSeries> series;
   final int? selectedIndex;
   final ValueChanged<int>? onSliceTap;
 
-  /// 环心总量文案（18074 验收：桌面同款中心两行——总量+tokens；
-  /// null=不叠中心）。
+ /// 环心总量文案（验收：桌面同款中心两行——总量+tokens；
+ /// null=不叠中心）。
   final String? centerValue;
   const _DonutView({
     required this.series,
@@ -2660,11 +2857,11 @@ class _DonutView extends StatelessWidget {
           onTapUp: onSliceTap == null
               ? null
               : (d) {
-                  // 18074 验收根因修：constraints.biggest 在滚动列里高度
-                  // 无界（∞）——中心/半径无穷化后角度退化恒为 0，所有的
-                  // 点按都命中第一片（用户实锤"只能点 glm5.3"；测试实证：
-                  // 底部点按预期命中第 2 片、实际回弹成取消选择）。改取
-                  // 本组件实际布局尺寸（=SizedBox 的 150 高）。
+ // 验收根因修：constraints.biggest 在滚动列里高度
+ // 无界（∞）——中心/半径无穷化后角度退化恒为 0，所有的
+ // 点按都命中第一片（用户实锤"只能点 glm5.3"；测试实证：
+ // 底部点按预期命中第 2 片、实际回弹成取消选择）。改取
+ // 本组件实际布局尺寸（=SizedBox 的 150 高）。
                   final box = context.size;
                   if (box == null || !box.isFinite) return;
                   final i = donutHitIndex(d.localPosition, box, series);

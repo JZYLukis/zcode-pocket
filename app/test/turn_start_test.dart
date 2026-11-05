@@ -33,7 +33,8 @@ class _StartApp extends AppState {
   int loadOlderCalls = 0;
 
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     if (!sub.state.ready) {
       final fullHistory = olderPages.isEmpty;
       sub.state.applySeed(

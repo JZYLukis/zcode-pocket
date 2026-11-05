@@ -59,29 +59,29 @@ class AppColors {
   final Color sidebar;
   final Color card;
 
-  /// 输入卡专用底（Paseo 参考 2026-10-23 用户拍板：深色降一档向"融合
-  /// 安静"靠——card 降档只连坐输入卡不连坐 popover/menu/toast；浅色
-  /// 与 card 同值零变化）。消费方：conversation 输入卡容器。
+ /// 输入卡专用底（Paseo 参考 2026-10-23 用户拍板：深色降一档向"融合
+ /// 安静"靠——card 降档只连坐输入卡不连坐 popover/menu/toast；浅色
+ /// 与 card 同值零变化）。消费方：conversation 输入卡容器。
   final Color inputSurface;
   final Color surface;
   final Color surfaceHover;
   final Color selected;
   final Color border;
 
-  /// V1 审美优化（方案 A，2026-10-22）：卡片描边单独减淡档，配合阴影
-  /// 加重一档用「浮起感」替代「描边感」；全库通用 border 保持官方值
-  /// （输入框/分隔线等非卡片描边仍用 border）。
+ /// V1 审美优化（方案 A，2026-10-22）：卡片描边单独减淡档，配合阴影
+ /// 加重一档用「浮起感」替代「描边感」；全库通用 border 保持官方值
+ /// （输入框/分隔线等非卡片描边仍用 border）。
   final Color borderFaint;
   final Color borderHover;
 
-  /// 主按钮色：浅=黑底白字，深=黑白反转（官方 dark --color-primary 做法
-  /// ——纯黑按钮在近黑底 #161616 上隐形， 拍板④）。
+ /// 主按钮色：浅=黑底白字，深=黑白反转（官方 dark --color-primary 做法
+ /// ——纯黑按钮在近黑底 #161616 上隐形， 拍板④）。
   final Color brand;
   final Color onBrand;
 
-  /// 品牌强调色=智谱蓝。浅=#134CFF（开放平台主蓝，白字 6.0:1 过 AA），
-  /// 只做点睛位（FAB/发送键按下态/空态插图/扫码框线/配对页主视觉点缀）。
-  /// 深=官方深蓝基准 #4099FF（批 1 横向校准定稿， 拍板⑤）。
+ /// 品牌强调色=智谱蓝。浅=#134CFF（开放平台主蓝，白字 6.0:1 过 AA），
+ /// 只做点睛位（FAB/发送键按下态/空态插图/扫码框线/配对页主视觉点缀）。
+ /// 深=官方深蓝基准 #4099FF。
   final Color brandAccent;
   final Color onBrandAccent;
   final Color secondary;
@@ -93,20 +93,20 @@ class AppColors {
   final Color destructive;
   final Color warning;
 
-  /// 运行中状态色（浅=琥珀 #B45309 / 深=官方 warning #FF8A30）。
-  /// 官方铁证 run-status-presentation.ts:12-17 running=bg-warning+
-  /// animate-pulse；#0B7FFF 在官方仅是终端蓝/图表 1 号色/git renamed
-  /// 标记，从不用作运行态（评审文档 P1-1a 勘误实证）。
+ /// 运行中状态色（浅=琥珀 #B45309 / 深=官方 warning #FF8A30）。
+ /// 官方铁证 run-status-presentation.ts:12-17 running=bg-warning+
+ /// animate-pulse；#0B7FFF 在官方仅是终端蓝/图表 1 号色/git renamed
+ /// 标记，从不用作运行态（评审文档 勘误实证）。
   final Color running;
 
-  /// 连接中/同步中/上下文进度类指示（连接心智=蓝，官方 terminal blue
-  /// 血统）——与运行态琥珀拆开，两语义不再共用一色。
+ /// 连接中/同步中/上下文进度类指示（连接心智=蓝，官方 terminal blue
+ /// 血统）——与运行态琥珀拆开，两语义不再共用一色。
   final Color linkBlue;
   final Color idleTask;
   final Color idleTaskSurface;
 
-  /// 文档查看底色（18076 反馈#9）：html 预览等生成文档固定白底——
-  /// 深色主题也不蒙黑（文档查看器约定，同 PDF）。双主题同值白。
+ /// 文档查看底色（反馈#9）：html 预览等生成文档固定白底——
+ /// 深色主题也不蒙黑（文档查看器约定，同 PDF）。双主题同值白。
   final Color documentPaper;
   final Color interactionAskSurface;
   final Color interactionAskForeground;
@@ -115,8 +115,8 @@ class AppColors {
   final Color diffAdded;
   final Color diffRemoved;
 
-  /// 阴影色（浅=黑低透明；深=裁量：纯黑更高透明档——深底上阴影弱化，
-  /// 层次靠亮度分层，dark-mode-plan §3 裁量格）。
+ /// 阴影色（浅=黑低透明；深=裁量：纯黑更高透明档——深底上阴影弱化，
+ /// 层次靠亮度分层，dark-mode-plan §3 裁量格）。
   final Color shadowXs;
   final Color shadowMd;
 }
@@ -207,19 +207,19 @@ class AppChartPalette {
     required this.sourceColors,
   });
 
-  /// 用量图表 6 色（浅=官方 --color-usage-chart-1..6 浅色近似；深=官方
-  /// 深色 1..6：#4099FF/#46BF72/#7B5CE5/#FF5C5C/#FF8A30/#42C8C8）。
+ /// 用量图表 6 色（浅=官方 --color-usage-chart-1..6 浅色近似；深=官方
+ /// 深色 1..6：#4099FF/#46BF72/#7B5CE5/#FF5C5C/#FF8A30/#42C8C8）。
   final List<Color> series;
 
-  /// 热力图 5 级（level 0-4）。浅=绿阶（历史语义，官方浅色实为蓝阶的
-  /// 已知偏差）；深=裁量「绿阶深色版」——保持跨模式同语义（绿色=活跃
-  /// 量），阶值批 1 定稿留痕 。
+ /// 热力图 5 级（level 0-4）。浅=绿阶（历史语义，官方浅色实为蓝阶的
+ /// 已知偏差）；深=裁量「绿阶深色版」——保持跨模式同语义（绿色=活跃
+ /// 量），阶值批 1 定稿留痕 。
   final List<Color> heatmapGreens;
 
-  /// 上下文来源 7 色（会话页来源圆点，对应 _sourceLabels 7 类）。
-  /// 取色必须按 source 字符串确定性映射——勿用对象 hashCode（Map 身份
-  /// 哈希跨快照重建会变，同一来源会换色；设计审计 6.5-1 实证）。
-  /// 深色=裁量提亮版。
+ /// 上下文来源 7 色（会话页来源圆点，对应 _sourceLabels 7 类）。
+ /// 取色必须按 source 字符串确定性映射——勿用对象 hashCode（Map 身份
+ /// 哈希跨快照重建会变，同一来源会换色；设计审计 6.5-1 实证）。
+ /// 深色=裁量提亮版。
   final List<Color> sourceColors;
 }
 
@@ -248,15 +248,15 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   final AppGitColors git;
   final AppChartPalette charts;
 
-  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（对抗审查路C B-3：
-  /// 原先 BoxShadow 字面量与 AppColors 双源同值独立维护，改一处漏一处
-  /// 不会被测试抓——派生后只维护 colors 侧，两套测试各自锁值即闭环）。
+ /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（路C B-3：
+ /// 原先 BoxShadow 字面量与 AppColors 双源同值独立维护，改一处漏一处
+ /// 不会被测试抓——派生后只维护 colors 侧，两套测试各自锁值即闭环）。
   AppShadows get shadows => AppShadows(
         xs: [BoxShadow(color: colors.shadowXs, blurRadius: 6, offset: const Offset(0, 2))],
         md: [BoxShadow(color: colors.shadowMd, blurRadius: 12, offset: const Offset(0, 4))],
       );
 
-  /// 浅色套（zai-light 镜像，冻结——test/theme_freeze_test.dart）。
+ /// 浅色套（zai-light 镜像，冻结——test/theme_freeze_test.dart）。
   static final AppThemeSpec light = AppThemeSpec(
     colors: const AppColors(
       background: Color(0xFFF8F8F8),
@@ -277,12 +277,16 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       secondary: Color(0xFFE6E6E6),
       accent: Color(0xFFEBF4FF),
       foreground: Color(0xFF262626), // neutral-800
-      // 对比度修正（2026-10-19 批次4）：subtlest 40%→55%、subtle 60%→70%
-      // （原对 #F8F8F8 仅 2.24:1 / 3.88:1，低于 WCAG AA 正文线 4.5:1）。
+ // 对比度修正（2026-10-19 批次4）：subtlest 40%→55%、subtle 60%→70%
+ // （原对 #F8F8F8 仅 2.24:1 / 3.88:1，低于 WCAG AA 正文线 4.5:1）。
+ // 2026-11-05 反馈④（用户拍板折中档）：subtlest 55%→45%（2.68:1）
+ // ——正文与工具行/思考行的层级差此前只做到官方（40% 档）的六成，
+ // 官方本档即辅助文字档（tertiary），按官方层级回撤但保留一档可读性；
+ // subtle 70% 维持（真正的次要正文，不动）。
       foregroundSubtle: Color(0xB3262626), // 70%
-      foregroundSubtlest: Color(0x8C262626), // 55%
-      // warning/success 加深过 AA（原 #E07B00 2.82:1 / #1E8A3E 4.15:1；
-      // amber-700/green-700 量级）。
+      foregroundSubtlest: Color(0x73262626), // 45%
+ // warning/success 加深过 AA（原 #E07B00 2.82:1 / #1E8A3E 4.15:1；
+ // amber-700/green-700 量级）。
       success: Color(0xFF15803D),
       destructive: Color(0xFFE03131),
       warning: Color(0xFFB45309),
@@ -336,8 +340,8 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     ),
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-light usage-chart-1..6（styles.css，2026-10-26
-        // 对齐轮替换——原 5 色系 tailwind-600 自选非官方）。
+ // 官方 zai-light usage-chart-1..6（styles.css，2026-10-26
+ // 对齐轮替换——原 5 色系 tailwind-600 自选非官方）。
         Color(0xFF0B7FFF), // chart-1 蓝
         Color(0xFF1E8A3E), // chart-2 绿
         Color(0xFF9E77ED), // chart-3 紫
@@ -364,8 +368,8 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     ),
   );
 
-  /// 深色套（官方 zai-dark 1:1 搬运，styles.css:638-783；裁量项留痕
-  /// dark-mode-plan §3 + 批 1 补记）。
+ /// 深色套（官方 zai-dark 1:1 搬运，styles.css:638-783；裁量项留痕
+ /// dark-mode-plan §3 + 批 1 补记）。
   static final AppThemeSpec dark = AppThemeSpec(
     colors: const AppColors(
       background: Color(0xFF161616),
@@ -381,24 +385,25 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       borderHover: Color(0x26FFFFFF), // 白 15%
       brand: Color(0xFFFFFFFF), // 黑白反转（拍板④）
       onBrand: Color(0xFF000000),
-      // 智谱蓝深色基准 #4099FF（官方深蓝/terminal-blue，拍板⑤；批 1
-      // 横向校准后如偏离须回填此处+ADR 留痕）。
+ // 智谱蓝深色基准 #4099FF（官方深蓝/terminal-blue，拍板⑤；批 1
+ // 横向校准后如偏离须回填此处+ADR 留痕）。
       brandAccent: Color(0xFF4099FF),
-      // 批1-5 横向校准定稿（ 补记）：#4099FF 实底配白图标仅
-      // 2.91:1（低于 3:1 非文本线）；改深蓝前景 #001D3D=5.81:1（GitHub
-      // accent.emphasis 压暗路线的镜像——亮底深前景，paseo zinc 同构）。
+ // -5 横向校准定稿（补记）：#4099FF 实底配白图标仅
+ // 2.91:1（低于 3:1 非文本线）；改深蓝前景 #001D3D=5.81:1（GitHub
+ // accent.emphasis 压暗路线的镜像——亮底深前景，paseo zinc 同构）。
       onBrandAccent: Color(0xFF001D3D),
       secondary: Color(0xFF363636),
       accent: Color(0xFF001D3D),
       foreground: Color(0xFFD4D4D4), // neutral-300
-      // ⚠ 官方值起步（白60%/白30%）。路B 视觉审查 A2（2026-10-23）：30%
-      // 档像素实测 3.3:1，低于浅色同位（55% 档 3.64:1，已记录的偏离档）
-      // ——按底账"浅色同逻辑等效果"提亮至 47%（3.6:1）。subtle 60% 维持
-      // （bg 上 4.85:1 过线；卡上 4.49 临界，批 2 对比度单测定档复核）。
+ // ⚠ 官方值起步（白60%/白30%）。路B 视觉审查 A2（2026-10-23）：30%
+ // 档像素实测 3.3:1，低于浅色同位——按底账"浅色同逻辑等效果"曾提亮
+ // 至 47%。2026-11-05 反馈④随浅色 subtlest 55%→45%（2.68:1）等效果
+ // 对齐回撤至 36%（2.67:1）；subtle 60% 维持（bg 上 4.85:1 过线；
+ // 卡上 4.49 临界，批 2 对比度单测定档复核）。
       foregroundSubtle: Color(0x99D4D4D4), // 60%
-      foregroundSubtlest: Color(0x78D4D4D4), // 47%（等效果修正）
-      // 官方深色即提亮版（success #46bf72 / warning #ff8a30），直接用；
-      // ⚠ 批 2 对比度单测复核（底账标注）。
+      foregroundSubtlest: Color(0x5CD4D4D4), // 36%（等效果随浅色回撤）
+ // 官方深色即提亮版（success #46bf72 / warning #ff8a30），直接用；
+ // ⚠ 批 2 对比度单测复核（底账标注）。
       success: Color(0xFF46BF72),
       destructive: Color(0xFFFF5C5C),
       warning: Color(0xFFFF8A30),
@@ -413,8 +418,8 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       interactionConfirmForeground: Color(0xFF87D9A4),
       diffAdded: Color(0xFF46BF72),
       diffRemoved: Color(0xFFFF5C5C),
-      // 裁量（批 1 定稿留痕）：深底阴影弱化、层次靠亮度分层——纯黑更高
-      // 透明档（浅色 3%/8% → 深色 35%/50%，截图校准）。
+ // 裁量：深底阴影弱化、层次靠亮度分层——纯黑更高
+ // 透明档（浅色 3%/8% → 深色 35%/50%，截图校准）。
       shadowXs: Color(0x59000000), // 黑 35%
       shadowMd: Color(0x80000000), // 黑 50%
     ),
@@ -450,15 +455,15 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       renamed: Color(0xFF4099FF),
       untracked: Color(0xFF46BF72),
       ignored: Color(0x4DD4D4D4), // 官方原值 30%（v foreground-subtlest 的
-      // 渲染值快照；官方语义为引用跟随，subtlest 校准至 47% 后本值不联动——
-      // 保官方渲染值更贴 zai-dark，接线消费时如观感不足再议）
+ // 渲染值快照；官方语义为引用跟随，subtlest 校准至 47% 后本值不联动——
+ // 保官方渲染值更贴 zai-dark，接线消费时如观感不足再议）
       descendant: Color(0xFFFF8A30),
     ),
-    // series=官方 usage-chart 深色前 5；热力图=裁量绿阶深色版（保语义，
-    // 官方深色实为蓝阶——与浅色同型偏差，留痕）；来源 7 色=裁量提亮版。
+ // series=官方 usage-chart 深色前 5；热力图=裁量绿阶深色版（保语义，
+ // 官方深色实为蓝阶——与浅色同型偏差，留痕）；来源 7 色=裁量提亮版。
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-dark usage-chart-1..6（前 5 色原已一致，补第 6 色）。
+ // 官方 zai-dark usage-chart-1..6（前 5 色原已一致，补第 6 色）。
         Color(0xFF4099FF), // chart-1
         Color(0xFF46BF72), // chart-2
         Color(0xFF7B5CE5), // chart-3
@@ -466,8 +471,8 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
         Color(0xFFFF8A30), // chart-5
         Color(0xFF42C8C8), // chart-6（2026-10-26 对齐轮补）
       ],
-      // 批1-5 校准（GitHub 贡献图同构）：状态绿只做中间档，顶档更亮
-      // 增满格冲击力（GitHub #3fb950→#7ee787 同款思路，顶档略压）。
+ // -5 校准（GitHub 贡献图同构）：状态绿只做中间档，顶档更亮
+ // 增满格冲击力（GitHub #3fb950→#7ee787 同款思路，顶档略压）。
       heatmapGreens: [
         Color(0xFF252B28),
         Color(0xFF1B4531),
@@ -544,8 +549,8 @@ abstract final class AppRadius {
   static const bubbleTail = 2.0; // 气泡右上指向角（官方 rounded-tr-xs；批次 B 入单源）
   static const card = 16.0; // 输入卡/审批卡/弹窗
   static const glassChrome = 20.0; // 悬浮 chrome 容器（输入卡/悬浮胶囊）
-  // V1 审美优化：胶囊档入 token（原先 11 处手写 999 靠 scanner 合法值集
-  // 豁免；Flutter 会把 999 钳到半高，语义=完全胶囊）。
+ // V1 审美优化：胶囊档入 token（原先 11 处手写 999 靠 scanner 合法值集
+ // 豁免；Flutter 会把 999 钳到半高，语义=完全胶囊）。
   static const pill = 999.0;
 }
 
@@ -558,14 +563,14 @@ abstract final class AppAlpha {
   static const mid = 0.35; // 次级描边/遮罩
   static const strong = 0.45; // 描边强调
   static const heavy = 0.6; // 高对比遮罩
-  // 空态欢迎屏 Z 水印（2026-10-23 用户反馈批⑥，对齐官方欢迎屏
-  // 「若隐若现」定调：官方浅=foreground-subtlest 线框+.7 透明、
-  // 深=暗资产渐变 #444→#1A1A1A，双主题取同一净观感档——
-  // 首版 0.12 目检偏强半档，收到 0.08「第二眼才注意到」档）。
+ // 空态欢迎屏 Z 水印（2026-10-23 用户反馈，对齐官方欢迎屏
+ // 「若隐若现」定调：官方浅=foreground-subtlest 线框+.7 透明、
+ // 深=暗资产渐变 #444→#1A1A1A，双主题取同一净观感档——
+ // 首版 0.12 目检偏强半档，收到 0.08「第二眼才注意到」档）。
   static const watermark = 0.08;
 }
 
-/// 空态欢迎屏 Z 水印下端渐隐遮罩（2026-10-23 用户反馈批⑥；ShaderMask
+/// 空态欢迎屏 Z 水印下端渐隐遮罩（2026-10-23 用户反馈；ShaderMask
 /// dstIn 用——白=遮罩全透通道、透明=渐隐，非渲染色，官方 mask-image
 /// linear-gradient(to bottom, black 0, transparent 70%→100%) 同款语义）。
 const LinearGradient kBottomFadeMask = LinearGradient(
@@ -575,7 +580,7 @@ const LinearGradient kBottomFadeMask = LinearGradient(
   stops: [0, 0.7, 1.0],
 );
 
-/// 基座 ThemeData 模块级单例（ P1 P3-7/P2 P3-10）：基座构造是
+/// 基座 ThemeData 模块级单例（P1 /P2 ）：基座构造是
 /// 全量组件默认计算（M3 出厂全套），原先深色分支单次 buildAppTheme 要
 /// 构造 3 个完整 ThemeData（base + textTheme.apply 底 + primaryTextTheme
 /// .apply 底），MaterialApp 每次重建 theme/darkTheme 各调一次=最多 6 个。
@@ -592,6 +597,16 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
   final base = isDark ? _darkBaseTheme : _lightBaseTheme;
   return base.copyWith(
     scaffoldBackgroundColor: c.background,
+ // 2026-11-05 反馈②D：Android 默认 FadeForwards 450ms（旧页 112ms
+ // 即淡出、新页 337ms 才全亮）=「进窗口闪一下+等一下」观感的固定
+ // 背景之一（本机 3.47.7 默认 PredictiveBack→程序化 push 回退
+ // FadeForwards）。换经典 Zoom 300ms（缩放+淡入更干脆；iOS 保持
+ // 出厂）。
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
+      },
+    ),
     colorScheme: base.colorScheme.copyWith(
       primary: c.brand,
       onPrimary: c.onBrand,
@@ -599,18 +614,18 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       surface: c.card,
       error: c.destructive,
       brightness: brightness,
-      // 对抗审查路B A-1（2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
-      // 等槽位带紫调（#2B2930/#4A4458 系），深色下大面积漏出（弹层/chip/
-      // snackbar/未覆盖文字）——仅深色分支收口到官方灰阶；浅色侧保持出厂
-      // 既有观感（零回归红线，浅色基线哈希把守）。
+ // 路B A-1（2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
+ // 等槽位带紫调（#2B2930/#4A4458 系），深色下大面积漏出（弹层/chip/
+ // snackbar/未覆盖文字）——仅深色分支收口到官方灰阶；浅色侧保持出厂
+ // 既有观感（零回归红线，浅色基线哈希把守）。
       onSurface: isDark ? c.foreground : null,
       onSurfaceVariant: isDark ? c.foregroundSubtle : null,
       outline: isDark ? c.borderHover : null,
-      // 批3（S06 像素复检）：ActionChip 默认边框走 outlineVariant（M3 出厂
-      // #48454F 紫灰，深色下 1.9:1 过暗）——深色收口到 borderFaint。
+ // （S06 像素复检）：ActionChip 默认边框走 outlineVariant（M3 出厂
+ // #48454F 紫灰，深色下 1.9:1 过暗）——深色收口到 borderFaint。
       outlineVariant: isDark ? c.borderFaint : null,
-      // 容器族（路B A1 残余补齐）：M3 surfaceContainer* 各档紫调全数
-      // 收口到三档背景语义（lowest=bg/low=header/中高=card）。
+ // 容器族（路B A1 残余补齐）：M3 surfaceContainer* 各档紫调全数
+ // 收口到三档背景语义（lowest=bg/low=header/中高=card）。
       surfaceDim: isDark ? c.background : null,
       surfaceBright: isDark ? c.card : null,
       surfaceContainerLowest: isDark ? c.background : null,
@@ -623,19 +638,19 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       surfaceContainerHighest: isDark ? c.selected : null,
       inverseSurface: isDark ? c.card : null,
       onInverseSurface: isDark ? c.foreground : null,
-      // 波2 路B2 A-2：inversePrimary 恒作 SnackBarAction 文字色（五态皆然），
-      // 纯黑在 #2B2B2B 上≈2:1 撤销键隐形——改 brandAccent（≈4:1 过 3:1 线）。
+ // 波2 路B2 A-2：inversePrimary 恒作 SnackBarAction 文字色（五态皆然），
+ // 纯黑在 #2B2B2B 上≈2:1 撤销键隐形——改 brandAccent（≈4:1 过 3:1 线）。
       inversePrimary: isDark ? c.brandAccent : null,
     ),
-    // 波2 路B2 A-1：ThemeData.dark() 把出厂 surface #141218 固化进 canvasColor
-    // （copyWith colorScheme 不会重算该槽），DropdownButton 菜单底走它——
-    // 深色收口到 card（官方 popover 基准）。
+ // 波2 路B2 A-1：ThemeData.dark() 把出厂 surface #141218 固化进 canvasColor
+ // （copyWith colorScheme 不会重算该槽），DropdownButton 菜单底走它——
+ // 深色收口到 card（官方 popover 基准）。
     canvasColor: isDark ? c.card : null,
-    // B3 A1 闭环（2026-10-23 像素实证）：ThemeData.dark() 同样把出厂
-    // onSurface #E6E0E9 烤进 textTheme 全系（bodyMedium/bodySmall/...）与
-    // indicatorColor——所有未显式设色的文字（设置页行标题/任务卡副标题/
-    // 会话正文默认继承链）在深色下漏薰衣草白且比正文更亮（层级颠倒）。
-    // apply 重铸为中性前景。
+ // B3 A1 闭环（2026-10-23 像素实证）：ThemeData.dark() 同样把出厂
+ // onSurface #E6E0E9 烤进 textTheme 全系（bodyMedium/bodySmall/...）与
+ // indicatorColor——所有未显式设色的文字（设置页行标题/任务卡副标题/
+ // 会话正文默认继承链）在深色下漏薰衣草白且比正文更亮（层级颠倒）。
+ // apply 重铸为中性前景。
     textTheme: isDark
         ? base.textTheme
             .apply(bodyColor: c.foreground, displayColor: c.foreground)
@@ -644,7 +659,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
         ? base.primaryTextTheme
             .apply(bodyColor: c.onBrand, displayColor: c.onBrand)
         : null,
-    // 弹层族收口（路B A-1 主体）：官方 popover/menu/toast 深色=#2B2B2B。
+ // 弹层族收口（路B A-1 主体）：官方 popover/menu/toast 深色=#2B2B2B。
     dialogTheme: isDark ? DialogThemeData(backgroundColor: c.card) : null,
     bottomSheetTheme: isDark
         ? BottomSheetThemeData(
@@ -653,8 +668,8 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
           )
         : null,
     popupMenuTheme: isDark ? PopupMenuThemeData(color: c.card) : null,
-    // 文本选区（路B B-7 顺带收口）：深色下默认=primary 纯白块压浅字不可读，
-    // 用官方终端选区蓝（rgba(64,153,255,0.28)）。
+ // 文本选区（路B B-7 顺带收口）：深色下默认=primary 纯白块压浅字不可读，
+ // 用官方终端选区蓝（rgba(64,153,255,0.28)）。
     textSelectionTheme: isDark
         ? TextSelectionThemeData(
             selectionColor: spec.terminal.selection,
@@ -677,7 +692,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(AppRadius.sm)),
-        // V1 方案 A：卡片描边用 borderFaint，描边感弱化、阴影浮起。
+ // V1 方案 A：卡片描边用 borderFaint，描边感弱化、阴影浮起。
         side: BorderSide(color: c.borderFaint),
       ),
     ),
@@ -694,8 +709,8 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
         ),
       ),
     ),
-    // V1 审美优化：FAB 显式配置（原先走 M3 默认容器色，渲染为未配置的
-    // 紫调底）——新建任务键是品牌点睛位之一。
+ // V1 审美优化：FAB 显式配置（原先走 M3 默认容器色，渲染为未配置的
+ // 紫调底）——新建任务键是品牌点睛位之一。
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: c.brandAccent,
       foregroundColor: c.onBrandAccent,

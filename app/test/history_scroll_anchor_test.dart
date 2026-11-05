@@ -36,7 +36,8 @@ class _AnchorApp extends AppState {
   int prependCount = 0;
 
   @override
-  Future<ConversationSubscription> ensureConversation(String id) async {
+  Future<ConversationSubscription> ensureConversation(String id,
+      {Object? seedCacheEntry}) async {
     if (!sub.state.ready) {
       sub.state.applySeed(
         ConversationSeed(

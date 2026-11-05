@@ -85,7 +85,8 @@ class _WfApp extends AppState {
     'workspacePath': '/example-workspace',
   };
   @override
-  Future<ConversationSubscription> ensureConversation(String sessionId) async {
+  Future<ConversationSubscription> ensureConversation(String sessionId,
+      {Object? seedCacheEntry}) async {
     final sub = _WfSub(sessionId);
     sub.state.applySeed(
       ConversationSeed(
@@ -126,7 +127,7 @@ class _WfApp extends AppState {
         savedAt: DateTime.now().millisecondsSinceEpoch,
         byteSize: 1024,
       );
-  /// ：注入加载失败（empty-error 销账用例）。
+ /// 注入加载失败（empty-error 销账用例）。
   bool throwRuns = false;
   @override
   Future<dynamic> workflowRuns(String sessionId, {int? limit}) async {
@@ -177,7 +178,7 @@ Future<void> _pump(WidgetTester tester, Widget widget) async {
 
 void main() {
   test('offPeakCreateSummary：JSON 串/嵌套/平铺/缺 id 回退', () {
-    // 官方语义：output 可为 JSON 字符串；{task:{…}} 或平铺。
+ // 官方语义：output 可为 JSON 字符串；{task:{…}} 或平铺。
     final json = jsonEncode({
       'task': {
         'offPeakTaskId': 'op-1',
@@ -197,7 +198,7 @@ void main() {
     });
     expect(s2?.offPeakTaskId, 'op-2');
     expect(s2?.queuePosition, isNull);
-    // 缺 id=无效，回退普通工具行。
+ // 缺 id=无效，回退普通工具行。
     expect(offPeakCreateSummary({'output': {'title': 'x'}}), isNull);
     expect(offPeakCreateSummary({'output': 'not-json'}), isNull);
     expect(offPeakCreateSummary(const {}), isNull);
@@ -209,7 +210,7 @@ void main() {
       detailResult: const {'events': [], 'artifacts': []},
       artifactText: '',
     );
-    // 直接泵目录页（菜单入口旅程已由入口用例覆盖；此处锁空/错状态本体）。
+ // 直接泵目录页（菜单入口旅程已由入口用例覆盖；此处锁空/错状态本体）。
     await _pump(tester, _host(app, const WorkflowRunsPage(sessionId: 's1')));
     expect(find.textContaining(tr('本会话没有工作流运行')), findsOneWidget,
         reason: '空态文案（此前 ui-coverage 声称覆盖但零断言）');
@@ -222,7 +223,7 @@ void main() {
       artifactText: '',
     );
     app.throwRuns = true;
-    // 直接泵目录页（菜单入口旅程已由入口用例覆盖；此处锁空/错状态本体）。
+ // 直接泵目录页（菜单入口旅程已由入口用例覆盖；此处锁空/错状态本体）。
     await _pump(tester, _host(app, const WorkflowRunsPage(sessionId: 's1')));
     expect(find.textContaining(tr('加载失败')), findsOneWidget,
         reason: '错误态呈现（此前零断言）');
@@ -235,7 +236,7 @@ void main() {
       detailResult: const {},
       artifactText: 'x',
     );
-    // 会话行里放一个 OffPeakCreate 工具行（输出=JSON 串）。
+ // 会话行里放一个 OffPeakCreate 工具行（输出=JSON 串）。
     await _pump(
       tester,
       _host(
@@ -243,8 +244,8 @@ void main() {
         const ConversationPage(sessionId: 's1', title: '工作流测试'),
       ),
     );
-    // 直接单测卡片渲染（会话 fixture 注入工具行走缓存行链路较重，
-    // 卡片本体为纯函数+静态 UI，这里钉 UI 形态）。
+ // 直接单测卡片渲染（会话 fixture 注入工具行走缓存行链路较重，
+ // 卡片本体为纯函数+静态 UI，这里钉 UI 形态）。
     await tester.pumpWidget(
       _host(
         app,
@@ -268,7 +269,7 @@ void main() {
     expect(find.textContaining('已加入闲时队列（第 3 位）'), findsOneWidget);
     expect(find.textContaining('运行在当前会话'), findsOneWidget);
 
-    // 入口在任务菜单（entry-polish-1 方案 A：加号面板回归纯"添加"）。
+ // 入口在任务菜单（entry-polish-1 方案 A：加号面板回归纯"添加"）。
     await _pump(
       tester,
       _host(
@@ -281,7 +282,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.text('工作流运行'), findsOneWidget);
-    // 面板不再有查看型入口（工作流/用量详情都不在加号面板）。
+ // 面板不再有查看型入口（工作流/用量详情都不在加号面板）。
     await tester.tapAt(const Offset(200, 40)); // 关菜单
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -326,12 +327,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
 
-    // 详情：事件时间线（倒序首条=#2）+ 产物清单。
+ // 详情：事件时间线（倒序首条=#2）+ 产物清单。
     expect(find.textContaining('事件（最新 2 条）'), findsOneWidget);
     expect(find.text('node.completed'), findsOneWidget);
     expect(find.textContaining('简报正文'), findsOneWidget);
 
-    // 点产物 → 分块读取 → 文本预览页。
+ // 点产物 → 分块读取 → 文本预览页。
     await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
