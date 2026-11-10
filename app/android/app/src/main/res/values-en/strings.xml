@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_new_task">New task</string>
+    <string name="shortcut_last_session">Recent chat</string>
+    <string name="fgs_channel_name">Background connection status</string>
+    <string name="fgs_channel_desc">Persistent connection status notification while approval alerts are on</string>
+</resources>

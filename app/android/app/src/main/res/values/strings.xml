@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 原生层字符串（快捷入口/通知渠道等；Flutter 内文案不走这里）。 -->
+<resources>
+    <string name="shortcut_new_task">新任务</string>
+    <string name="shortcut_last_session">最近会话</string>
+    <string name="fgs_channel_name">后台连接状态</string>
+    <string name="fgs_channel_desc">审批提醒开启时常驻的连接状态通知</string>
+</resources>

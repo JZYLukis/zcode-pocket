@@ -1,0 +1,9 @@
+# 凭据与本地配置（公开仓库卫生：本仓库不含任何真实凭据，亦禁止新增）
+*.jks
+*.keystore
+key.properties
+local.properties
+*.pem
+*.p12
+.dart_tool/
+build/

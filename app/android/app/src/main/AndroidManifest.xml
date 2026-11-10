@@ -1,0 +1,115 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 中继连接（release 包也需要，debug 由 debug manifest 注入） -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 扫码配对；相机非必需硬件（可用粘贴链接兜底） -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- 语音输入：RECORD_AUDIO 主权限；WIFI/NETWORK_STATE 供语音服务
+         可用性与网络状态判定。未声明 MODIFY_AUDIO_SETTINGS / WAKE_LOCK
+         （原生/插件代码零使用）。 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- 麦克风同相机降级（Q1 P3-6）：无麦设备（部分平板/桌面）可装可用，
+         语音入口经 SystemAsr.probe 三级判定自然隐藏，不被商店/安装过滤。 -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+    <!-- 系统语音识别兜底（2026-10-28 语音泛用批）：Android 11+ 包可见性
+         ——不声明则 SpeechRecognizer.isRecognitionAvailable 恒 false，
+         非华为机型探测失效等于功能白做。 -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+    </queries>
+    <!-- 阶段 3 第二段：通知与后台保障 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- specialUse 型前台服务权限（Android 14+ 按类型分权，与下方 service
+         声明的 foregroundServiceType 配套；原 dataSync 型权限随类型退役） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- H02（ADR 0046，2026-10-25 审查）：整体关闭安卓云备份与设备迁移
+         ——应用目录的会话缓存/通知台账/电量日志均为明文 JSON，不随系统
+         备份外带（凭据本在 Keystore，secure storage 不参与备份）。个人
+         自用无换机迁移诉求；厂商自有换机克隆路径未实证，公开库前如需
+         强保证再评估 dataExtractionRules。静态断言见
+         app/test/android_manifest_guard_test.dart。 -->
+    <application
+        android:label="ZCode Pocket"
+        android:name="${applicationName}"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher">
+        <!-- 18090：关闭 Impeller 回退 Skia（扫码黑屏根治，ADR 0080 §9）——
+             相机预览（mobile_scanner 平台视图）销毁后 Impeller 合成器在
+             部分华为机型楔死：引擎持续渲染（帧统计正常）但窗口像素全黑
+             （agent 自动复现实证：粘贴路径 6/6 正常、含相机路径 1/1 黑屏，
+             进程健康无击杀）。Flutter 已知平台视图+Impeller 黑屏问题族；
+             Skia 后端在同类机型上长期稳定。后续升级 Flutter 版本后可
+             复测移除本开关。 -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- 长按图标快捷入口（6.6①，ADR 0061）：新任务/最近会话 -->
+            <meta-data
+              android:name="android.app.shortcuts"
+              android:resource="@xml/shortcuts"/>
+        </activity>
+        <!-- 审批提醒前台服务（默认关，设置页开启）：常驻状态通知+连接保活。
+             类型用 specialUse 而非 dataSync（开源前审查 Q1 P2-1 / Q2 P1-1）：
+             Android 14+ 对 dataSync 型有每 24h 累计 6h 的运行硬限（Android
+             15+ 超限后 startForeground 直接失败），本服务的职责恰是过夜
+             常连保活收审批通知，在 dataSync 限额下确定性失效；且连接保活
+             本就不属 dataSync 语义（系统定义为媒体/数据同步传输）。specialUse
+             无时限，用 PROPERTY_SPECIAL_USE_FGS_SUBTYPE 向系统说明用途。
+             本项目侧载/开源分发、不上 Google Play，无 Play 审核声明负担。
+             超时兜底见 ForegroundService.onTimeout。静态断言见
+             app/test/android_manifest_guard_test.dart。 -->
+        <service
+            android:name=".ForegroundService"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="desktop_remote_control_keepalive_notification"/>
+        </service>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

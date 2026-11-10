@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色模式批2-3（ADR 0035）：夜间启动底=深色背景 #161616（与 app 深色
+     scaffold 同值），治「纯黑启动窗→深色首帧」的色阶断层；浅色侧
+     drawable/launch_background.xml（纯白）不动=零回归。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <color android:color="#FF161616" />
+    </item>
+</layer-list>

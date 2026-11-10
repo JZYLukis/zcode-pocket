@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 通知栏小图标（notification_service 的 AndroidNotificationDetails
+     icon: 'ic_notification'）：系统会把小图标按 alpha 着色成单色，
+     因此只画不透明的白色 Z 形，不携带品牌底色/渐变色带（彩色图在
+     状态栏会被压成灰块）。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M5,5h14v2.5H5z M5,16.5h14V19H5z M14.5,7.5h4.5L9.5,16.5H5z"/>
+</vector>
