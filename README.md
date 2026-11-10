@@ -209,8 +209,10 @@ status and workaround.
 Maintained by [@JZYLukis](https://github.com/JZYLukis) — a solo maintainer,
 best effort. The primary target is the desktop version the maintainer
 currently runs; other desktop versions are supported on a best-effort basis.
-See [CHANGELOG.md](CHANGELOG.md) for release notes. Please open an issue for
-problems and feedback.
+Key design trade-offs and their costs are recorded in
+[docs/decisions.md](docs/decisions.md) — check it before reporting something
+that might be intended behavior. See [CHANGELOG.md](CHANGELOG.md) for release
+notes. Please open an issue for problems and feedback.
 
 ## License
 

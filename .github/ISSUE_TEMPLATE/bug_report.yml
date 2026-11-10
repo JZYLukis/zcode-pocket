@@ -23,6 +23,13 @@ body:
       description: e.g. Pixel 8 / Android 14, or a foldable model
     validations:
       required: true
+  - type: input
+    id: desktop-version
+    attributes:
+      label: ZCode desktop version
+      description: The version of the desktop app the phone is paired with（配对电脑上 ZCode 桌面端的版本）
+    validations:
+      required: false
   - type: textarea
     id: steps
     attributes:

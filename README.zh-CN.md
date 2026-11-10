@@ -163,7 +163,9 @@ DeepSeek/Kimi，在设置中自行填 key。
 
 由 [@JZYLukis](https://github.com/JZYLukis) 维护——单人维护者，尽力而为
 （best effort）：以维护者当前在用的桌面端版本为主要适配目标，其他版本
-尽力支持。版本变化见 [CHANGELOG.md](CHANGELOG.md)；问题与反馈请开 issue。
+尽力支持。关键设计取舍及其代价记录在
+[docs/decisions.md](docs/decisions.md)——报告问题前先查，可能是预期行为。
+版本变化见 [CHANGELOG.md](CHANGELOG.md)；问题与反馈请开 issue。
 
 ## 许可证
 
