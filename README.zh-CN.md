@@ -15,6 +15,36 @@ ZCode 桌面端的安卓原生客户端（Flutter）：把桌面端的多电脑�
 > 服务时须自行遵守官方服务条款（zcode.z.ai/cn/terms）——现行条款
 > 默认限非商业的个人研究学习用途，商业使用需与官方另行约定。
 
+## 截图
+
+> 截图中的账号、项目与会话内容均为演示数据（内置演示模式），非真实使用记录。
+
+**演示视频**（26 秒：流式输出 → 工具调用 → 权限审批 → 放行 → 完成）
+
+https://github.com/user-attachments/assets/4e81ba59-6d69-4316-a5fc-67955c261c47
+
+**浅色**
+
+| 任务主页 | 会话：流式输出与工具调用 |
+|---|---|
+| ![任务主页](docs/screenshots/home.png) | ![会话](docs/screenshots/conversation.png) |
+| **审批交互（Bash 权限请求）** | **模型与思考档切换** |
+| ![审批](docs/screenshots/approval.png) | ![模型](docs/screenshots/models.png) |
+| **用量统计（热力图/趋势/额度）** | **工作流运行与产物** |
+| ![用量](docs/screenshots/usage.png) | ![工作流](docs/screenshots/workflows.png) |
+
+**深色**
+
+| 任务主页 | 会话：流式输出与工具调用 |
+|---|---|
+| ![任务主页](docs/screenshots/home-dark.png) | ![会话](docs/screenshots/conversation-dark.png) |
+| **审批交互（Bash 权限请求）** | **用量统计** |
+| ![审批](docs/screenshots/approval-dark.png) | ![用量](docs/screenshots/usage-dark.png) |
+
+**折叠屏展开 / 宽屏双栏**（左栏任务列表 + 右栏会话）
+
+![双栏](docs/screenshots/dual-pane.png)
+
 ## 主要功能
 
 - 多电脑/多账号管理（并行在线、档案隔离、电脑备注名、其他电脑任务快照聚合）
@@ -138,6 +168,10 @@ DeepSeek/Kimi，在设置中自行填 key。
   任务标题与最近回复的前 60 字；可选的常驻连接通知还会显示正在运行的
   任务名。要隐藏这些内容：在系统设置中为本应用开启「隐藏敏感通知内容」，
   或关闭「锁屏通知」。
+- **本地缓存为明文 JSON**：任务与用量快照、会话缓存、通知台账以明文
+  JSON 存于应用私有目录（不进云备份；未 root 设备上其他应用不可读）。
+  可随时在「设置 → 关于 → 清除本地缓存」一键清除；不影响草稿、排队
+  消息、账号与设置。
 
 ## 已知限制
 

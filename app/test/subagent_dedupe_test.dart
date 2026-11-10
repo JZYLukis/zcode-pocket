@@ -343,13 +343,13 @@ void main() {
     final app = _RowsApp([
       {'rowId': 1, 'kind': 'userInput', 'text': '并行审查'},
       {'rowId': 2, 'kind': 'turnHeader', 'state': 'running'},
-      _agentTool(3, 'tc-a', '视觉审查精选与备航 A'),
+      _agentTool(3, 'tc-a', '视觉走查精选与备航 A'),
       _agentTool(4, 'tc-b', '视觉交叉备航与驻留 B'),
-      _agentTool(5, 'tc-c', '视觉审查父母置顶'),
+      _agentTool(5, 'tc-c', '视觉走查父母置顶'),
       _agentTool(6, 'tc-d', '独立审查内容迁移与隔离'),
-      _subagentRow(7, '视觉审查精选与备航 A', 'success'),
+      _subagentRow(7, '视觉走查精选与备航 A', 'success'),
       _subagentRow(8, '视觉交叉备航与驻留 B', 'success'),
-      _subagentRow(9, '视觉审查父母置顶', 'success'),
+      _subagentRow(9, '视觉走查父母置顶', 'success'),
       _subagentRow(10, '独立审查内容迁移与隔离', 'running'),
     ]);
     await tester.pumpWidget(_host(app));

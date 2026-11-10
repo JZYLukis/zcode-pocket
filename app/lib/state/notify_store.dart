@@ -148,6 +148,18 @@ class NotifyStore {
     _scheduleWrite();
   }
 
+  /// 清空通知台账（关于页「清除本地缓存」动作）：内存副本+盘上 JSONL
+  /// 一并清掉。**保留去重基线**——基线是纯状态（id/时间戳，无内容），
+  /// 清掉会导致旧交互在下一帧差分时重复通知。
+  Future<void> clearLedger() async {
+    _recentLedger.clear();
+    try {
+      if (await _ledgerFile.exists()) await _ledgerFile.delete();
+    } on Object catch (_) {
+      // 盘上删除失败不阻断（下次 append 会 rewriteAll 自愈）。
+    }
+  }
+
   void _scheduleWrite() {
     _baselineWriteTimer?.cancel();
     _baselineWriteTimer = Timer(

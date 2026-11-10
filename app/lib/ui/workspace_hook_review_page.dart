@@ -318,7 +318,7 @@ class _HookItemCard extends StatelessWidget {
               // editable 只约束写配置（toggle 命令），不约束信任勾选：
               // 所有条目均可勾选（此前非 editable 待信任项被强制勾选且
               // 无法取消）。不可写盘仅作视觉标注（卡片下方小字）。
-              // （视觉审查 1109）：原命中区=SizedBox(32,24)+FittedBox
+              // （视觉走查）：原命中区=SizedBox(32,24)+FittedBox
               // 缩放后的开关本体，实际可点区仅 32×24（低于 44 触控下限）。
               // 修=40×40 热区外壳 + opaque GestureDetector 承接槽内空白处
               // 点按（开关本体手势优先，不会双触发）；开关视觉尺寸不变。

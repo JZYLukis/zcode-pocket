@@ -603,9 +603,9 @@ String planBadgeOf(ConfigOptionValue v) {
   // BigModel 组头两组完全同名不可辨；桌面语义=每个 provider 组都
   // 有类型标识（个人/团队/免费/API），消歧义。
   return switch (kind) {
-    'individual-coding-plan' => '个人',
-    'team-coding-plan' => '团队',
-    'start-plan' => '免费',
+    'individual-coding-plan' => tr('个人'),
+    'team-coding-plan' => tr('团队'),
+    'start-plan' => tr('免费'),
     _ => 'API',
   };
 }

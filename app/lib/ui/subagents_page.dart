@@ -532,7 +532,8 @@ class _SubagentsPageState extends State<SubagentsPage> {
               // 基准线（复核实测 16 vs 12 差 4dp）。
               padding: const EdgeInsets.fromLTRB(0, 10, 4, 6),
               child: Text(
-                '${entry.key} (${entry.value.length})',
+                // 分组键保留中文参与逻辑比较（editable 判定），仅展示翻译。
+                '${tr(entry.key)} (${entry.value.length})',
                 style: TextStyle(
                   fontSize: AppType.uiSm,
                   fontWeight: FontWeight.w600,

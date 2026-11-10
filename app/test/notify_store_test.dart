@@ -146,6 +146,31 @@ void main() {
     expect(s4.recentLedger(), hasLength(3), reason: '二次点击也不重复');
   });
 
+  test('clearLedger 清台账但保留去重基线', () async {
+    final s = newStore();
+    await s.load();
+    await s.appendLedger(const LedgerEntry(
+      ts: 1, kind: 'taskCompleted', deviceSid: 'd1', taskId: 't1',
+      title: 'A', outcome: 'posted'));
+    s.replaceBaselines('d1', {
+      't1': PhaseSnapshot(phase: 'running', title: 'A', lastActivityAt: 1),
+    });
+    await _pollUntil(
+      () => _persistedActivity(tmp, 'd1', 't1') == 1,
+      '基线应先落盘（clearLedger 不得动基线）',
+    );
+    await s.clearLedger();
+    expect(s.recentLedger(), isEmpty, reason: '内存台账清空');
+    // 基线文件仍在且内容不变。
+    expect(_persistedActivity(tmp, 'd1', 't1'), 1);
+    // 盘上台账清空：重开店铺读回空。
+    final s2 = newStore();
+    await s2.load();
+    expect(s2.recentLedger(), isEmpty, reason: '盘上 JSONL 已删');
+    // 基线跨"重开"仍在。
+    expect(_persistedActivity(tmp, 'd1', 't1'), 1);
+  });
+
   test('基线写盘防饿死（介入点2自证轮实锤）：首写立即+持续刷新 10s 必落盘', () async {
     final dir = await Directory.systemTemp.createTemp('notify_starve');
     try {

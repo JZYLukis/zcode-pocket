@@ -22,6 +22,37 @@ ZCode account and a running desktop.
 > non-commercial personal research and study; commercial use requires a
 > separate agreement with the provider.
 
+## Screenshots
+
+> All content shown (accounts, projects, conversations) is demo data produced
+> by the built-in demo mode — no real usage records.
+
+**Demo video** (26s: streaming output → tool calls → permission approval → done)
+
+https://github.com/user-attachments/assets/4e81ba59-6d69-4316-a5fc-67955c261c47
+
+**Light**
+
+| Task home | Conversation: streaming and tool calls |
+|---|---|
+| ![Task home](docs/screenshots/home-en.png) | ![Conversation](docs/screenshots/conversation-en.png) |
+| **Approval interaction (Bash permission)** | **Model & thinking level** |
+| ![Approval](docs/screenshots/approval-en.png) | ![Model sheet](docs/screenshots/models-en.png) |
+| **Usage stats (heatmap / trends / quota)** | **Workflow runs and artifacts** |
+| ![Usage](docs/screenshots/usage-en.png) | ![Workflows](docs/screenshots/workflows-en.png) |
+
+**Dark**
+
+| Task home | Conversation: streaming and tool calls |
+|---|---|
+| ![Task home](docs/screenshots/home-dark-en.png) | ![Conversation](docs/screenshots/conversation-dark-en.png) |
+| **Approval interaction (Bash permission)** | **Usage stats** |
+| ![Approval](docs/screenshots/approval-dark-en.png) | ![Usage](docs/screenshots/usage-dark-en.png) |
+
+**Foldable unfolded / wide-screen dual pane** (task list + conversation)
+
+![Dual pane](docs/screenshots/dual-pane.png)
+
 ## Features
 
 - Multi-computer / multi-account management (parallel online, isolated
@@ -172,6 +203,12 @@ with your own API keys in settings.
   connection notification also shows the name of the running task. To hide
   this, enable "hide sensitive notification content" (or disable lock-screen
   notifications) for ZCode Pocket in system settings.
+- **Local caches are plain JSON**: task and usage snapshots, conversation
+  caches and the notification ledger live as plain JSON inside the app's
+  private storage (never in cloud backups, and not readable by other apps on
+  a non-rooted device). You can clear them anytime from
+  Settings → About → "Clear local cache"; drafts, queued messages, accounts
+  and settings are not affected.
 
 ## Known limitations
 

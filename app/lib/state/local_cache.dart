@@ -167,6 +167,27 @@ class LocalCacheStore {
     }
   }
 
+  /// 清除全部本地缓存（关于页「清除本地缓存」动作）：设备快照+会话缓存
+  /// 整目录删除，返回删除的文件数供提示。不动草稿/发送队列/凭据/偏好
+  /// （各自的独立存储）。清除后活跃会话的防抖写可能重新落一份新缓存
+  /// （正常再缓存，非清除失败）；测试/生产共用此语义。
+  Future<int> clearAll() async {
+    await waitForPendingWrites();
+    var removed = 0;
+    for (final root in [_sessionsRoot, _devicesRoot]) {
+      try {
+        if (!await root.exists()) continue;
+        await for (final e in root.list(recursive: true, followLinks: false)) {
+          if (e is File) removed++;
+        }
+        await root.delete(recursive: true);
+      } on Object catch (e) {
+        debugPrint('[cache] clearAll partial failure (contained): $e');
+      }
+    }
+    return removed;
+  }
+
   Future<void> close() async {
     // 等在途写落定再置 closed（状态层批）：AppState.dispose 与拆栈收尾
     // 并发时，立即置 closed 会把拆栈 flush 的最后一次落盘吞掉（会话

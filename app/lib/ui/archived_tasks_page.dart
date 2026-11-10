@@ -161,7 +161,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                         ),
                       ),
                     ),
-                    // 视觉审查②：破坏性批量操作用危险色（审查发现：纯文字
+                    // 视觉走查②：破坏性批量操作用危险色（审查发现：纯文字
                     // 无警示性、易误触）。
                     TextButton.icon(
                       key: const ValueKey('archive-delete-all'),

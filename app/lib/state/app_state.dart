@@ -53,6 +53,10 @@ class AppState extends ChangeNotifier {
        _injectedCache = cacheStore,
        _injectedNotifyService = notifyService,
        _injectedNotifyStore = notifyStore {
+    // 注入的缓存存储立即对公开字段可见（load() 仍是 ??= 语义不变）：
+    // 此前注入件要等 load() 才挂到 cacheStore，页面级轻量测试（如关于页
+    // 清除缓存）注入后读不到。
+    if (cacheStore != null) this.cacheStore = cacheStore;
     _deviceRegistry = DeviceStackRegistry(
       store: this.store,
       accountStore: this.accountStore,

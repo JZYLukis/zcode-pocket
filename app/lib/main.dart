@@ -10,6 +10,8 @@ import 'core/system_asr.dart';
 
 import 'core/theme.dart';
 import 'app.dart';
+import 'demo/demo_app_state.dart';
+import 'demo/demo_mode.dart';
 
 /// release 取证探针（2026-10-16 真机复验教训）：
 /// release 构建里未捕获的构建异常默认渲染为黑/空屏且无日志——
@@ -148,5 +150,12 @@ void main() {
   // 指纹（验收#3 取证当时正缺这一行）。
   debugPrint('[voice] build probe $kVoiceHmsBuildProbe');
   SystemAsr.probe();
-  runApp(const ZcodeCompanionApp());
+  // 演示模式（--dart-define=ZP_DEMO=1）：注入 DemoAppState——纯虚拟
+  // 数据驱动真实 UI（截图/演示视频采集用），跳过登录/配对/网络。
+  // 注入路径同时跳过 testLaunchArgsReader 与 load()（见 app.dart）。
+  runApp(
+    demoModeEnabled
+        ? ZcodeCompanionApp(app: DemoAppState())
+        : const ZcodeCompanionApp(),
+  );
 }

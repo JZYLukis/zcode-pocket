@@ -34,7 +34,7 @@ import 'task_home.dart';
 /// 折叠/展开共用同一主页；项目成为分组与新建上下文，不再是常驻导航轨。
 
 /// 卡片摘要剥 Markdown 记号（**强调**/`代码`/标题# 等）——纯文本场景
-/// 裸符号观感糙（视觉审查 2026-10-18）。
+/// 裸符号观感糙（视觉走查-10-18）。
 /// （2026-10-19 审查）：结果缓存——preview 串跨重建稳定（卡实例每
 /// rebuild 新建，键必须用串）；上限超限整清，规模=可见卡量级。
 final _stripMarkdownCache = <String, String>{};
@@ -4150,7 +4150,7 @@ class _TaskCard extends StatelessWidget {
                     (entry.unread || !entry.previewIsRunDigest)) ...[
                   const SizedBox(height: 6),
                   Text(
-                    // 视觉审查修订（2026-10-18）：卡片摘要是纯文本场景，
+                    // 视觉走查修订（2026-10-18）：卡片摘要是纯文本场景，
                     // 桌面下发的行文常带 **强调**/`代码`——裸符号直接显示
                     // 观感糙，剥掉后再呈示。
                     _stripMarkdown(entry.preview!),

@@ -562,7 +562,7 @@ class _AutomationCard extends StatelessWidget {
       return (context.colors.destructive, '失败', Icons.warning_amber_rounded);
     }
     return switch (e.lifecycleStatus) {
-      // 视觉审查①：与筛选词"进行中"统一（官方 inProgress 组=active+paused）。
+      // 视觉走查①：与筛选词"进行中"统一（官方 inProgress 组=active+paused）。
       'active' => (
         context.colors.running,
         '进行中',

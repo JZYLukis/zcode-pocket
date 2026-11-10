@@ -295,7 +295,7 @@ void main() {
     expect(find.byKey(const ValueKey('automation-sched-weekly')), findsOneWidget);
     expect(find.byKey(const ValueKey('automation-sched-weekday-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('automation-sched-weekday-5')), findsOneWidget);
-    // （视觉审查 1109）：Wrap 在 375dp 下折成 5+2 两行——
+    // （视觉走查）：Wrap 在 375dp 下折成 5+2 两行——
     // 修=Row+7×Expanded 等分单行。红=第 6/7 只 y 中心下移一行。
     final weekdayCenters = <Offset>[];
     final weekdaySizes = <Size>[];
@@ -418,7 +418,7 @@ void main() {
     }, reason: '模型换过下发完整选型');
   });
 
-  // （视觉审查 1109）：模型弹层 ListView 吃满 0.65×屏高约束——
+  // （视觉走查）：模型弹层 ListView 吃满 0.65×屏高约束——
   // 5 行短目录底部空 202dp。修=shrinkWrap:true（maxHeight 上限保留）。
   // 红=修复前弹层高 0.65×806≈524dp（真机 880 高≈572dp）。
   testWidgets('模型弹层按内容收缩（5 行目录 < 半屏）', (tester) async {
@@ -476,7 +476,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // （视觉审查 1109）：模型值行（模型名+思考档+来源三层拼接）
+  // （视觉走查）：模型值行（模型名+思考档+来源三层拼接）
   // 无 maxLines——长名换行顶破行高并挤压右侧按钮。修=单行省略。
   testWidgets('模型值 Text 单行省略（maxLines=1）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);

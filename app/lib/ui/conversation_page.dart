@@ -156,7 +156,7 @@ class ConversationPage extends StatefulWidget {
   static void debugResetScrollMemory() =>
       _ConversationPageState._scrollMemory.clear();
 
-  /// 视觉审查缝（同 debugImage 先例）：asserts 态默认抑制一次性
+  /// 视觉走查缝（同 debugImage 先例）：asserts 态默认抑制一次性
   /// 引导（保测试确定性），置 true 可强制渲染引导态供审美审查取证。
   static bool debugFabHintForce = false;
 

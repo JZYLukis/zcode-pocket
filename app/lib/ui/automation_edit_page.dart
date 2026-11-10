@@ -472,7 +472,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
           ),
           child: ListView(
             key: const ValueKey('automation-model-picker'),
-            // （视觉审查 1109）：弹层此前吃满 0.65×屏高约束，短目录
+            // （视觉走查）：弹层此前吃满 0.65×屏高约束，短目录
             // （5 行）底部空 202dp。shrinkWrap=true 让内容自收（maxHeight
             // 上限保留=长目录照常滚，physics 不变）。
             shrinkWrap: true,
@@ -716,7 +716,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
                           : '$_selModel'
                                 '${_selThought != null && _selThought!.isNotEmpty ? ' · 思考 $_selThought' : ''}'
                                 '${_selProvider != null ? ' · ${_providerLabel(_selProvider!, '')}' : ''}',
-                      // （视觉审查 1109）：模型值（模型名+思考档+
+                      // （视觉走查）：模型值（模型名+思考档+
                       // 来源三层拼接）此前无 maxLines，长名换行把行高顶破
                       // 并与右侧「继承默认」按钮挤压。单行省略。
                       key: const ValueKey('automation-edit-model-value'),
@@ -856,7 +856,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
             // （2026-11-07 用户批）：周几选择器——此前 weekly 档只回填
             // 旧值无 UI 可改（对抗审查「周几选择器」遗留实际未修完）。
             // 七只紧凑 chip 与档位/模式 chip 同规格（蓝 10% 选中）。
-            // （视觉审查 1109）：Wrap 在 375dp 宽下折成 5+2 两行——
+            // （视觉走查）：Wrap 在 375dp 宽下折成 5+2 两行——
             // 改 Row+7×Expanded 等分单行（间距 3dp、内容居中）。
             // 紧凑回滚（候选 13 真机反馈⑤「太松散」）：保单行等分
             //（修掉 5+2 折行），密度回 compact 与档位/模式 chip 同规格。

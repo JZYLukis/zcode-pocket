@@ -31,7 +31,22 @@ void main() {
     expect(find.textContaining('社区驱动的第三方客户端'), findsOneWidget);
     expect(find.textContaining('官方服务条款'), findsOneWidget);
     expect(find.textContaining('无遥测'), findsOneWidget);
+    // 明文缓存披露 + 清除入口与许可行同屏区——
+    // 新增内容把许可行挤出首屏（懒构建），断言前先滚到可见。
+    expect(find.textContaining('明文 JSON'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('项目许可证（Apache 2.0）'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
     expect(find.text('项目许可证（Apache 2.0）'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('第三方来源声明'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
     expect(find.text('第三方来源声明'), findsOneWidget);
     // 版权行在页尾（折叠线下），滚到可见再断言署名。
     await tester.scrollUntilVisible(

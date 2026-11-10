@@ -402,7 +402,7 @@ void main() {
         reason: '事件区必须「最新在前」（降序夹具此前掩盖了 reversed 语义）');
     expect(find.textContaining('简报正文'), findsOneWidget);
     expect(find.textContaining('简报摘要'), findsOneWidget);
-    // （视觉审查 1109）：产物卡此前零间距叠放+行高 39.7——两张卡
+    // （视觉走查）：产物卡此前零间距叠放+行高 39.7——两张卡
     // 像一整块且低于 44 触控/可读下限。修=相邻 6dp 间距+行高 ≥44。
     final cardA = tester.getRect(
       find.byKey(const ValueKey('workflow-artifact-art-1')),

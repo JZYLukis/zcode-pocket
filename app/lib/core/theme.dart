@@ -406,7 +406,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       secondary: Color(0xFF363636),
       accent: Color(0xFF001D3D),
       foreground: Color(0xFFD4D4D4), // neutral-300
-      // ⚠ 官方值起步（白60%/白30%）。路B 视觉审查 （2026-10-23）：30%
+      // ⚠ 官方值起步（白60%/白30%）。路B 视觉走查 （2026-10-23）：30%
       // 档像素实测 3.3:1，低于浅色同位——按底账"浅色同逻辑等效果"曾提亮
       // 至 47%。2026-11-05 反馈④随浅色 subtlest 55%→45%（2.68:1）等效果
       // 对齐回撤至 36%（2.67:1）；subtle 60% 维持（bg 上 4.85:1 过线；

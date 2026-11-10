@@ -362,6 +362,15 @@ const _customEn = <String, String>{
       'This device CPU is not supported by the voice service',
   '前天': 'The day before yesterday',
   '3 天前': '3 days ago',
+  // 单数英文（英文界面出现「1 days ago」）：exact 表先于
+  // ^(\d+) 天前$ 模式命中，补两条单数档；复数仍走模式。
+  '1 天前': '1 day ago',
+  '1 天后': 'In 1 day',
+  // 套餐类型徽标：此前硬编码中文直出，英文界面
+  // 残留；子代理分组头三词条本已有译，渲染点补 tr() 即可。
+  '个人': 'Individual',
+  '团队': 'Team',
+  '免费': 'Free',
   '更早': 'Earlier',
   '其他': 'Other',
   '团队套餐': 'Team plan',
@@ -853,6 +862,30 @@ const _customEn = <String, String>{
   '）。仅当你明确知道该服务器可信时才继续；连接后消息与凭据会发往该服务器。':
       '). Continue only if you know this server is trustworthy; '
       'your messages and credentials will be sent to it.',
+  // 关于页明文缓存披露 + 清除动作。
+  '任务与用量快照、会话缓存以明文 JSON 存于应用私有目录，不参与系统备份；可随时清除，重新打开各页面时自动重建。':
+      'Task and usage snapshots and conversation caches are stored as '
+      'plain JSON inside the app-private directory and are never included '
+      'in system backups; you can clear them anytime — pages reload them '
+      'on next open.',
+  '清除本地缓存': 'Clear local cache',
+  '删除任务/会话快照与通知台账；不影响草稿、排队消息、账号与设置':
+      'Deletes task/conversation snapshots and the notification ledger; '
+      'drafts, queued messages, accounts and settings are untouched',
+  '清除本地缓存？': 'Clear local cache?',
+  '将删除本机的任务/会话快照与通知台账（明文 JSON 缓存），重新打开各页面时会重新加载；不会删除草稿、排队消息、账号与设置。':
+      'This deletes on-device task/conversation snapshots and the '
+      'notification ledger (plain-JSON caches); pages reload their data '
+      'on next open. Drafts, queued messages, accounts and settings are '
+      'not deleted.',
+  '清除': 'Clear',
+  '已清除本地缓存': 'Local cache cleared',
+  // 工作流产物图片预览。
+  '图片过大（超过 16MB），暂不支持预览':
+      'Image too large (over 16 MB); preview is not supported yet',
+  '该产物没有可读的内容': 'This artifact has no readable content',
+  '图片解码失败：该格式不受支持':
+      'Image decoding failed: this format is not supported',
 };
 
 final _customPatterns = <_L10nPattern>[

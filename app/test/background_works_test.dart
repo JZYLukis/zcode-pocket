@@ -57,7 +57,7 @@ void main() {
         {
           'workId': 'w-sub',
           'kind': 'subagent',
-          'title': '视觉审查',
+          'title': '视觉走查',
           'status': 'resultPending',
           'startedAt': 1700000000100,
           'anchorRowId': 2,

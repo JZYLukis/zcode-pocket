@@ -34,6 +34,14 @@ class RpcFrameTransport {
   /// 64 MiB at 512 KiB/fragment = 128 fragments.
   static const maxFragments = 256;
 
+  /// 发送侧按官方限额（官方 web-remote-control-rpc-transport.ts:12-13：
+  /// 逻辑消息 ≤16MiB、≤64 分片）——官方接收端超限直接丢帧（丢的是整个
+  /// 逻辑消息），发出去也永远无 ack。我们最大的出站载荷是附件分块
+  /// （384KiB/块），距 16MiB 两个数量级，收紧无实际损失。
+  /// 接收侧维持上面的宽容值（zemote 偏差，防长快照丢帧，见类注释）。
+  static const sendMaxMessageBytes = 16 * 1024 * 1024;
+  static const sendMaxFragments = 64;
+
   /// Raw bytes per fragment; base64 expands by 4/3, keep envelope < 1 MiB.
   static const _fragmentPayloadBytes = 512 * 1024;
 
@@ -42,6 +50,16 @@ class RpcFrameTransport {
   final String? recoveryId;
   final void Function(Map<String, dynamic> payload) sendPayload;
   final void Function(String line)? onLog;
+
+  /// 入站装配资源闸（对齐官方 logicalFrameAssemblyMaxConcurrent=32 /
+  /// MaxStagedBytes 语义，zcode-protocol-v4/core.ts:65-70）：装配中消息
+  /// 达到并发数、或暂存字节达到上限时，逐出最老装配给新消息让位——
+  /// 防畸形对端在 60s 过期窗内驻留无界内存。官方暂存上限（32MiB）按其
+  /// 16MiB 消息上限的 2 倍语义设定；我们的接收容忍上限是 64MiB，故暂存
+  /// 上限取「单条合法快照上限 + 并发小消息余量」（64+16MiB），保证单条
+  /// 合法大快照永不被自己挤出。可注入供测试。
+  final int maxConcurrentAssemblies;
+  final int maxStagedAssemblyBytes;
 
   int _seq = 0;
   int? _lastInboundSeq;
@@ -62,12 +80,17 @@ class RpcFrameTransport {
   final _assemblies = <int, _Assembly>{};
   Timer? _assemblyCleanupTimer;
 
+  /// 当前装配中消息的暂存字节总量（随每个分片增减，逐出处扣回）。
+  int _stagedBytes = 0;
+
   RpcFrameTransport({
     required this.bridgeSessionId,
     required this.sendPayload,
     this.bridgeGeneration,
     this.recoveryId,
     this.onLog,
+    this.maxConcurrentAssemblies = 32,
+    this.maxStagedAssemblyBytes = maxMessageBytes + 16 * 1024 * 1024,
   }) {
     _assemblyCleanupTimer = Timer.periodic(
       const Duration(seconds: 30),
@@ -82,9 +105,28 @@ class RpcFrameTransport {
       if (now.difference(a.createdAt).inSeconds > 60) stale.add(seq);
     });
     for (final seq in stale) {
-      _assemblies.remove(seq);
+      _stagedBytes -= _assemblies.remove(seq)?.bytes ?? 0;
       onLog?.call('[rpc] purged stale assembly $seq');
     }
+  }
+
+  /// 资源闸逐出：淘汰最老装配（createdAt 最早者），暂存字节扣回。
+  void _evictOldestForRoom() {
+    if (_assemblies.isEmpty) return;
+    int? oldestSeq;
+    DateTime? oldestAt;
+    _assemblies.forEach((seq, a) {
+      if (oldestAt == null || a.createdAt.isBefore(oldestAt!)) {
+        oldestAt = a.createdAt;
+        oldestSeq = seq;
+      }
+    });
+    final evicted = _assemblies.remove(oldestSeq!);
+    if (evicted != null) _stagedBytes -= evicted.bytes;
+    onLog?.call(
+      '[rpc] evicted assembly $oldestSeq for room '
+      '(assemblies=${_assemblies.length} staged=$_stagedBytes)',
+    );
   }
 
   Map<String, dynamic> get _identity => {
@@ -96,14 +138,14 @@ class RpcFrameTransport {
   /// Fragment and send one logical message.
   void sendMessage(Uint8List bytes) {
     if (bytes.isEmpty) throw StateError('remote.rpcFrame.emptyMessage');
-    if (bytes.length > maxMessageBytes) {
+    if (bytes.length > sendMaxMessageBytes) {
       throw StateError('remote.rpcFrame.messageTooLarge');
     }
     final messageSeq = ++_messageSeq;
     final checksum = Crc32.hexOf(bytes);
     final fragmentCount =
         (bytes.length + _fragmentPayloadBytes - 1) ~/ _fragmentPayloadBytes;
-    if (fragmentCount > maxFragments) {
+    if (fragmentCount > sendMaxFragments) {
       throw StateError('remote.rpcFrame.fragmentLimitExceeded');
     }
     for (var i = 0; i < fragmentCount; i++) {
@@ -231,24 +273,41 @@ class RpcFrameTransport {
     // ——曾把桌面大分片全部静默丢弃，组装永不完成→无 ack→桌面 45s
     // replayGraceExceeded 断桥循环（真机 2026-10-15 定位，官方
     // web-remote-control-rpc-transport.ts findDecodedBudget）。
+    if (chunk.length > maxPhysicalFrameBytes) {
+      // 合规对端的解码分片 ≤~768KiB（1MiB 物理帧预算的 base64 逆运算），
+      // 超 1MiB 只可能来自非合规对端——丢弃该帧，免无界解码缓冲驻留。
+      onLog?.call(
+        '[rpc] dropped oversized fragment msgSeq=$messageSeq '
+        '(${chunk.length}B > ${maxPhysicalFrameBytes}B)',
+      );
+      return true;
+    }
 
     final existing = _assemblies[messageSeq];
     if (existing != null &&
         (existing.fragmentCount != fragmentCount ||
             existing.messageBytes != messageBytes ||
             existing.checksum != checksum)) {
-      _assemblies.remove(messageSeq);
+      _stagedBytes -= _assemblies.remove(messageSeq)?.bytes ?? 0;
       return true;
+    }
+    if (!_assemblies.containsKey(messageSeq)) {
+      // 资源闸：新装配入场前给并发/暂存让位（已存在的装配不受影响）。
+      while (_assemblies.length >= maxConcurrentAssemblies ||
+          _stagedBytes >= maxStagedAssemblyBytes) {
+        if (_assemblies.isEmpty) break;
+        _evictOldestForRoom();
+      }
     }
     final assembly = _assemblies.putIfAbsent(
       messageSeq,
       () => _Assembly(fragmentCount, messageBytes, checksum),
     );
-    assembly.add(fragmentIndex, chunk);
+    _stagedBytes += assembly.add(fragmentIndex, chunk);
     // 畸形对端可声明小 messageBytes 却投递大分片——
     // 累计超声明值即整组作废，免内存放大驻留到终局尺寸校验。
     if (assembly.oversized) {
-      _assemblies.remove(messageSeq);
+      _stagedBytes -= _assemblies.remove(messageSeq)?.bytes ?? 0;
       onLog?.call(
         '[rpc] dropped assembly $messageSeq '
         '(fragments exceed declared $messageBytes bytes)',
@@ -263,7 +322,7 @@ class RpcFrameTransport {
       );
     }
     if (assembly.isComplete) {
-      _assemblies.remove(messageSeq);
+      _stagedBytes -= _assemblies.remove(messageSeq)?.bytes ?? 0;
       final message = assembly.assemble();
       if (message.length != assembly.messageBytes) {
         onLog?.call('[rpc] message $messageSeq size mismatch');
@@ -308,6 +367,7 @@ class RpcFrameTransport {
     _disposed = true;
     _assemblyCleanupTimer?.cancel();
     _assemblies.clear();
+    _stagedBytes = 0;
     await _messageController.close();
   }
 }
@@ -323,20 +383,26 @@ class _Assembly {
   /// 已收分片累计字节（超过声明的 messageBytes 即
   /// oversized，调用方整组作废）。
   int _bytes = 0;
+  int get bytes => _bytes;
   bool get oversized => _bytes > messageBytes;
 
   _Assembly(this.fragmentCount, this.messageBytes, this.checksum)
     : fragments = List<Uint8List?>.filled(fragmentCount, null);
 
-  void add(int index, Uint8List data) {
-    if (index < 0 || index >= fragmentCount) return;
+  /// 返回本次暂存字节增量（新分片=+len；重收同号分片=新len-旧len），
+  /// 调用方据此维护传输层的全局暂存字节计数。
+  int add(int index, Uint8List data) {
+    if (index < 0 || index >= fragmentCount) return 0;
+    final int delta;
     if (fragments[index] == null) {
       received += 1;
-      _bytes += data.length;
+      delta = data.length;
     } else {
-      _bytes += data.length - fragments[index]!.length;
+      delta = data.length - fragments[index]!.length;
     }
+    _bytes += delta;
     fragments[index] = data;
+    return delta;
   }
 
   bool get isComplete => received == fragmentCount;

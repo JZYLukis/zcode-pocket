@@ -194,7 +194,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // （视觉审查，触控维）：逐项开关旧
+  // （视觉走查，触控维）：逐项开关旧
   // 命中区=SizedBox(32,24)+FittedBox 缩放后的开关本体，实际仅 32×24；
   // 修=40×40 热区外壳（开关视觉尺寸不变）。红=修复前 getSize ≈32×24。
   testWidgets('逐项开关热区 ≥38×38 且槽内空白点按可切换',

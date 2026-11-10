@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/localized_text.dart';
 import '../core/theme.dart';
+import '../state/app_state_scope.dart';
 import 'app_widgets.dart';
 import 'markdown_view.dart';
 
@@ -84,6 +85,30 @@ class _AboutZcodePocketPageState extends State<AboutZcodePocketPage> {
             context,
             tr('锁屏默认可能显示通知内容：任务标题与最近回复的前 60 字；'
                 '可在系统设置中隐藏敏感通知或关闭锁屏通知。'),
+          ),
+          const SizedBox(height: 8),
+          _paragraph(
+            context,
+            tr('任务与用量快照、会话缓存以明文 JSON 存于应用私有目录，'
+                '不参与系统备份；可随时清除，重新打开各页面时自动重建。'),
+          ),
+          ListTile(
+            key: const ValueKey('about-clear-cache'),
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.cleaning_services_outlined, size: 20),
+            title: Text(
+              tr('清除本地缓存'),
+              style: const TextStyle(fontSize: AppType.uiBase),
+            ),
+            subtitle: Text(
+              tr('删除任务/会话快照与通知台账；不影响草稿、排队消息、账号与设置'),
+              style: TextStyle(
+                fontSize: AppType.uiCaption,
+                color: context.colors.foregroundSubtle,
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right, size: 18),
+            onTap: () => _confirmClearCache(context),
           ),
           const AppSectionHeader('开源'),
           ListTile(
@@ -246,6 +271,29 @@ class _AboutZcodePocketPageState extends State<AboutZcodePocketPage> {
           color: context.colors.foregroundSubtle,
         ),
       ),
+    );
+  }
+
+  /// 清除本地缓存：确认弹窗走统一 showConfirmDialog（红确认键+触感，
+  /// 统一确认弹窗红键主操作）→ 清 LocalCacheStore 全部
+  /// 快照 + 通知台账 → SnackBar 反馈。草稿/队列/账号/偏好各有独立存储，
+  /// 不在此动作范围内。
+  Future<void> _confirmClearCache(BuildContext context) async {
+    final app = AppStateScope.of(context);
+    final ok = await showConfirmDialog(
+      context,
+      title: tr('清除本地缓存？'),
+      message: tr('将删除本机的任务/会话快照与通知台账（明文 JSON 缓存），'
+          '重新打开各页面时会重新加载；不会删除草稿、排队消息、'
+          '账号与设置。'),
+      confirmLabel: tr('清除'),
+    );
+    if (!ok) return;
+    await app.cacheStore?.clearAll();
+    await app.notifyStore?.clearLedger();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(tr('已清除本地缓存'))),
     );
   }
 

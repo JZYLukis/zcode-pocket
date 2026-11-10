@@ -68,7 +68,13 @@ subscribe/frame schema as the desktop.
   sequence number, fragment index/count, total byte length and a CRC32
   checksum. The receiver reassembles and acknowledges the logical sequence.
 - Official limits: physical frame ≤ 1 MiB, logical message ≤ 16 MiB, ≤ 64
-  fragments, 30 s assembly timeout.
+  fragments, 30 s assembly timeout. This client **sends** within the official
+  limits (the official receiver silently drops anything larger) but is
+  **tolerant on receive** up to 64 MiB / 256 fragments — long-context
+  snapshots can legitimately exceed 16 MiB, and dropping them used to leave
+  the UI spinning forever. Inbound assembly is resource-capped (concurrent
+  assemblies and staged bytes, evicting the oldest when full) and a decoded
+  fragment larger than the 1 MiB physical-frame budget is discarded.
 - Physical or logical sequence gaps are terminal faults, not something the
   application layer may silently skip.
 - CRC32 uses the standard reflected polynomial (`0xedb88320`), rendered as

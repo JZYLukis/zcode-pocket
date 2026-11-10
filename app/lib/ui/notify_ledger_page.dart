@@ -101,7 +101,7 @@ class NotifyLedgerPage extends StatelessWidget {
               itemCount: entries.length,
               itemBuilder: (context, i) {
                 // 倒序显示（最新在上）。行结构：图标｜标题（恒正常对比度）
-                // ｜时间·类型副行｜处置结果彩色标签——视觉审查修订
+                // ｜时间·类型副行｜处置结果彩色标签——视觉走查修订
                 // （2026-10-18）：静音/失败行整行淡化导致"最该被看见的
                 // 一条反而最看不清"；处置结果用颜色区分可扫读。
                 final e = entries[entries.length - 1 - i];

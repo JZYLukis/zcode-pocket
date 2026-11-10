@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide Text;
 import '../core/localized_text.dart';
@@ -16,6 +17,100 @@ import 'file_preview.dart' show HtmlPreviewPage;
 /// （产物清单）/workflowRunArtifactRead（内容产物字节 ≤512KiB 分块，形
 /// 状照 attachmentRead）。全部只读、无状态、超时重发安全（transport.ts
 /// 注释），手机端为纯消费页。
+
+/// 图片产物预览：artifactRead
+/// 是纯数据读取（零 token、不进模型上下文）——与 base64 塞上下文的方案
+/// 本质不同。纯函数判定 + 首块字节嗅探双保险；上限 16MiB；解码降采样
+/// 2048px。SVG 不在 Flutter 原生支持集，走"不支持的格式"提示。
+const artifactImagePreviewMaxBytes = 16 * 1024 * 1024;
+
+/// 分块读取一个内容产物（512KiB/块）。返回拼接字节与截断/超限标志。
+///
+/// 图片类（扩展名或首块魔数命中）放宽到 32 块/16MiB；上限随魔数嗅探
+/// 放宽（公开同步终审抓出：上限预定死，无扩展名图片 >4MiB 被静默
+/// 截断）；超限判定结合「还有下一块」——恰好 16MiB 的完整图片不误报。
+/// 纯逻辑抽离供单测直灌 read 回调（终审覆盖缺口）。
+typedef ArtifactBlockRead = Future<dynamic> Function({
+  required int offset,
+  required int blockLimit,
+});
+
+class ArtifactBlocks {
+  ArtifactBlocks({
+    required this.bytes,
+    required this.truncated,
+    required this.oversized,
+    required this.isImage,
+  });
+  final List<int> bytes;
+  final bool truncated;
+  final bool oversized;
+  final bool isImage;
+}
+
+Future<ArtifactBlocks> readArtifactBlocks({
+  required String name,
+  required ArtifactBlockRead read,
+}) async {
+  var isImage = artifactLooksImageByExtension(name);
+  var blockLimit = isImage ? 32 : 8;
+  final bytes = <int>[];
+  var offset = 0;
+  var truncated = false;
+  for (var i = 0; i < blockLimit; i++) {
+    final res = await read(offset: offset, blockLimit: blockLimit);
+    final b64 = '${(res is Map ? res['dataBase64'] : '') ?? ''}';
+    if (b64.isEmpty) break;
+    bytes.addAll(base64.decode(b64));
+    if (i == 0 && !isImage && sniffImageMagic(bytes)) {
+      isImage = true;
+      blockLimit = 32;
+    }
+    final next =
+        (res is Map ? (res['nextOffset'] as num?)?.toInt() : null) ?? -1;
+    if (next <= offset || next <= 0) break;
+    if (isImage &&
+        bytes.length >= artifactImagePreviewMaxBytes &&
+        next > offset) {
+      return ArtifactBlocks(
+        bytes: bytes, truncated: false, oversized: true, isImage: isImage);
+    }
+    offset = next;
+    if (i == blockLimit - 1) truncated = !isImage;
+  }
+  return ArtifactBlocks(
+    bytes: bytes, truncated: truncated, oversized: false, isImage: isImage);
+}
+const _imageArtifactExts = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'};
+
+/// 按标题/id 的扩展名判定（大小写不敏感；无扩展名=非图片，等嗅探兜底）。
+bool artifactLooksImageByExtension(String titleOrId) {
+  final dot = titleOrId.lastIndexOf('.');
+  if (dot < 0 || dot + 1 >= titleOrId.length) return false;
+  return _imageArtifactExts.contains(
+    titleOrId.substring(dot).toLowerCase(),
+  );
+}
+
+/// 首块字节嗅探（PNG/JPEG/GIF/WEBP/BMP 魔数；扩展名缺失或被骗时兜底）。
+bool sniffImageMagic(List<int> b) {
+  if (b.length < 4) return false;
+  bool eq(int start, List<int> magic) {
+    if (b.length < start + magic.length) return false;
+    for (var i = 0; i < magic.length; i++) {
+      if (b[start + i] != magic[i]) return false;
+    }
+    return true;
+  }
+
+  return eq(0, [0x89, 0x50, 0x4E, 0x47]) || // PNG
+      eq(0, [0xFF, 0xD8, 0xFF]) || // JPEG
+      eq(0, [0x47, 0x49, 0x46, 0x38]) || // GIF8
+      (eq(0, [0x52, 0x49, 0x46, 0x46]) && // RIFF….WEBP
+          b.length >= 12 &&
+          eq(8, [0x57, 0x45, 0x42, 0x50])) ||
+      eq(0, [0x42, 0x4D]); // BM
+}
 
 /// run 状态五态的人话与配色（官方词表 runs 投影同一套）。
 ({String label, Color color}) workflowRunStatusOf(
@@ -531,39 +626,60 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _artifactBusy = true);
     try {
-      final bytes = <int>[];
-      var offset = 0;
-      var truncated = false;
-      for (var i = 0; i < 8; i++) {
-        final res = await app.workflowRunArtifactRead(
-          widget.sessionId,
-          widget.runId,
-          '${artifact['id']}',
-          version: (artifact['version'] as num?)?.toInt() ?? 1,
-          offset: offset,
-          limit: 512 * 1024,
+      final r = await readArtifactBlocks(
+        name: '${artifact['title'] ?? artifact['id']}',
+        read: ({
+          required int offset,
+          required int blockLimit,
+        }) =>
+            app.workflowRunArtifactRead(
+              widget.sessionId,
+              widget.runId,
+              '${artifact['id']}',
+              version: (artifact['version'] as num?)?.toInt() ?? 1,
+              offset: offset,
+              limit: 512 * 1024,
+            ),
+      );
+      if (r.oversized) {
+        if (!mounted) return;
+        messenger.showSnackBar(
+          SnackBar(content: Text(tr('图片过大（超过 16MB），暂不支持预览'))),
         );
-        final b64 = '${(res is Map ? res['dataBase64'] : '') ?? ''}';
-        if (b64.isEmpty) break;
-        bytes.addAll(base64.decode(b64));
-        final next =
-            (res is Map ? (res['nextOffset'] as num?)?.toInt() : null) ??
-                -1;
-        if (next <= offset || next <= 0) break;
-        offset = next;
-        if (i == 7) truncated = true;
+        return;
+      }
+      final bytes = r.bytes;
+      final truncated = r.truncated;
+      final isImage = r.isImage;
+      if (!mounted) return;
+      final name = '${artifact['title'] ?? artifact['id']}';
+      if (isImage) {
+        if (bytes.isEmpty) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('该产物没有可读的内容')),
+          );
+          return;
+        }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ArtifactImagePage(
+              title: name,
+              bytes: Uint8List.fromList(bytes),
+            ),
+          ),
+        );
+        return;
       }
       final text = utf8.decode(bytes, allowMalformed: true);
-      if (!mounted) return;
       if (text.isEmpty) {
         messenger.showSnackBar(
           const SnackBar(content: Text('该产物没有可读的文本内容')),
         );
         return;
       }
-      final name = truncated
-          ? '${artifact['title'] ?? artifact['id']}（${tr('内容过长已截断')}）'
-          : '${artifact['title'] ?? artifact['id']}';
+      final displayName = truncated
+          ? '$name（${tr('内容过长已截断')}）'
+          : name;
       // html 嗅探正则锚定文首（此前 `|` 优先
       // 级让正文任意位置的 <html 字样也会误进 WebView）。
       if (RegExp(r'^\s*(<!doctype html|<html)', caseSensitive: false)
@@ -571,7 +687,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => HtmlPreviewPage(
-              title: name,
+              title: displayName,
               htmlContent: text,
             ),
           ),
@@ -579,7 +695,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
       } else {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => _ArtifactTextPage(title: name, content: text),
+            builder: (_) => _ArtifactTextPage(title: displayName, content: text),
           ),
         );
       }
@@ -704,7 +820,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // （视觉审查 1109）：产物卡此前零间距叠放+行高
+                  // （视觉走查）：产物卡此前零间距叠放+行高
                   // 39.7（低于 44 触控/可读下限），两张卡像一整块。
                   // 修=相邻卡 6dp 间距 + 卡内容 minHeight 44（行高抬到
                   // ≥44，图标/字号不变）。
@@ -816,6 +932,79 @@ class _ArtifactTextPage extends StatelessWidget {
             fontSize: AppType.uiCaption,
             fontFamily: 'monospace',
             height: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 图片产物预览页：入口已限 16MiB；解码降采样 2048px
+/// 防大图位图尖峰；双指缩放平移；解码期 spinner 占位（大图分块读+解码
+/// 有可感窗口，不留空白画布）；图片套 1px borderFaint 防白底产物与画布
+/// 零边界；解码失败人话降级（SVG 被扩展名拦在入口，此处兜底罕见格式与
+/// 损坏数据）。AppBar 走全库标准（实体面+1px hairline）。
+class ArtifactImagePage extends StatelessWidget {
+  final String title;
+  final Uint8List bytes;
+
+  const ArtifactImagePage({super.key, required this.title, required this.bytes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.colors.background,
+      appBar: AppBar(
+        title: Text(
+          title,
+          translate: false,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: context.colors.border),
+        ),
+      ),
+      body: InteractiveViewer(
+        maxScale: 8,
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              border: Border.all(color: context.colors.borderFaint),
+            ),
+            padding: const EdgeInsets.all(2),
+            child: Image.memory(
+              bytes,
+              cacheWidth: 2048,
+              fit: BoxFit.contain,
+              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded || frame != null) return child;
+                return const SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  tr('图片解码失败：该格式不受支持'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppType.uiCaption,
+                    color: context.colors.foregroundSubtle,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
