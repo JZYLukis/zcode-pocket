@@ -20,7 +20,7 @@ class _RowsApp extends AppState {
   @override
   Future<SessionCacheEntry?> readSessionCache(String id) async {
     // 只给父会话缓存：下钻子会话走空缓存→标题回落 widget.title
-    // （H1 断言的正是这条兜底路径）。
+    // （断言的正是这条兜底路径）。
     if (id != 's1') return null;
     return SessionCacheEntry(
         deviceSid: 'd1',

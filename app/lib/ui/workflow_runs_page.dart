@@ -258,7 +258,7 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                               ),
                             ),
                               const SizedBox(width: 8),
-                              // 视觉补跑必修（human-eye-retro-1109，Visual B
+                              // 视觉补跑必修（Visual B
                               // 像素实测）：原先 Flexible(状态) 与 Expanded(标题)
                               // 双分把行宽对半分——状态只画约 55dp、剩余约
                               // 87dp 全落行尾=右缘死区（时间不靠右、不同状态
@@ -704,7 +704,7 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  // VR-6（视觉审查 1109）：产物卡此前零间距叠放+行高
+                  // （视觉审查 1109）：产物卡此前零间距叠放+行高
                   // 39.7（低于 44 触控/可读下限），两张卡像一整块。
                   // 修=相邻卡 6dp 间距 + 卡内容 minHeight 44（行高抬到
                   // ≥44，图标/字号不变）。
@@ -931,7 +931,7 @@ class OffPeakTaskCard extends StatelessWidget {
   }
 }
 
-/// A 批（拍板⑧）+ F3 对抗审查返工（高③）：会话内工作流 run 卡。
+/// A 批（拍板⑧）+ 对抗审查返工（高③）：会话内工作流 run 卡。
 /// runId/status 权威源=快照 workflowRuns 投影按 toolCallId 联接（官方
 /// workflowRunCardJoin.ts:33-51——v4 工具行 output 只有散文，结构化
 /// 字段不在行上）；联接不上=只显示名称不可点（官方同款：编不过的
@@ -977,7 +977,7 @@ class WorkflowRunCard extends StatelessWidget {
     var name = '${input['name'] ?? ''}'.trim();
     if (name.isEmpty) name = '${input['description'] ?? ''}'.trim();
     final run = _joinedRun();
-    // F3：status 只认投影（工具行 status 是 success/error 工具态，
+    // status 只认投影（工具行 status 是 success/error 工具态，
     // 不是 run 态——混用会显示英文原词）。
     final status = '${run?['status'] ?? ''}';
     final runId = '${run?['runId'] ?? ''}';

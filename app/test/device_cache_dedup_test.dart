@@ -6,7 +6,7 @@ import 'package:zcode_pocket/state/computer_stack.dart';
 import 'package:zcode_pocket/state/local_cache.dart';
 import 'package:zcode_pocket/transport/z_transport.dart';
 
-/// 设备缓存内容去重（电量批 2026-10-30，18075 验收电量反馈）：
+/// 设备缓存内容去重（电量批 2026-10-30， 验收电量反馈）：
 /// 后台保活期订阅持续推帧，任务列表模型每 ~5s notify 一次但内容大多
 /// 无差异——真机日志实证 [cache] device saved 连续 9 次写同内容
 /// （workspaces=9 tasks=1，间隔 5-7s）。本用例锁行为：
@@ -180,7 +180,7 @@ void main() {
   });
 }
 
-/// 首写可注入失败的 store（A8 红绿：写失败语义透出）。
+/// 首写可注入失败的 store（红绿：写失败语义透出）。
 class _FlakyStore extends LocalCacheStore {
   _FlakyStore(super.baseDir, this.shouldFail);
   final bool Function() shouldFail;

@@ -84,7 +84,7 @@ class SessionCacheEntry {
       lastSeq: (m['lastSeq'] as num?)?.toInt() ?? 0,
       firstRowId: (m['firstRowId'] as num?)?.toInt(),
       totalCount: (m['totalCount'] as num?)?.toInt() ?? rows.length,
-      // P3-9：前向兼容方向——旧读取端遇到未来 v3 条目应按
+      // 前向兼容方向——旧读取端遇到未来 v3 条目应按
       // 不可信处理（版本升级的意义恰是"旧读取端别信新写入端"），判定
       // 此前用 >= 会把 v3 误判 trusted。
       historyTrusted: v == schemaVersion,
@@ -170,7 +170,7 @@ class DeviceCacheEntry {
     List<Map<String, dynamic>> maps(Object? raw) => raw is List
         ? raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList()
         : const [];
-    // P3-5：null 元素 '${null}' 产生的 "null" 死 id 不再混入
+    // null 元素 '${null}' 产生的 "null" 死 id 不再混入
     // pinned/archived/deleted 集合（外来文件防御）。
     List<String> strings(Object? raw) => raw is List
         ? raw.whereType<String>().where((e) => e.isNotEmpty).toList()
@@ -217,7 +217,7 @@ List<Map<String, dynamic>> cacheHomeTaskRows(
     'unreadAt',
     'archived',
     'pinned',
-    // F5：B/A 批新字段——离线预览行保留月亮与后台点（run 线对象
+    // B/A 批新字段——离线预览行保留月亮与后台点（run 线对象
     // 较重不入缓存，live 到达即恢复）。
     'offPeakTaskId',
     'hasBackgroundWork',
@@ -231,7 +231,7 @@ List<Map<String, dynamic>> cacheHomeTaskRows(
     for (final t in tasks)
       if ('${t['taskId'] ?? ''}'.isNotEmpty)
         () {
-          // P3-8：displayStatus 空串此前 `??` 不兜（只兜
+          // displayStatus 空串此前 `??` 不兜（只兜
           // null）——空串+status=running 时既不命中清洗也不回退 status，
           // 读取预渲会冒充运行态。空串视为缺省回退 status。
           final ds = '${t['displayStatus'] ?? ''}'.trim();
@@ -270,7 +270,7 @@ const maxTotalCacheBytes = 40 * 1024 * 1024;
 ///
 /// 仅当：已收到快照（ready）&& logEpoch 已知 && 回合静默（非 running、
 /// 无 streaming 行）——即"回合结束/收尾帧"的落盘点。流式中间态、
-/// 未落稳的订阅不落盘（R6 快照守门对齐：state.ready 只有快照应用后才
+/// 未落稳的订阅不落盘（快照守门对齐：state.ready 只有快照应用后才
 /// 为真，驱逐竞态期的脏帧到不了这里）。
 bool shouldWriteSessionCache({
   required bool ready,
@@ -354,7 +354,7 @@ List<(String, String)> evictSessions(
       doomed.add((m.deviceSid, m.sessionId));
     }
   }
-  // 再解决全局体积：剩余条目按最旧先删直到入预算（P3-4：
+  // 再解决全局体积：剩余条目按最旧先删直到入预算（
   // remaining 构造时已过滤 doomed，循环内的 contains 恒假死行已删）。
   var remaining = <SessionCacheMeta>[];
   for (final e in entries) {

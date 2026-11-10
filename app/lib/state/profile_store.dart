@@ -16,11 +16,11 @@ import '../transport/z_transport.dart';
 /// V2 账号档案（{kind:'v2', sid, mid, name,…}）。
 ///
 /// 批次 2（2026-10-19 审查）加固：
-/// - B1 逐条容错：单条坏数据跳过+计数（不再一条坏→全量抛→界面全清空）；
-/// - B3 串行化：读-改-写全部经同一队列（原毫秒级交错窗口可丢一次更新）；
+/// - 逐条容错：单条坏数据跳过+计数（不再一条坏→全量抛→界面全清空）；
+/// - 串行化：读-改-写全部经同一队列（原毫秒级交错窗口可丢一次更新）；
 /// - 存储可注入（测试缝：内存 FlutterSecureStorage 替身）。
 ///
-/// 18087 黑屏批加固（V2 明文冗余备份+自救）：真机实证配对成功 ~1.3s 后
+/// 黑屏批加固（V2 明文冗余备份+自救）：真机实证配对成功 ~1.3s 后
 /// 被外部系统进程强杀（华为 am_kill by app），且**刚写入的 relay.list 在
 /// 加密存储的异步落盘窗口内丢失**（老键全在、唯新键消失=apply 未及
 /// flush 的签名）→ 重启回到空配对页（用户看到"黑屏要大退"的半个根因）。
@@ -43,14 +43,14 @@ class ProfileStore {
   final String? debugBackupPath;
 
   /// 备份层是否可用：显式覆写路径（本批单测）恒可用；flutter test 环境
-  /// 无覆写时旁路（18088 教训：getApplicationSupportDirectory 在全量
+  /// 无覆写时旁路（教训：getApplicationSupportDirectory 在全量
   /// 测试并发下经 MethodChannel 挂起=整个门卡死，单文件跑则抛异常被
   /// 吞——统一旁路最干净）；其余环境（真机/模拟器）可用。
   bool get _backupAvailable =>
       debugBackupPath != null ||
       !Platform.environment.containsKey('FLUTTER_TEST');
 
-  // -------------------------------------------------------- B3 串行队列
+  // -------------------------------------------------------- 串行队列
 
   Future<void> _tail = Future.value();
 
@@ -66,7 +66,7 @@ class ProfileStore {
   Future<List<DeviceProfile>> listProfiles() async =>
       (await listProfilesDetailed()).profiles;
 
-  /// B1：逐条解码，坏条目跳过并计数（界面提示"N 个档案损坏"）。
+  /// 逐条解码，坏条目跳过并计数（界面提示"N 个档案损坏"）。
   Future<({List<DeviceProfile> profiles, int skipped})>
   listProfilesDetailed() => _serialized(_readRaw);
 
@@ -78,8 +78,8 @@ class ProfileStore {
         result = decodeProfileList(json);
       } catch (e) {
         // 顶层 JSON 畸形（存储截断/加密层损坏出非 JSON 串，
-        // K1 P2-4/K2 P2-1）：此前 jsonDecode 抛出直接冲出 _readRaw，
-        // 18088 明文备份自救层被整体短路——合法备份就在旁边却不参与
+        // ）：此前 jsonDecode 抛出直接冲出 _readRaw，
+        // 明文备份自救层被整体短路——合法备份就在旁边却不参与
         // 回补。按空列表落位，让 rescue 用空 known 集走正常回补路径
         // （回补会重写合法 blob，顺带自愈损坏值；V1 本就不可救属已拍板
         // 边界）。
@@ -87,7 +87,7 @@ class ProfileStore {
         result = (profiles: <DeviceProfile>[], skipped: 1);
       }
     }
-    // 18087 自救：加密列表缺失而明文备份在的 V2 档案回补（外部强杀
+    // 自救：加密列表缺失而明文备份在的 V2 档案回补（外部强杀
     // 吃掉 apply 窗口内新键的场景）——回补成功后用户重启直接回首页。
     try {
       final rescued = await _rescueFromBackup(result.profiles);
@@ -109,7 +109,7 @@ class ProfileStore {
 
   /// V2 档案描述符写明文备份（flush=true 直达页缓存，进程击杀不丢；
   /// V1 含 hash 凭据绝不含入）。备份层不可用视为成功（跳过）。
-  /// 返回是否落定（ K1-P3-5/K2-P2-3：删除路径需要真实结果来
+  /// 返回是否落定（删除路径需要真实结果来
   /// 决定是否继续——备份写失败时继续删加密列表会让已删档案被陈旧
   /// 备份"自救复活"）。
   Future<bool> _writeBackup(List<DeviceProfile> profiles) async {
@@ -129,7 +129,7 @@ class ProfileStore {
     }
   }
 
-  /// 备份文件缺失探测缓存（ K2-P3-5：常态缺失时每次档案读取
+  /// 备份文件缺失探测缓存（常态缺失时每次档案读取
   /// 都 exists()+readAsString 白付 IO；写入成功后复位）。
   bool _backupKnownAbsent = false;
 
@@ -166,7 +166,7 @@ class ProfileStore {
   }
 
   /// 新增（或替换）一台电脑：同 deviceSid 覆盖（重扫后旧档案复活，
-  /// invalid 清除）。写后同步刷新明文备份（18087 击杀防丢层）。
+  /// invalid 清除）。写后同步刷新明文备份（击杀防丢层）。
   Future<DeviceProfile> upsertProfile(DeviceProfile profile) =>
       _serialized(() async {
         final list = [
@@ -201,7 +201,7 @@ class ProfileStore {
         .profiles
         .where((p) => p.deviceSid != deviceSid)
         .toList();
-    // K1-P3-5/K2-P2-3：删除路径备份先行（关键态先行原则）——
+    // 删除路径备份先行（关键态先行原则）——
     // 备份写失败（磁盘满/IO 异常）时中止删除：加密列表保持原样，用户
     // 重试即可；反之先删加密列表、备份刷新失败会让已删档案被陈旧备份
     // "自救复活"（删掉的电脑自己回来）。
@@ -268,7 +268,7 @@ class ProfileStore {
             ? null
             : m['accountId'] as String?,
         label: m['label'] as String? ?? m['name'] as String? ?? sid,
-        // K1-P3-14：字段缺失回退固定 0（排序垫底、稳定）——
+        // 字段缺失回退固定 0（排序垫底、稳定）——
         // now() 使"纯函数"解码不确定且排序展示抖动。
         addedAt: DateTime.fromMillisecondsSinceEpoch(
           (m['addedAt'] as num?)?.toInt() ?? 0,
@@ -292,7 +292,7 @@ class ProfileStore {
     );
   }
 
-  /// B1 纯函数（单测靶）：坏条目跳过+计数，好条目保留——原实现任一条
+  /// 纯函数（单测靶）：坏条目跳过+计数，好条目保留——原实现任一条
   /// 抛出即整体失败（app_state catch → profiles=const [] 全清空）。
   @visibleForTesting
   ({List<DeviceProfile> profiles, int skipped}) decodeProfileList(String json) {

@@ -5,11 +5,10 @@ import 'package:zcode_pocket/state/app_state.dart';
 import 'package:zcode_pocket/state/profile_store.dart';
 import 'package:zcode_pocket/transport/relay_v2.dart';
 
-/// 正式包测试缝闸门（H01）红绿：release 模式下 intent extra 的
+/// 正式包测试缝闸门红绿：release 模式下 intent extra 的
 /// 连接地址覆盖/账号凭据注入被忽略、非官方域配对链接被拒；debug 行为
 /// 不回归。修复前=闸门机制不存在、load() 无条件应用三条注入（对应账号
-/// 令牌外发面，静态调用链见 docs/handoff-2026-10-25-optimization-review
-/// H01）。
+/// 令牌外发面，静态调用链见
 
 /// 内存 secure storage 替身（ProfileStore 测试缝同款，profile_store_test）。
 class _MemStorage extends FlutterSecureStorage {

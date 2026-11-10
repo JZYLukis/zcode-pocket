@@ -9,7 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// - anthropic/gemini/deepseek/moonshotai/qwen：Simple Icons 官方 path
 ///   （品牌官方标志的单色矢量转写，CC0）。
 /// - openai/mistralai/meta：Simple Icons 同源同工艺补齐（2026-10-24
-///   修复批 G28 拍板）。
+/// 修复批 拍板）。
 /// - x/xiaomi/minimax/nvidia：Simple Icons 同源同工艺补齐（2026-11-05
 ///   反馈④"各模型 logo 充分补齐"——xAI 的 X 形标已被收录（slug=x，与
 ///   xAI 官方同形）；OCG 常见第三方品牌覆盖 mimo/minimax/nemotron。

@@ -11,7 +11,7 @@ import 'core/system_asr.dart';
 import 'core/theme.dart';
 import 'app.dart';
 
-/// release 取证探针（B2，2026-10-16 真机复验教训）：
+/// release 取证探针（2026-10-16 真机复验教训）：
 /// release 构建里未捕获的构建异常默认渲染为黑/空屏且无日志——
 /// 配对后黑屏无现场可查。这里把三类异常全部落到 logcat（[app] 前缀，
 /// 与既有监控管线一致），并把黑屏改为可见的红字错误卡，黑屏必留栈。
@@ -25,7 +25,7 @@ void _installForensicProbes() {
     debugPrint('[app] [error-widget] ${details.exception}');
     // 深色模式批1：ErrorWidget 在失败子树原位渲染（仍处于主题树内），
     // 用 Builder 读当前套——builder 签名无 context。
-    // P3 P3-7：MaterialApp 之上的子树（根 builder 等）出错时
+    // MaterialApp 之上的子树（根 builder 等）出错时
     // 无 Theme 祖先，Theme.of 抛异常会让红卡自身 build 失败退回框架
     // 灰屏——字面色兜底保证任何层级都能渲染取证红卡（日志已先行落
     // logcat，不受影响）。
@@ -36,7 +36,7 @@ void _installForensicProbes() {
           destructive = context.colors.destructive;
         } catch (_) {
           // 单源：AppThemeSpec.light.colors.destructive（不硬编码字面量，
-          // design_scan R1 要求颜色引用主题单源；此处 Theme 不可用故直接
+          // design_scan 要求颜色引用主题单源；此处 Theme 不可用故直接
           // 取 light 规格常量）。
           destructive = AppThemeSpec.light.colors.destructive;
         }
@@ -56,7 +56,7 @@ void _installForensicProbes() {
   };
 }
 
-/// 帧看门狗（18091，见 main() 内注释详述）。返回探针句柄仅供测试引用。
+/// 帧看门狗（见 main 内注释详述）。返回探针句柄仅供测试引用。
 void _installFrameWatchdog() {
   DateTime lastFrameAt = DateTime.now();
   bool probeArmed = false;
@@ -104,7 +104,7 @@ void _installFrameWatchdog() {
   });
 }
 
-/// 构建产物探针（18077 验收#3）：`String.fromEnvironment` 在 AOT 编译期
+/// 构建产物探针（验收#3）：`String.fromEnvironment` 在 AOT 编译期
 /// 求值，拼接串进 snapshot 字符串池——tools/build-release.sh 在成品
 /// APK 的 libapp.so 里 grep 此串，验证 VOICE_HMS dart-define 真正到达
 /// Dart 编译（防线背景：历史上两次构建开关与原生注入错配——产物
@@ -120,7 +120,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   _installForensicProbes();
   debugPrint('[perf] main_start');
-  // 18091 帧看门狗（扫码黑屏根治层 3）：相机纹理销毁后
+  // 帧看门狗（扫码黑屏根治层 3）：相机纹理销毁后
   // 引擎偶发停止产帧（Dart 定时器活着=业务日志正常，但零帧输出、语义
   // 树空、窗口黑——agent 实证帧计数冻结）。检测=前台期间主动 schedule
   // -Frame 后连续两个探测周期（16s）无任何帧完成 → 判楔死 → 经
@@ -128,7 +128,7 @@ void main() {
   // 恢复，替代用户大退）。健康应用：静止页也会因主动调帧而完成一帧，
   // 探针续挂；后台（paused）不探测不误杀。
   _installFrameWatchdog();
-  // 18088 黑屏取证：帧时序哨兵——任何总耗时>250ms 的
+  // 黑屏取证：帧时序哨兵——任何总耗时>250ms 的
   // 帧打一行（build/raster 分解），用于实测"配对成功瞬间 UI 线程停顿"
   // 是否超厂商应用自愈阈值（理论待验）。零常驻开销（回调仅读时序）。
   WidgetsBinding.instance.addTimingsCallback((timings) {

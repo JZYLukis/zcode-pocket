@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';

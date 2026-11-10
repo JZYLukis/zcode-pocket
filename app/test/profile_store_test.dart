@@ -150,7 +150,7 @@ void main() {
     });
   });
 
-  group('18088 自救：加密列表顶层畸形（K1 P2-4/K2 P2-1）', () {
+  group('自救：加密列表顶层畸形（K1 P2-4/K2 P2-1）', () {
     test('relay.list JSON 整体畸形 → 明文备份回补接管（修复前=jsonDecode 抛出短路 rescue）', () async {
       final storage = FakeSecureStorage();
       final backupPath = _tempBackupPath();
@@ -174,14 +174,14 @@ void main() {
       await store.upsertProfile(v2);
       expect(storage.data['profile.relay.list'], contains('sid-v2'));
 
-      // 模拟加密层损坏出非 JSON 串（18087 同类故障的相邻形态：值在但坏了）。
+      // 模拟加密层损坏出非 JSON 串（同类故障的相邻形态：值在但坏了）。
       storage.data['profile.relay.list'] = '{"kind":"v2","sid":"sid-v2"';
       final r = await store.listProfilesDetailed();
       expect(
         r.profiles.map((p) => p.deviceSid),
         ['sid-v2'],
         reason: '修复前：decodeProfileList 的 jsonDecode 抛出直接冲出 '
-            '_readRaw，18088 明文备份自救层被整体短路（合法备份在旁边不参与）',
+            '_readRaw， 明文备份自救层被整体短路（合法备份在旁边不参与）',
       );
       expect(
         storage.data['profile.relay.list'],

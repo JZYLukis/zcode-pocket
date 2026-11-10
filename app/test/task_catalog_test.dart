@@ -318,7 +318,7 @@ void main() {
     },
   );
 
-  // J3-P2-2（批C 组3 守卫铺满）：tasks-index 行映射排序对
+  // （批C 组3 守卫铺满）：tasks-index 行映射排序对
   // updatedAt 硬转换 `as num?`——单条畸形行抛 TypeError 落进
   // _acceptLogicalFrame 的 catch 触发 resync，快照重放再抛=无界循环。
   // 修复=安全读取（payload_guard.intOf，String 数字容忍解析、非数字
@@ -382,7 +382,7 @@ void main() {
 
   // 2026-11-05 反馈②A：跨工作区打开任务期间保首页旧列表（SWR 式防闪
   // 「正在加载任务…」）——keepHomePreview 保行+零额外通知；打开失败
-  // clearStaleHomePreview 收口恢复 J2 清残留语义；新工作区首帧
+  // clearStaleHomePreview 收口恢复 清残留语义；新工作区首帧
   // tasks-index 到达由既有 _onTasksIndexChanged 全量替换并复位标记。
   test('detach(keepHomePreview)：保首页行+stale 标记；clear 收口清空+通知', () async {
     final ti = _TasksSub(() {});

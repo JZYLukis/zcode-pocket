@@ -151,12 +151,12 @@ class ConversationPage extends StatefulWidget {
 
   /// 测试缝：清空会话级滚动记忆（游览多轮共用 sessionId，上一轮的
   /// 记忆还原会在新一轮开场 50/300ms 校正窗口内把视口拽回旧位置，
-  /// 干扰轮内交互（S11 展开后滚动即被拽回=收起条离场）。
+  /// 干扰轮内交互（展开后滚动即被拽回=收起条离场）。
   @visibleForTesting
   static void debugResetScrollMemory() =>
       _ConversationPageState._scrollMemory.clear();
 
-  /// 视觉审查缝（同 S28 debugImage 先例）：asserts 态默认抑制一次性
+  /// 视觉审查缝（同 debugImage 先例）：asserts 态默认抑制一次性
   /// 引导（保测试确定性），置 true 可强制渲染引导态供审美审查取证。
   static bool debugFabHintForce = false;
 
@@ -174,7 +174,7 @@ class ConversationPage extends StatefulWidget {
   @visibleForTesting
   static int debugDeepLinkScheduleCount = 0;
 
-  /// waitForWorkspace 等待时限（测试缝，S28/debugFabHintForce 同款
+  /// waitForWorkspace 等待时限（测试缝，/debugFabHintForce 同款
   /// static 形态）：生产 75s；测试可缩短驱动超时分支。
   static Duration waitForWorkspaceTimeout = const Duration(seconds: 75);
 
@@ -188,7 +188,7 @@ class ConversationPage extends StatefulWidget {
   /// 失败走页面错误态可重试）；null=原行为（当前栈直接订阅）。
   final String? waitForWorkspace;
 
-  /// 欠账盘点 B5 接线修复（2026-11-08）：通知深链时刻随导航参数透传
+  /// 欠账盘点 接线修复（2026-11-08）：通知深链时刻随导航参数透传
   ///（task_center 消费 pendingOpenTask 后全局 getter 恒 null 的时序洞）
   /// ——非空时优先于全局 pendingDeepLinkTarget；消费后仍清全局防重放。
   final int? deepLinkAtMs;
@@ -287,24 +287,24 @@ class _ConversationPageState extends State<ConversationPage> {
   String? _listCenterItemKey;
   ConversationSubscription? _sub;
 
-  /// 当前已挂 _onStateChanged 的 ConversationState（ A1-P2-1：
+  /// 当前已挂 _onStateChanged 的 ConversationState（
   /// 重试重订阅按实例配对摘挂，防幻影监听器驻留 registry 长寿命 notifier）。
   ChangeNotifier? _listenedState;
   String? _sessionId;
   bool _sending = false;
   String? _error;
 
-  /// 订阅路径错误专档（ A2-P3-1）：`_error` 还承载发送/停止
+  /// 订阅路径错误专档：`_error` 还承载发送/停止
   /// 失败——cache-sync strip 只认订阅错误（否则发送错误会被误标成
   /// 「同步失败：…点按重试」，点按触发的是重订阅）。
   String? _syncError;
 
-  /// 离线入队在飞哨兵（ A1-P2-4）：入队的清输入发生在
+  /// 离线入队在飞哨兵：入队的清输入发生在
   /// `await store.add`（真实文件 IO）之后，双击窗口内第二次 tap 读到
   /// 未清空输入=同文条目双入队（重连后双发）。
   bool _enqueueingOffline = false;
 
-  /// 发送失败原文暂存（A2，2026-10-19 审查）：输入框被等待期新输入
+  /// 发送失败原文暂存（2026-10-19 审查）：输入框被等待期新输入
   /// 占用时不回填（避免覆盖新内容），暂存于此，横幅下提供恢复入口。
   String? _unsentDraft;
 
@@ -361,7 +361,7 @@ class _ConversationPageState extends State<ConversationPage> {
   Offset? _fabPointerDown;
   Offset? _fabDragStartPos;
 
-  /// 末段折叠键（ P1-1）：chatItems 逆序找最后一个 TurnBarItem，
+  /// 末段折叠键：chatItems 逆序找最后一个 TurnBarItem，
   /// 取其 work.collapseKeyId——与 TurnBar 读写键严格同源。找不到（窗口
   /// 无 TurnBar 快照）返回 null 由调用方回退裸 headerId（旧行为）。
   int? get _lastTurnCollapseKeyFromItems {
@@ -384,11 +384,11 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _showTurnQuickActions() {
-    // A1-P3-3：实时行扫值优先——_lastTurnHeaderId 由懒列表
+    // 实时行扫值优先——_lastTurnHeaderId 由懒列表
     // itemBuilder 赋值，末轮滚出视口后持旧值（期间新回合开始时快捷
     // 菜单会作用于陈旧回合）。菜单打开才执行一次，O(rows) 可承受。
     //
-    // P1-1（批E-1 漏改面）：折叠键必须与 TurnBar/TurnWork 同源
+    // （批 漏改面）：折叠键必须与 TurnBar/TurnWork 同源
     // （collapseKeyId=header rowId*1000+segmentIndex）——guided 多段回合
     // 的可见末段键≠裸 headerId，直接用 headerId 会写错段（末段无反应、
     // 首段被静默翻转）。经最后 TurnBarItem 的 work 取当前末段键。
@@ -439,7 +439,7 @@ class _ConversationPageState extends State<ConversationPage> {
         cur.dx + 24 < viewportCons.maxWidth / 2
             ? 14
             : viewportCons.maxWidth - 48 - 14,
-        // A2-P3-7/A3-P3-6：num.clamp 要求下限 ≤ 上限——视口
+        // num.clamp 要求下限 ≤ 上限——视口
         // <48px（键盘+多横幅极限压缩）时上限为负直接抛 ArgumentError；
         // 上限先钳到 ≥0（回拉路径同款守卫）。
         cur.dy.clamp(0.0, math.max(0.0, viewportCons.maxHeight - 48)),
@@ -482,7 +482,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// switchCollaborationMode 无 planEnabled 字段，计划只能草稿态切）。
   bool? _pendingPlan;
 
-  /// A5 水位式清理兜底（2026-10-24 修复批）：accepted 但乐观写回被跳过
+  /// 水位式清理兜底（2026-10-24 修复批）：accepted 但乐观写回被跳过
   /// （快照未就绪）时挂起等待 config 回显确认；回显丢失超时退位给 config。
   Timer? _planEchoTimer;
 
@@ -501,11 +501,11 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 用量详情卡（状态点开关）：entitlement/重置机会拉取缓存。
   bool _usageCardOpen = false;
   Map<String, dynamic>? _entCache;
-  // 18077 验收#2：缓存所属套餐档——档位切换后旧快照不得复用。
+  // 验收#2：缓存所属套餐档——档位切换后旧快照不得复用。
   String? _entCachePlanKind;
   DateTime? _entLoadedAt;
 
-  /// A4 退避（2026-10-19 审查）：失败后 1→2→4→5min 指数退避，替代
+  /// 退避（2026-10-19 审查）：失败后 1→2→4→5min 指数退避，替代
   /// "失败即复位"（最坏每通知一次）。stale 判据与在途守卫结构不动。
   DateTime? _entLastAttemptAt;
   int _entFailCount = 0;
@@ -513,7 +513,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 配额低额度提醒去重（官方按桶周期 reminderKey）。
   /// _quotaDismissedKeys=本页实例内手动关闭；_quotaShownKeys=本页实例
   /// 已展示过的键（官方 owner 语义：展示实例内继续显示，跨页/重启由
-  /// UiPrefs 持久记录隐藏——PF-1 修复批）。
+  /// UiPrefs 持久记录隐藏—— 修复批）。
   final Set<String> _quotaDismissedKeys = {};
   final Set<String> _quotaShownKeys = {};
   bool _entLoading = false;
@@ -588,7 +588,7 @@ class _ConversationPageState extends State<ConversationPage> {
     // 斜杠命令目录加载延到首帧后。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(_loadSlashCommands());
-      // A5：打开任务即上报查看态（桌面据此抑未读）。
+      // 打开任务即上报查看态（桌面据此抑未读）。
       final sid = _sessionId;
       if (mounted && sid != null && sid.isNotEmpty) {
         AppStateScope.of(context).reportTaskView(sid);
@@ -599,7 +599,7 @@ class _ConversationPageState extends State<ConversationPage> {
   Future<void> _loadSlashCommands() async {
     final app = AppStateScope.of(context);
     try {
-      // B20：目录刷新直拉（绕缓存）——桌面改命令/模式后
+      // 目录刷新直拉（绕缓存）——桌面改命令/模式后
       // 长驻会话页的斜杠面板不再陈旧（官方热订阅为服务内部消费，UI 侧
       // 官方同样按需重拉；此处对齐按需刷新语义）。
       final prep = await app.prepareWorkspace(refresh: true);
@@ -629,7 +629,7 @@ class _ConversationPageState extends State<ConversationPage> {
     final app = AppStateScope.of(context);
     final bridge = app.bridge;
     final ws = app.activeWorkspace;
-    // A1-P3-1/A3-P3-4：桥/工作区未就绪是瞬时态——旧实现先置
+    // 桥/工作区未就绪是瞬时态——旧实现先置
     // 闩锁再查前置条件，瞬时失败后本页实例子代理补全永久不可用（注释
     // 承诺的「下次打开面板再拉」不存在）。失败回滚闩锁，下次输入/打开
     // 面板重试。
@@ -665,7 +665,7 @@ class _ConversationPageState extends State<ConversationPage> {
       take(listOf(res['agents']));
       take(listOf(res['pluginAgents']));
       if (out.isEmpty) return;
-      // A1-P3-1：候选真正到达时若当前仍是 slash token，就地
+      // 候选真正到达时若当前仍是 slash token，就地
       // 重算补全列表（旧实现只 setState 换候选字段，_slashCandidates
       // 不重算——第一次输入 / 看不到子代理分区，再敲一键才出现）。
       final cur = activeCompletionToken(_input.text);
@@ -688,7 +688,7 @@ class _ConversationPageState extends State<ConversationPage> {
   void _onInputChanged() {
     _draftTextSnapshot = _input.text;
     if (!_restoringDraft && !_suppressDraftSync) _onDraftMutated();
-    // D3-P3-13：按光标位置解析 token——旧版只看文尾，中段
+    // 按光标位置解析 token——旧版只看文尾，中段
     // 编辑时任意键入都会弹文尾 token 的面板、点选把光标拽到文尾。
     final sel = _input.selection;
     final token = activeCompletionToken(
@@ -706,7 +706,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     if (token.type == 'slash') {
       _loadSubagentCandidates();
-      // A3-P3-9：先算后比——斜杠输入期每个字符都无条件
+      // 先算后比——斜杠输入期每个字符都无条件
       // setState 整页重建（含 O(rows) 投影检查）；候选不变不重建。
       final next = filterSlashCommands(
         _slashCommands.cast<SlashCommand>(),
@@ -760,7 +760,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   void _insertCompletion(String insertion) {
     final text = _input.text;
-    // D1-P3-14：token 定位复用 activeCompletionToken 同款语义
+    // token 定位复用 activeCompletionToken 同款语义
     // （页面侧自拼 lastIndexOf(' ') 与函数版漂移——换行前 @token、光标
     // 中位两大差异一并收敛）。
     final sel = _input.selection;
@@ -776,7 +776,7 @@ class _ConversationPageState extends State<ConversationPage> {
       final token = head.substring(lastSpace + 1);
       if (token.startsWith('@')) replaceFrom = lastSpace + 1;
     }
-    // D3-P3-12：子代理插入串 '@name ' 自带尾空格，再统一补
+    // 子代理插入串 '@name ' 自带尾空格，再统一补
     // 一个='@name  ' 双空格——插入串已带尾空白不重复补。
     final tail = sep(insertion);
     _input.text =
@@ -988,7 +988,7 @@ class _ConversationPageState extends State<ConversationPage> {
       if (ref.isEmpty) continue;
       try {
         final result = await app.attachmentRead(sessionId, ref);
-        // A1-P3-11/A3-P3-3/D3-P2-7：附件被移除只该跳过本项
+        // 附件被移除只该跳过本项
         // ——旧 return 中止整轮，剩余恢复附件的失效检测要等下轮
         // dataVersion 闸（≥5）才补。
         if (!mounted) return;
@@ -1109,7 +1109,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   /// 断网消息排队（6.6②）：app 状态变化（桥恢复/断连）驱动队列刷新与
   /// 自动发出；首挂即读一次（重启后队列在场且已连接则直接补发）。
-  /// 三轮审查 B2 L1：只读页在解析 scope 之前先返回（HEAD 同款——
+  /// 三轮审查 ：只读页在解析 scope 之前先返回（HEAD 同款——
   /// 避免任何 scope 外挂载的只读页在此抛空指针）。
   void _armSendQueueWatch() {
     if (widget.readOnly) return;
@@ -1130,7 +1130,7 @@ class _ConversationPageState extends State<ConversationPage> {
       app.viewingSessionId = null;
     }
     _queue.dispose();
-    // A5：页面关闭即取消查看态上报（best-effort，栈还活着才发得出）。
+    // 页面关闭即取消查看态上报（best-effort，栈还活着才发得出）。
     // 归属校验（#16）：子会话页退出动画晚于父页接回——父页已重报
     // 自己时（viewingSessionId 已指向别人）不得再把查看态清成 null。
     final closedSid = _sessionId;
@@ -1159,7 +1159,7 @@ class _ConversationPageState extends State<ConversationPage> {
     super.dispose();
   }
 
-  /// A5 超时兜底：乐观写回被跳过（快照未就绪）且 config 回显迟迟未到
+  /// 超时兜底：乐观写回被跳过（快照未就绪）且 config 回显迟迟未到
   /// 时，挂起值退位给 config 当前值——不让用户切换永驻挂起态。
   void _armPlanEchoFallback() {
     _planEchoTimer?.cancel();
@@ -1220,7 +1220,7 @@ class _ConversationPageState extends State<ConversationPage> {
     });
   }
 
-  /// 本页路由引用（ P2-2）：跨电脑自动退出必须确认**本页仍是
+  /// 本页路由引用：跨电脑自动退出必须确认**本页仍是
   /// 栈顶**再 pop——此前只查 canPop（=栈里有>1 路由），设置页/子会话
   /// 页/弹层压顶时会关错页面。didChangeDependencies 是 dependOnInherited
   /// 的合法调用点（build 阶段族）。
@@ -1300,7 +1300,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       ? widget.subscribeTimeout! * 3
                       : widget.subscribeTimeout!),
             onTimeout: () {
-              // B1（2026-10-16 夜，间歇竞态结构免疫）：ensure 链在负载下偶发
+              // （2026-10-16 夜，间歇竞态结构免疫）：ensure 链在负载下偶发
               // wedge（页面 await 不复活，而订阅经自愈路径已 ready——真机
               // "永远正在载入"实测 3/3）。超时兜底：直捞缓存活订阅；没有
               // 才把超时抛给页面错误态（可重试）。
@@ -1322,7 +1322,7 @@ class _ConversationPageState extends State<ConversationPage> {
           'ms=${_openStopwatch.elapsedMilliseconds}',
         );
       }
-      // A1-P2-1/A2-P3-3/A3-P2-1：按实例配对——ensureConversation
+      // 按实例配对——ensureConversation
       // 对同一 sid 返回同一驻留实例，重试路径二次 addListener 会注册
       // 双份监听（40ms 节流被翻倍架空 + dispose 只摘一份=已 dispose 的
       // 整页 State 被驻留 notifier 钉在内存）。先摘旧监听再挂新。
@@ -1330,14 +1330,14 @@ class _ConversationPageState extends State<ConversationPage> {
       sub.state.addListener(_onStateChanged);
       _listenedState = sub.state;
       unawaited(_scheduleAttachmentValidation(reset: true));
-      // 打开会话一律先粘底（F2 真机反馈）：空闲历史会话若不粘底，首帧
+      // 打开会话一律先粘底（真机反馈）：空闲历史会话若不粘底，首帧
       // jump 时快照未到（maxScrollExtent=0 即顶部），快照到达后监听器又因
       // stick=false 早退——页面停在顶部，用户需手动下划。粘底后用户上滚
       // 超过 120px 才解除（监听器语义不变）。
       // 阶段 3 补修（介入点 1 用户实锤"不粘底"）：缓存种子让内容先于任何
       // 状态通知渲染——原靠数据通知触发的 followUntilStable 修正循环（治
       // 懒列表 extent 估算偏差）不再被触发。初始落位必须自带修正循环。
-      // A1-P2/A3-P1：缓存预渲已还原过非贴底记忆时不翻粘底
+      // 缓存预渲已还原过非贴底记忆时不翻粘底
       //（否则温重开的阅读位置必被跳底覆盖）；live 快照比预渲确有新
       // 输出（离开期间会话推进）时仍贴底。
       final preview = _cachePreview;
@@ -1350,11 +1350,11 @@ class _ConversationPageState extends State<ConversationPage> {
       }
       _snapToBottom();
     } catch (e) {
-      // 18075 验收 C（子代理下钻）：lineage-invalid=子会话工作目录≠父任务
-      // 根目录（如 refs/app 子目录），3.16.x CLI 订阅校验拒绝且重试必然
+      // 验收 C（子代理下钻）：lineage-invalid=子会话工作目录≠父任务
+      // 根目录（如 官方 app 源码 子目录），3.16.x CLI 订阅校验拒绝且重试必然
       // 循环失败——人话化；3.17 虽重写解析区，但严格 path 等价校验仍在，
-      // refs/app 子目录场景升级后仍可能被拒（对抗审查 D6b 源码复核）。
-      // 三轮审查 A1/D1：新增三类内部 StateError 的人话映射——不再把
+      // 官方 app 源码 子目录场景升级后仍可能被拒（对抗审查 D6b 源码复核）。
+      // 三轮审查 /：新增三类内部 StateError 的人话映射——不再把
       // 「Bad state:」英文前缀裸给用户，桥自建场景也不再误称"已切换"。
       final raw = '$e';
       final friendly = raw.contains('session-lineage-invalid')
@@ -1367,7 +1367,7 @@ class _ConversationPageState extends State<ConversationPage> {
           ? tr('电脑连接已关闭，请重新连接')
           : '订阅会话失败：$e';
       if (mounted) {
-        // 双写（ A2-P3-1）：loading 态照旧消费 _error；strip 只
+        // 双写：loading 态照旧消费 _error；strip 只
         // 认订阅专档 _syncError——发送/停止失败不再被误标「同步失败」。
         setState(() {
           _error = friendly;
@@ -1431,7 +1431,7 @@ class _ConversationPageState extends State<ConversationPage> {
   bool _renderPending = false;
   static const Duration _renderThrottleWindow = Duration(milliseconds: 40);
 
-  /// 搜索索引刷新节流（ A2-P3-10）：流式期 500ms 上限+尾沿补跳。
+  /// 搜索索引刷新节流：流式期 500ms 上限+尾沿补跳。
   DateTime? _searchRefreshAt;
   Timer? _searchRefreshTrail;
 
@@ -1458,7 +1458,7 @@ class _ConversationPageState extends State<ConversationPage> {
     // 条/appbar 状态）全靠页面重建；旧的"非粘底早退"会让上滑回看历史时
     // 审批横幅永不出现、回合结束后运行态残留。
     final state = _sub?.state;
-    // A5 水位式清理（2026-10-24 修复批）：仅当 config 回显与挂起计划值
+    // 水位式清理（2026-10-24 修复批）：仅当 config 回显与挂起计划值
     // 一致才清挂起——禁"patch 到达即清"（旧回显/桌面端外部改档的 patch
     // 值不同，到达即清会把在途挂起误杀，手机自切档闪烁竞态）。
     final cfgPlan = state?.config?['planEnabled'];
@@ -1498,7 +1498,7 @@ class _ConversationPageState extends State<ConversationPage> {
       unawaited(_scheduleAttachmentValidation());
     }
     if (_searchOpen && state != null) {
-      // A2-P3-10/D3-P2-4：流式期每 40ms 合帧都全量重建搜索
+      // 流式期每 40ms 合帧都全量重建搜索
       // 索引（O(rows×文本)）——搜索刷新自身加宽到 500ms 节流+尾沿补一
       // 次（渲染节流不变；计数最多滞后半秒）。
       final now = DateTime.now();
@@ -1564,7 +1564,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   /// 会话滚动记忆（官方 chatSessionScrollMemory 内存 Map 同义，上限
   /// 200 条）：dispose 存 {稳定 center key, 绝对 offset（锚定还原后
-  /// clamp 校正——非相对锚偏移， A1-P3-9 勘正注释）, 是否贴底}，
+  /// clamp 校正——非相对锚偏移， 勘正注释）, 是否贴底}，
   /// 重进先恢复锚点再恢复位置——前插过历史后裸像素不再冒充绝对坐标。
   static const _scrollMemoryMax = 200;
   static final _scrollMemory = <String,
@@ -1586,7 +1586,7 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
 
-  /// C6：上次构建的键盘 inset（变化检测）。
+  /// 上次构建的键盘 inset（变化检测）。
   double _lastInsetBottom = -1;
 
   // ── 6.2 选分支：顶栏分支标签（工作区级 git 状态，通道放行实证见
@@ -1688,7 +1688,7 @@ class _ConversationPageState extends State<ConversationPage> {
   bool _inProgrammaticWindow() => _programmaticScrollEndSkips > 0;
 
   /// 滚动记忆 upsert（官方 chatSessionScrollMemory 持续保存语义：每次
-  /// 静止落点更新——不依赖退出时机）。 A2-P3-5：remove+assign
+  /// 静止落点更新——不依赖退出时机）。 ：remove+assign
   /// 重排到插入序尾——高频使用的老会话不再比闲置新会话更易被逐出
   /// （LinkedHashMap 对既有 key 赋值不改变位次=按插入序逐出）。
   void _saveScrollMemory() {
@@ -1732,7 +1732,7 @@ class _ConversationPageState extends State<ConversationPage> {
         return;
       }
     } else if (!_stickToBottom) {
-      // A1-P2/A3-P1（温重开还原必被覆盖）：还原过的非贴底
+      // （温重开还原必被覆盖）：还原过的非贴底
       // 记忆不被第二个触发源（live ready / 慢预渲）的跳底+1.2s 粘底
       // 跟随覆盖——阅读位置保持；后续新输出由既有落点回吸语义承接
       //（用户滚到底 48px 内恢复跟随，_doRender 的 stick 门不变）。
@@ -1765,7 +1765,7 @@ class _ConversationPageState extends State<ConversationPage> {
       Duration(milliseconds: 300),
     ]) {
       await Future<void>.delayed(delay);
-      // A1-P3-10：校正跳前查用户接管——300ms 窗口内点 FAB 回底
+      // 校正跳前查用户接管——300ms 窗口内点 FAB 回底
       // （_stickToBottom 已翻真）时不再把视口拽回记忆位置（视觉抖动）。
       if (!mounted || !_scroll.hasClients || _stickToBottom) continue;
       final targetPos = target.clamp(
@@ -1885,7 +1885,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   int get _pendingAttsLen => _pendingAtts.length;
 
-  /// 上传进度 UI 合帧时间戳（ A3-P3-10）。
+  /// 上传进度 UI 合帧时间戳。
   DateTime? _attUiAt;
 
   /// 串行上传队列（官方并发 2，手机端取串行足够）。幂等：已在跑则返回。
@@ -1912,7 +1912,7 @@ class _ConversationPageState extends State<ConversationPage> {
             bytes: next.bytes,
             onProgress: (p) {
               next.progress = p.clamp(0.0, 1.0);
-              // A3-P3-10：20MB 分块上传的每块回调都整页
+              // 20MB 分块上传的每块回调都整页
               // setState——100ms 合帧（终值由循环尾部的统一 setState 兜）。
               final now = DateTime.now();
               if (p >= 1.0 ||
@@ -2020,7 +2020,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     _pumpAttachmentUploads(sessionId);
     final deadline = DateTime.now().add(const Duration(minutes: 5));
-    // A2-P2-1：等待期按 _pendingAtts 实时成员过滤——旧实现轮询
+    // 等待期按 _pendingAtts 实时成员过滤——旧实现轮询
     // 发送瞬间的快照，用户移除的排队态附件（progress=-1）不再被 pump
     // 拾取也永无 error/ready，会挂满 5 分钟才抛「附件上传超时」。移除
     // 即放行（用户意图：不要这个了，让消息先走）。
@@ -2048,7 +2048,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  /// 发起会话压缩：反馈=时间线「正在压缩上下文」标记行（B11 已渲染，
+  /// 发起会话压缩：反馈=时间线「正在压缩上下文」标记行（已渲染，
   /// 本批文案对齐官方）；失败人话提示。
   /// ：ack 非 accepted 族（rejected/failed）时
   /// sendCommand 不抛——此前零反馈（用户按了没反应，恰是本批原病征
@@ -2087,7 +2087,7 @@ class _ConversationPageState extends State<ConversationPage> {
     await _sendText(text, clearInput: true);
   }
 
-  /// B1（官方 ConversationComposer.tsx:1323-1336 对位）：
+  /// （官方 ConversationComposer.tsx:1323-1336 对位）：
   /// 发送前读快照 inputRouting——reject=禁发（人话提示）；choice=held
   /// 态弹「清空队列后发送/保留队列发送」二选一（heldQueueDisposition
   /// 随 sendText 提交）。返回 null=可直发；非 null=应带的 disposition；
@@ -2104,7 +2104,7 @@ class _ConversationPageState extends State<ConversationPage> {
         : 'startNow';
     if (mode == 'reject') {
       final reason = routing is Map ? '${routing['reasonCode'] ?? ''}' : '';
-      // P1 P3-1：闭括号随语言取半/全角（tr 不覆盖全角标点，
+      // 闭括号随语言取半/全角（tr 不覆盖全角标点，
       // hasCjk 判 False——条件式直接选字形，保持 EN 括号成对）。
       throw StateError(
         reason.isEmpty
@@ -2193,7 +2193,7 @@ class _ConversationPageState extends State<ConversationPage> {
     if (fromQueue == null && text.trim() == '/compact') {
       // 命令发出后清输入——此前 "/compact" 残留
       // 在输入框（草稿还会存它），再点一次=busy 期双压缩进 FIFO。
-      // A2-P3-8：语音直发（clearInput=false）路径输入框可能正
+      // 语音直发（clearInput=false）路径输入框可能正
       // 恰残留同一命令文本——按内容判定清理，不误清无关草稿。
       if (clearInput || _input.text.trim() == '/compact') {
         _suppressDraftSync = true;
@@ -2211,7 +2211,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     // 断网消息排队（6.6②）：无桥或链路未在线=断连（90s 后台断连窗口/
     // 冷启动未连/切工作区期/飞行模式）——文本消息入队等重连自动发出，
-    // 不发起注定失败的 RPC。验收修复（18076 反馈#6）：此前只看
+    // 不发起注定失败的 RPC。验收修复（反馈#6）：此前只看
     // bridge==null，飞行模式下桥为恢复保留 → 发送走 45s waitHealthy
     // 超时才失败（转圈很久、第二条也进不了队）。relay 断链后 phase
     // 秒降 reconnecting，以此快速判定（offline/connecting 时桥本就为
@@ -2219,7 +2219,7 @@ class _ConversationPageState extends State<ConversationPage> {
     if (fromQueue == null &&
         _pendingAtts.isEmpty &&
         (app.bridge == null || app.phase == LinkPhase.reconnecting)) {
-      // A1-P2-4：入队在飞哨兵——清输入发生在 await store.add
+      // 入队在飞哨兵——清输入发生在 await store.add
       // （真实文件 IO）之后，双击窗口内第二次 tap 读到未清空输入=同文
       // 条目双入队（重连 drain 双发）。首击已在途即视为本条已受理。
       if (_enqueueingOffline) return true;
@@ -2243,7 +2243,7 @@ class _ConversationPageState extends State<ConversationPage> {
       _suppressDraftSync = true;
       try {
         _input.clear();
-        // 18076 反馈#5：快照必须与输入框同步清空——失败回填路径以
+        // 反馈#5：快照必须与输入框同步清空——失败回填路径以
         // 快照判"等待期新输入"，残留旧值会把正文误入暂存（输入框空=
         // 用户体感"消息消失"）。
         _draftTextSnapshot = '';
@@ -2310,7 +2310,7 @@ class _ConversationPageState extends State<ConversationPage> {
           sessionId = error.sessionId;
         }
         if (!mounted) {
-          // A2-P1-2：建会话已提交（config 已随 createSession
+          // 建会话已提交（config 已随 createSession
           // 消费）——同步清挂起选型，防 _replayQueuedSend 的还原分支把
           // 已消费选型当「未消费」误还原（退页无法 setState，纯字段写，
           // 与附件路径 1804-1812 的成功清理对齐）。
@@ -2357,7 +2357,7 @@ class _ConversationPageState extends State<ConversationPage> {
           await _finishDraftSubmission();
           return true;
         }
-        // A2-P3-2：非附件草稿路径 createSession 成功后清理挂起
+        // 非附件草稿路径 createSession 成功后清理挂起
         // 选型（config 已随建会话消费）——与附件路径 1845-1853 对齐；
         // 旧实现不清，药丸整个首回合保持「挂起」高亮、下次 sendText
         // 还把同值选型重发一遍。
@@ -2402,7 +2402,7 @@ class _ConversationPageState extends State<ConversationPage> {
         // 批⑦（2026-10-23）：mode=权限档、planEnabled=独立开关并行提交
         // （官方 composerSubmissionConfig.ts:35-37 同款；_pendingMode 不再
         // 承载 'plan'——计划从开关来，可为显式 false=关闭会话已开的计划）。
-        // 对抗审查 A1（2026-10-24）：服务端 resolveExecutionState 对
+        // 对抗审查 （2026-10-24）：服务端 resolveExecutionState 对
         // "带 mode 无 planEnabled"的提交按 mode.success⇒false 收敛——
         // 本次提交带 mode 时必须成对冻结当前计划生效值（官方提交瞬间
         // 冻结同款），否则挂起回退场景下计划被静默关闭。
@@ -2432,7 +2432,7 @@ class _ConversationPageState extends State<ConversationPage> {
         // 反馈）——非 accepted/duplicate 抛入既有 catch（回填正文、保留
         // 草稿、错误条可见）。
         _throwIfSendRejected(res);
-        // A3+A5 乐观写回（2026-10-24 修复批）：accepted 即把本次提交的
+        // + 乐观写回（2026-10-24 修复批）：accepted 即把本次提交的
         // 选型写进本地 config——药丸/计划开关立即反映提交值，消灭
         // "accepted 清挂起→config 回显前窗口期回摆"（旧实现计划开关
         // 标记消失再回摆实锤）。服务端 config patch 回显同值零闪烁。
@@ -2519,7 +2519,7 @@ class _ConversationPageState extends State<ConversationPage> {
           // 队列重放的结果未知不是输入框草稿的提交态（条目仍在队列，
           // 幂等 commandId 会在退避后重试）——旧实现把队列正文按
           // in-flight 草稿落盘，重启后误显「结果未知」+可重发正文。
-          // F3（复审）：盘上收口前必须先清内存 _submittedDraftText——
+          // （复审）：盘上收口前必须先清内存 _submittedDraftText——
           // 否则后续任意一次 _saveDraft（键入/附件/再入队）会把队列
           // 正文+in-flight 标记重新写回盘上（污染换触发口复活）。
           _submittedDraftText = null;
@@ -2543,7 +2543,7 @@ class _ConversationPageState extends State<ConversationPage> {
       }
       _submittedDraftText = null;
       _draftResultUnknown = false;
-      // 18076 反馈#5：裸 TimeoutException 怼脸不可读——统一人话（正文
+      // 反馈#5：裸 TimeoutException 怼脸不可读——统一人话（正文
       // 已回填输入框/暂存，草稿可重发）；StateError 剥英文前缀。
       final friendlyError = e is TimeoutException
           ? tr('连接中断，消息未发出，正文已放回输入框')
@@ -2582,7 +2582,7 @@ class _ConversationPageState extends State<ConversationPage> {
       await _saveDraft();
       return false;
     } finally {
-      // 18077 验收#12（Bug J 防御兜底）：字段先行复位——mounted 判定
+      // 验收#12（Bug J 防御兜底）：字段先行复位——mounted 判定
       // 只该影响 setState（防 dispose 后重建 UI），不该让 _sending
       // 在任何路径下滞留 true（发送按钮永转圈+吞掉后续发送）。
       _sending = false;
@@ -2637,7 +2637,7 @@ class _ConversationPageState extends State<ConversationPage> {
         queuedAt: DateTime.now().millisecondsSinceEpoch,
       ),
     );
-    // A2-P2-2：store.add 是真实文件 IO 往返——期间退页后
+    // store.add 是真实文件 IO 往返——期间退页后
     // _input.clear() 打在已 dispose 的 controller 上（debug 抛
     // FlutterError）。条目已持久化，UI 收尾可弃。
     if (!mounted) return;
@@ -2680,13 +2680,13 @@ class _ConversationPageState extends State<ConversationPage> {
     try {
       return await _sendText(entry.text, fromQueue: entry);
     } finally {
-      // A3-P3-8：只要发生过覆盖就还原（旧条件还要求
+      // 只要发生过覆盖就还原（旧条件还要求
       // _pendingModelId != null——快照只带 provider 不带 model 的条目
       // 重放失败后，用户原挂起的 provider 残留为队列快照值）。
       if (cfg != null && _sessionId == null) {
         // 发送链路没消费掉（失败/半途）——还原用户当前挂起值。
-        // A2-P1-2（重放期间退页重复建会话）：字段写不依赖
-        // mounted（18077 同款——mounted 只挡 setState）——此前无守卫
+        // （重放期间退页重复建会话）：字段写不依赖
+        // mounted（同款——mounted 只挡 setState）——此前无守卫
         // 的 setState 在退页后抛异常，drain 的 store.remove 被跳过，
         // 条目留存再次重放=重复建会话+重复首条消息。
         _pendingModelProvider = restore.$1;
@@ -2702,14 +2702,14 @@ class _ConversationPageState extends State<ConversationPage> {
   bool _resultUnknownConverged = false;
   bool _busyResultRecheck = false;
 
-  /// A3：「结果未知」确权回捞——官方 queryConversation
+  /// 「结果未知」确权回捞——官方 queryConversation
   /// CommandsV4 查同一命令（adapter.ts:2065-2078）；accepted/duplicate/
   /// noop=已送达（清横幅+按已提交收尾），failed=未送达（清未知态走
   /// 失败暂存语义），unknown 维持横幅等人工核对。
   Future<void> _recheckLastSendResult() async {
     final sid = _sessionId;
     if (sid == null || _busyResultRecheck) return;
-    // 三轮审查 B1/A2：按钮点击时 context 有效，直接取 scope——不再
+    // 三轮审查 /：按钮点击时 context 有效，直接取 scope——不再
     // 复用草稿链引用（其赋值条件与队列链不同，属隐性耦合）。
     final app = AppStateScope.of(context);
     if (app.bridge == null) return;
@@ -2877,7 +2877,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 消费后清 app.pendingDeepLinkAt，防重复弹。
   bool _deepLinkPromptShown = false;
 
-  /// 深链提示的会话归属（ P2-3：pendingDeepLinkAt 此前无归属，
+  /// 深链提示的会话归属（pendingDeepLinkAt 此前无归属，
   /// 目标会话未打开时残留被下一个打开的无关会话消费——误弹+跳错行）。
   String? _deepLinkPromptShownFor;
 
@@ -2940,7 +2940,7 @@ class _ConversationPageState extends State<ConversationPage> {
     if (_deepLinkPromptShown || _deepLinkPromptShownFor == sessionId) return;
     if (_sub?.state.rows.isEmpty ?? true) return; // 行未就绪，等下一次通知
     final app = AppStateScope.of(context);
-    // B5：导航参数优先（pendingOpenTask 已被 task_center 清空的时序洞）；
+    // 导航参数优先（pendingOpenTask 已被 task_center 清空的时序洞）；
     // 参数只对本页构造传入，归属即本会话，无需再校验 taskId。
     final paramAt = widget.deepLinkAtMs;
     final target = paramAt != null
@@ -2950,15 +2950,15 @@ class _ConversationPageState extends State<ConversationPage> {
     // 标记恒 false，每次重建都排一个无用的 postFrame 回调。
     _deepLinkPromptShown = true;
     if (target == null) return;
-    // 会话归属校验（P2-3a）：通知的目标会话不是本页时不动 pending——
-    // 目标页随后打开时再消费。宽屏 keyed 复用（P2-3b）按会话闩锁。
+    // 会话归属校验（-3a）：通知的目标会话不是本页时不动 pending——
+    // 目标页随后打开时再消费。宽屏 keyed 复用（-3b）按会话闩锁。
     if (target.taskId != sessionId) return;
     _deepLinkPromptShownFor = sessionId;
     app.pendingDeepLinkAt = null;
     app.pendingDeepLinkTaskId = null;
     final rowId = _rowIdNearestMs(target.atMs);
     if (rowId == null) {
-      // P2-3c：零反馈缺陷——给轻提示而非静默吞。
+      // -3c：零反馈缺陷——给轻提示而非静默吞。
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         const SnackBar(content: Text('相关消息不在当前已加载范围')),
       );
@@ -3047,7 +3047,7 @@ class _ConversationPageState extends State<ConversationPage> {
         final state = _sub?.state;
         if (state == null) return;
         var target = latestTurnStartRowId(state.rows);
-        // A2-P3-11：turnHeader 已到、userInput delta 未落的
+        // turnHeader 已到、userInput delta 未落的
         // 窗口期 target 为 null——缺的输入在**新端**而非旧端，等一帧
         // 重查（通常自愈）再考虑拉历史，避免慢链路下连拉多页更早。
         if (target == null) {
@@ -3057,7 +3057,7 @@ class _ConversationPageState extends State<ConversationPage> {
         }
         if (target != null) {
           if (_jumpToRowStart(target)) return;
-          // A3-P3-7：目标在 rows 里但列表尚未挂载（内容未建
+          // 目标在 rows 里但列表尚未挂载（内容未建
           // 完成长按 FAB）——等挂载重试，而不是误报「没有找到」。
           for (var i = 0; i < 10 && mounted && !_scroll.hasClients; i++) {
             await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -3102,7 +3102,7 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _closeConversationSearch() {
-    // P3-5（D-8 批4）：关面板取消防抖尾巴——200ms 内关闭时尾沿仍会把
+    // （批4）：关面板取消防抖尾巴——200ms 内关闭时尾沿仍会把
     // query/命中写回控制器，下次打开残留旧词。
     _searchChangeDebounce?.cancel();
     final active = _search.close().activeMatch;
@@ -3130,7 +3130,7 @@ class _ConversationPageState extends State<ConversationPage> {
   void _refreshConversationSearch({bool reset = false}) =>
       _search.refresh(reset: reset);
 
-  /// 搜索输入防抖（ D1-P2-1/D2-05/D3-P2-4）：每键全量重扫
+  /// 搜索输入防抖：每键全量重扫
   /// （行文本提取+jsonEncode+全文折叠，1200 行上限）——200ms 合并，
   /// 计数条随输入即时、结果与定位随尾沿。
   Timer? _searchChangeDebounce;
@@ -3189,7 +3189,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
   }
 
-  /// F17：窗口内任务菜单动作。
+  /// 窗口内任务菜单动作。
   bool _currentTaskPinned(AppState app) {
     final sessionId = _sessionId;
     if (sessionId == null) return false;
@@ -3320,7 +3320,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 官方 V4ComposerModeControls.tsx:63 权限单选组排除 plan；
   /// 旧 config.mode='plan' 兼容折算为 build+计划开（官方
   /// execution-state.ts resolveExecutionState 同款折算）。
-  /// A3（2026-10-24 修复批）：_appliedMode 退役——accepted 即乐观写回
+  /// （2026-10-24 修复批）：_appliedMode 退役——accepted 即乐观写回
   /// config（writeBackConfig），桌面端外部改档后 config 变化药丸自然跟随。
   String _effectiveModeOf(ConversationState? state) {
     final cfgMode = '${state?.config?['mode'] ?? ''}';
@@ -3406,7 +3406,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 用户 2026-10-17 提议，点击开/再点关）。首次开启拉一次额度快照。
   void _toggleUsageCard() {
     setState(() => _usageCardOpen = !_usageCardOpen);
-    // 18077 验收#2：卡关期间套餐可能已切换（挂起选中/发送提交），
+    // 验收#2：卡关期间套餐可能已切换（挂起选中/发送提交），
     // 开卡时档位与缓存不一致即作废旧快照重拉——否则永远吃旧档数据。
     if (_usageCardOpen &&
         _entCache != null &&
@@ -3422,7 +3422,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 用户反馈：模型/套餐切换后额度卡自动刷新（不等手动关/开）。
   /// 由模型选择的 onPick 回调（_saveDraft 后）和会话 config 变更触发。
   void _refreshEntitlementForPlanChange() {
-    // 18077 验收#2：无论卡开关都作废旧档缓存——卡关时不清会让下次
+    // 验收#2：无论卡开关都作废旧档缓存——卡关时不清会让下次
     // 开卡复用旧档快照（toggleUsageCard 的档位比对是双保险）。
     _entCache = null;
     if (_usageCardOpen) {
@@ -3490,7 +3490,7 @@ class _ConversationPageState extends State<ConversationPage> {
         'resetType': resetType,
       });
       messenger.showSnackBar(const SnackBar(content: Text('已重置，额度刷新中')));
-      // A3-P3-1：30s RPC 窗口内退页——旧无守卫的 setState 抛
+      // 30s RPC 窗口内退页——旧无守卫的 setState 抛
       // dispose 异常被 catch 捕获，误报「重置失败：setState() called
       // after dispose()」（核销其实已成功）。
       if (!mounted) return;
@@ -3534,7 +3534,7 @@ class _ConversationPageState extends State<ConversationPage> {
       if (mounted) {
         setState(() {
           _entCache = res is Map ? res.cast<String, dynamic>() : null;
-          // 18077 验收#2：记住快照所属档位，供开卡时比对失效。
+          // 验收#2：记住快照所属档位，供开卡时比对失效。
           _entCachePlanKind = _entPlanKind();
           _entLoadedAt = DateTime.now();
           _entLoading = false;
@@ -3562,7 +3562,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
   /// 用户反馈（2026-10-31）：状态环/用量卡跟随当前模型的套餐——此前
   /// 硬编码 individual-coding-plan，切到 Start Plan 模型后额度不变。
-  /// 18077 验收#2 修正：当前会话 config 优先（多会话不同套餐互不串档），
+  /// 验收#2 修正：当前会话 config 优先（多会话不同套餐互不串档），
   /// 草稿页用挂起 provider；两者皆无才扫全局会话保底。
   String _entPlanKind() => inferEntPlanKind(
         currentProvider: _sessionId == null
@@ -3888,7 +3888,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     // 立即下发：先挂起显示（药丸即时反馈），accepted 后转本地已生效。
     setState(() => _pendingMode = picked);
-    // 对抗审查 A1（2026-10-24）：switchCollaborationMode 无 planEnabled
+    // 对抗审查 （2026-10-24）：switchCollaborationMode 无 planEnabled
     // 字段，服务端 resolveExecutionState 对任何 success 态权限档都会把
     // planEnabled 置 false（execution-state.ts:12-23）——切档必然关计划
     // （协议无法成对携带，官方桌面靠"切档只改草稿、提交时成对冻结"避开
@@ -3896,7 +3896,7 @@ class _ConversationPageState extends State<ConversationPage> {
     // 时计划若开着，提示用户并挂起 planEnabled=false 随下条提交确认——
     // 不让计划静默消失。
     final planWasOn = _planEnabledOf(state);
-    // A1-P3-5：权限单选值域只有 build/edit/guarded/yolo 四档
+    // 权限单选值域只有 build/edit/guarded/yolo 四档
     // ——`picked != 'plan'` 恒真（三处重复的恒真判断误导读者以为存在
     // plan 提交路径），删除。
     if (planWasOn) {
@@ -3908,10 +3908,10 @@ class _ConversationPageState extends State<ConversationPage> {
       if (!mounted) return;
       final status = res is Map ? '${res['status']}' : '';
       if (status == 'accepted' || status == 'duplicate' || status == 'noop') {
-        // A3 乐观写回（2026-10-24 修复批）：accepted 即落本地 config，
+        // 乐观写回（2026-10-24 修复批）：accepted 即落本地 config，
         // 药丸立即反映提交档；服务端回显同值零闪烁；桌面端外部改档由
         // config 变化自然跟随（_appliedMode 退役——旧记账永不失效，
-        // 外部改档后药丸滞留旧值即 A3 病灶）。写回落空（无快照）时
+        // 外部改档后药丸滞留旧值即 病灶）。写回落空（无快照）时
         // 挂起保留作显示载体（随下条提交重携，同值无害）。
         final wbTarget = _sub?.state ?? _cachePreview;
         final wrote =
@@ -3964,14 +3964,14 @@ class _ConversationPageState extends State<ConversationPage> {
     if (sessionId == null) return;
     final kind = '${row['kind']}';
     final hasEntity = '${row['entityId'] ?? ''}'.trim().isNotEmpty;
-    // H1（审计）：conversationRowTargetSchema 的 entityId 必填（strict），
+    // （审计）：conversationRowTargetSchema 的 entityId 必填（strict），
     // 官方 UI 从不发无 entityId 的 target——旧快照行缺 entityId 时只留
     // 纯本地操作（复制），协议操作入口禁用。
     final target = {
       'rowId': row['rowId'],
       if (hasEntity) 'entityId': row['entityId'],
     };
-    // A3-P3-2：await RPC 后用 context 查 ScaffoldMessenger 会
+    // await RPC 后用 context 查 ScaffoldMessenger 会
     // 抛 deactivated-widget（与 _onTaskMenu 同款）——入口先取。
     final rowMessenger = ScaffoldMessenger.of(context);
     void snack(String t) => rowMessenger.showSnackBar(
@@ -3979,7 +3979,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
     Future<void> run(Future<dynamic> Function() op) async {
       try {
-        // ack status 检查（对抗审查 A2）：sendCommand 对 rejected/stale
+        // ack status 检查（对抗审查）：sendCommand 对 rejected/stale
         // 耗尽只打日志正常返回——被拒不能当成功。
         final res = await op();
         if (res is Map && res['status'] is String) {
@@ -4006,7 +4006,7 @@ class _ConversationPageState extends State<ConversationPage> {
           },
         ),
       if (kind == 'assistantText' && row['state'] != 'streaming') ...[
-        // H1（target schema entityId 必填）：缺 entityId 的旧快照行禁用
+        // （target schema entityId 必填）：缺 entityId 的旧快照行禁用
         // 协议入口（服务端 strict 校验必拒；纯本地操作只留复制）。
         if (hasEntity)
           (
@@ -4157,7 +4157,7 @@ class _ConversationPageState extends State<ConversationPage> {
   /// 调用构造=官方 openXxxPreview（video/pdf/text 必须 target{rowId,
   /// entityId=消息id}+attachmentIndex 成对，image 可 ref-only）。
   /// 工具结果 ref（toolCall 行输出）不在授权面——previewRefNotAuthorized
-  /// 是官方设计边界（阶段 2 遗留 P1 定论， 批）。
+  /// 是官方设计边界（阶段 2 遗留 定论， 批）。
   Future<void> _openAttachmentAt(Map<String, dynamic> row, int index) async {
     final sessionId = _sessionId;
     if (sessionId == null) return;
@@ -4216,7 +4216,7 @@ class _ConversationPageState extends State<ConversationPage> {
       );
       if (!mounted) return;
       if (isTextMaterial) {
-        // A1-P2-3/A3-P2-2：attachmentRead 返回原始文件字节
+        // attachmentRead 返回原始文件字节
         // （UTF-8）——String.fromCharCodes 逐字节当码元，中文/emoji 全
         // 乱码；allowMalformed 容忍残缺尾字节。
         final text = utf8.decode(data.bytes, allowMalformed: true);
@@ -4335,7 +4335,7 @@ class _ConversationPageState extends State<ConversationPage> {
     required String title,
     required bool readOnly,
   }) async {
-    // A1-P3-8/A3-P2-3：进入子页前留 app 引用——子页 pop 后
+    // 进入子页前留 app 引用——子页 pop 后
     // 其 dispose 会清 viewingSessionId，父页（常驻其下）无人回填=正在
     // 查看的会话失去通知抑制（用户盯着看仍发系统通知）。返回时只在
     // 无人认领（null）时恢复本会话，不抢新顶层的上报。
@@ -4369,7 +4369,7 @@ class _ConversationPageState extends State<ConversationPage> {
     // 6.2 选分支：顶栏分支标签懒加载（缓存键守卫，见方法注）。
     _maybeLoadBranchInfo(app2);
     final state = _sub?.state;
-    // C6（2026-10-19 审查）：键盘弹起（insets 变化）时粘底会话重新贴底
+    // （2026-10-19 审查）：键盘弹起（insets 变化）时粘底会话重新贴底
     // ——原唯一触发是数据通知，流式静默期弹键盘会把输入栏压到内容之下。
     // 只加触发；12 帧自驱动核心与拖拽即停阀不动（介入点 1 修出的粘底
     // 机制一行不改）。
@@ -4513,7 +4513,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 openSession: _openConversationSession,
               ),
             ),
-          // F17（WR 对齐）：窗口内任务操作菜单（桌面 TaskActionMenu 对位）。
+          // （WR 对齐）：窗口内任务操作菜单（桌面 TaskActionMenu 对位）。
           if (state != null && _sessionId != null)
             PopupMenuButton<String>(
               key: const ValueKey('task-menu'),
@@ -4570,7 +4570,7 @@ class _ConversationPageState extends State<ConversationPage> {
               onClose: _closeConversationSearch,
               onRetry: _search.retry,
             ),
-          // 桥降级/恢复期反馈（P2-4 统一叙事的一部分）：会话页不再静默
+          // 桥降级/恢复期反馈（统一叙事的一部分）：会话页不再静默
           if (state != null && app2.phase != LinkPhase.online)
             Material(
               color: context.colors.linkBlue.withValues(alpha: AppAlpha.light),
@@ -4589,7 +4589,7 @@ class _ConversationPageState extends State<ConversationPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        // D2（2026-10-26 断线批）：relay 已连而桥未建时
+                        // （2026-10-26 断线批）：relay 已连而桥未建时
                         // "连接恢复中"是假话——横幅说正在恢复工作区；
                         // 其余档的括号内容来自 computeStatusDetail（不再
                         // 出现空括号——此前 error/reconnecting 档返回空串）。
@@ -4616,7 +4616,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   !_sub!.hasLiveFrames)
             Material(
               key: const ValueKey('cache-sync-strip'),
-              // A2-P3-1：strip 只认订阅错误专档（_syncError）——
+              // strip 只认订阅错误专档（_syncError）——
               // 发送/停止失败渗入 _error 时不得被误标成「同步失败」。
               color:
                   (_syncError == null
@@ -4664,7 +4664,7 @@ class _ConversationPageState extends State<ConversationPage> {
           // 回合失败可见性（介入点 2 实锤修复）：createSession 已受理但
           // 服务端约 200ms 打挂回合（phase=error，如选了不可用模型）——
           // 此前零提示用户只能干等。与发送错误同横幅。
-          // A1（2026-10-19 审查）：原门禁 `_sub?.state != null` 把草稿态
+          // （2026-10-19 审查）：原门禁 `_sub?.state != null` 把草稿态
           // （无订阅）的发送错误全部吞掉——createSession 本身失败时界面
           // 退回"发送第一条消息"零提示。现在 _error 在草稿态或已有订阅
           // 时都渲染；已有会话的 phase=error 路径语义不变（订阅失败仍由
@@ -4752,7 +4752,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       : null,
                   // 验收（2026-10-18）：内容不足一屏时列表不参与手势竞争，
                   // 竖向下滑由此兜底接收 → 收起输入法（可滚动时列表胜出，
-                  // 既有 F19 滚动收键盘路径不变）。
+                  // 既有 滚动收键盘路径不变）。
                   onVerticalDragEnd: (_) => _inputFocusNode.unfocus(),
                   child: Stack(
                     children: [
@@ -4773,7 +4773,7 @@ class _ConversationPageState extends State<ConversationPage> {
                               : _buildMessageList(state);
                         }(),
                       ),
-                      // F15：回到底部（官方常见聊天 UX；回溯历史后一键回底）。
+                      // 回到底部（官方常见聊天 UX；回溯历史后一键回底）。
                       // 2026-10-22 用户反馈补：悬浮球可拖动、松手吸左右边
                       // （tap=跳底，pan=拖动，手势不冲突）。
                       // 2026-10-25 问题②：缓存预渲期也要有——冻结重进
@@ -4859,7 +4859,7 @@ class _ConversationPageState extends State<ConversationPage> {
                                 if (total.distance < 4) return; // 抖动死区
                                 setState(() {
                                   _fabDragging = Offset(
-                                    // A2-P3-7/A3-P3-6：视口 <48px
+                                    // 视口 <48px
                                     // 时上限为负=clamp 抛 ArgumentError
                                     // ——上限先钳到 ≥0。
                                     (_fabDragStartPos!.dx + total.dx).clamp(
@@ -4976,7 +4976,7 @@ class _ConversationPageState extends State<ConversationPage> {
             ),
           ),
           // 配额横幅（官方 ConversationQuotaBanner 手机版；快照陈旧>10min
-          // 才重拉——外部 API，避免每次进页都打；失败后按 A4 退避压制）。
+          // 才重拉——外部 API，避免每次进页都打；失败后按 退避压制）。
           Builder(
             builder: (_) {
               final stale = entitlementShouldReload(
@@ -4990,7 +4990,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   if (mounted) _loadEntitlement();
                 });
               }
-              // PF-1 修复批：官方总门——活跃 provider 为 Start Plan 家族
+              // 修复批：官方总门——活跃 provider 为 Start Plan 家族
               // 且与快照一致才出桶式横幅（Coding Pro 载荷整路拦截）；
               // 低额提醒走"展示即记录"持久化（UiPrefs，官方 reminderStore
               // 语义），本页实例已展示过的键继续显示（owner 语义）。
@@ -5096,7 +5096,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
           // 2026-10-22：数据源兼容缓存预渲（订阅种子到达前的打开瞬间
 
-          // 信息条常驻，不闪没；视觉验收 S03 工装同路径）。
+          // 信息条常驻，不闪没；视觉验收 工装同路径）。
           if (state != null || _cachePreview != null)
             InfoRow(
               state: state ?? _cachePreview!,
@@ -5318,7 +5318,7 @@ class _ConversationPageState extends State<ConversationPage> {
               ),
               selectionPending:
                   _pendingModelId != null || _pendingThought != null,
-              // A1-P3-7：面板数据源与药丸同用 effState（含缓存
+              // 面板数据源与药丸同用 effState（含缓存
               // 回落）——离线/缓存首帧点开不再显示空「模型/思考档」。
               onSelectionTap: () => _openModelSheet(effState),
               onAdd: _sending ? null : _showAddSheet,
@@ -5518,7 +5518,7 @@ class _ConversationPageState extends State<ConversationPage> {
     _subscribe(sessionId);
   }
 
-  /// A2 暂存恢复：插入光标处（输入框可能已有新内容，不整体替换）。
+  /// 暂存恢复：插入光标处（输入框可能已有新内容，不整体替换）。
   void _restoreUnsentDraft() {
     final t = _unsentDraft;
     if (t == null || t.isEmpty) return;
@@ -5568,10 +5568,10 @@ class _ConversationPageState extends State<ConversationPage> {
   List<Map<String, dynamic>> _cachedRowsRef = const [];
   int _cachedDataVersion = -1;
 
-  /// 上次投影行数（ A1-P3-4：行数回退才触发 ViewStore 裁剪）。
+  /// 上次投影行数（行数回退才触发 ViewStore 裁剪）。
   int _lastRowCount = 0;
 
-  /// R1-part2：deltas 对 rows 原地变更，identical 永真——必须以
+  /// -part2：deltas 对 rows 原地变更，identical 永真——必须以
   /// state.dataVersion 为第一失效键（引用同一性仅作辅助）。
   bool _cachedItemsIdentical(
     List<Map<String, dynamic>> rows,
@@ -5609,7 +5609,7 @@ class _ConversationPageState extends State<ConversationPage> {
         final items = cachedHit
             ? _cachedChatItems
             : _rebuildChatItems(state.rows, state);
-        // A1-P3-4：行数回退（编辑重发/回滚的 row.removed）时
+        // 行数回退（编辑重发/回滚的 row.removed）时
         // 裁剪 ViewStore 页面级 Map（只增不减=长会话单调驻留）；行数
         // 增长不裁（流式常态）。
         if (state.rows.length < _lastRowCount) {
@@ -5757,7 +5757,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 _lastTurnHeaderId = intOf(item.work.header?['rowId']);
               }
               // 轮距（对抗审查收敛项 2026-10-22 对位官方 56=pt-14）：
-              // 候选 15 验收 B5 用户拍板紧凑优先——轮顶 56→28（手机档
+              // 候选 15 验收 用户拍板紧凑优先——轮顶 56→28（手机档
               // 减半；轮内首条 20/条目间 16 不变）。官方节奏在手机长会话
               // 里观感过松（真机实测轮间 ≈84dp 起步）。
               final startsTurn = item is UserItem;
@@ -5786,7 +5786,7 @@ class _ConversationPageState extends State<ConversationPage> {
                     searchReveal:
                         _activeSearchMatch?.rowId ==
                         intOf(item.row['rowId']),
-                    // 18077 验收#11（Bug H）：提问内容同享词级高亮。
+                    // 验收#11（Bug H）：提问内容同享词级高亮。
                     searchQuery: _searchOpen
                         ? _searchController.text.trim()
                         : null,
@@ -5817,7 +5817,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       : null,
                   openSession: _openConversationSession,
                   onLiveCollapsedChanged: (collapsed) {
-                    // B1-P3-4：与 TurnBar._turnId 同源
+                    // 与 TurnBar._turnId 同源
                     // collapseKeyId（无头半截回合按段内首行 rowId）——侧写键
                     // 与读键不一致会让覆盖写进孤儿 -1 键。
                     _liveCollapsedByRow[item.work.collapseKeyId] = collapsed;
@@ -5834,7 +5834,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   itemsByCard: _fileCardItems,
                   openSession: _openConversationSession,
                 ),
-                // B2-1：标记行渲染收敛 TimelineMarkerDivider
+                // 标记行渲染收敛 TimelineMarkerDivider
                 //（段内 mid-turn compact 同款，两处不漂移）。
                 TimelineMarkerItem() => TimelineMarkerDivider(
                   label: item.label,

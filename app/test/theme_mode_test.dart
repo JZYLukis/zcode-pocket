@@ -1,4 +1,4 @@
-// 深色模式批2-1：主题档位切换状态机（dark-mode-plan §2 批2：
+// 深色模式批2-1：主题档位切换状态机（dark-mode-plan 批2：
 // ui_prefs 读写/三档解析/重启保持 + 闸门「切换/重启路径日志断言」的
 // 测试侧等价——widget 断言即时生效）。
 import 'package:flutter/material.dart';
@@ -92,7 +92,7 @@ void main() {
 
     // system（默认档）+系统浅 → 深色图标。
     expect(iconOf(), Brightness.dark);
-    // 系统切深 → 注解必须翻转（A-1：原实现不刷新）。
+    // 系统切深 → 注解必须翻转（原实现不刷新）。
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     await tester.pump();
     expect(iconOf(), Brightness.light, reason: '系统翻深后状态栏图标应变浅');

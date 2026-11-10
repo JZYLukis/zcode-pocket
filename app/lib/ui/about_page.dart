@@ -178,7 +178,7 @@ class _AboutZcodePocketPageState extends State<AboutZcodePocketPage> {
               color: context.colors.brand,
               borderRadius: BorderRadius.circular(AppRadius.block),
             ),
-            // 字阶守卫（R3）：标记字号走 uiXl；Container 宽高给出紧约束，
+            // 字阶守卫：标记字号走 uiXl；Container 宽高给出紧约束，
             // Padding 内收后 FittedBox 真正放大到约 50% 块宽（视觉代理
             // 复核：此前 FittedBox 在松约束下只守字号、实际未放大）。
             child: Padding(

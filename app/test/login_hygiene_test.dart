@@ -8,7 +8,7 @@ import 'package:zcode_pocket/ui/login_page.dart';
 /// 设备"（zcode-web-remote-last-device-sid/mid，官方 clearAll 不清）
 /// 全存在 localStorage，还会用 replaceState 把过期 sid 写进当前 URL。
 /// 残留会让页面自动恢复旧登录、带过期 SID 连中继吃 WRONG_PARAM=
-/// 「手机连接已失效」失败卡死循环（18079 真机反馈①实证）。
+/// 「手机连接已失效」失败卡死循环（真机反馈①实证）。
 /// 状态机两段式：首个官方域 finish 只消费清场窗口（不置 ready——
 /// 旧一阶段版在置位与 wipe 求值间留窗口，700ms 轮询可抢读旧 token）；
 /// 清场+导航回规范地址+二次清全部落定后 markWipeComplete 才放行取
@@ -49,7 +49,7 @@ void main() {
       kLoginWipeJs,
       contains("localStorage.removeItem('oauth:active_provider')"),
     );
-    // 机制修正（审查 M1）：官方 web 端零 indexedDB 会话用途——有效
+    // 机制修正（审查）：官方 web 端零 indexedDB 会话用途——有效
     // 成分是 localStorage.clear()（根治点：官方页自己不清的 last-device
     // 两键也在其中，页面无从自动恢复旧设备会话）。纯同步、无 Promise
     //（Android evaluateJavascript 不等 Promise，异步段会被紧随的导航
@@ -65,7 +65,7 @@ void main() {
         reason: '各清理段独立 catch');
   });
 
-  test('登录-only 进入合成格式合法占位参数（18083 ①根因：部署版无参=恒失败卡）', () {
+  test('登录-only 进入合成格式合法占位参数（①根因：部署版无参=恒失败卡）', () {
     final uri = loginTargetUri(const {});
     expect(uri.host, 'zcode.z.ai');
     expect(uri.path, '/remote/v4');
@@ -82,7 +82,7 @@ void main() {
       isTrue,
       reason: 'mid 须为标准 UUID 格式',
     );
-    // 18084 实证：app_version 按官方已发布版本白名单校验——'app'=失败卡、
+    // 实证：app_version 按官方已发布版本白名单校验——'app'=失败卡、
     // '0.0.0'/'1.0.0'=Not Found，必须是真实发布版本号形态（如 3.17.1）。
     expect(
       RegExp(r'^\d+\.\d+\.\d+$').hasMatch(q['app_version'] ?? ''),
@@ -166,7 +166,7 @@ void main() {
     );
   });
 
-  // P1-1：Android WebView evaluateJavascript 对字符串结果返回
+  // Android WebView evaluateJavascript 对字符串结果返回
   // JSON 编码形态（外层引号+内层引号 \" 转义，webview_flutter_android
   // 4.14.1 实证）——只剥外层引号不反转义，oauth:<provider>:user_info 的
   // jsonDecode 必败 → identity 恒 null → bigmodel 每次重登生成新账号。

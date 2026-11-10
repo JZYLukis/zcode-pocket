@@ -232,7 +232,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     // 跨测试静态滚动记忆会在 50/300ms 校正窗口内拽回旧视口（本测试
-    // 的展开交互恰落在窗口内）——先清（同 S11 游览场景先例）。
+    // 的展开交互恰落在窗口内）——先清（同 游览场景先例）。
     ConversationPage.debugResetScrollMemory();
     final longText = '${'上下文行\n' * 12}tail needle';
     final app = _SearchApp(
@@ -511,7 +511,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 18077 验收#11（Bug H）：提问内容同享词级高亮——搜索激活时提问
+  // 验收#11（Bug H）：提问内容同享词级高亮——搜索激活时提问
   // 气泡走 user-search-highlight 渲染路径（修前仅 assistant 有高亮，
   // 提问命中只有行级定位效果）。
   testWidgets('提问气泡搜索高亮：命中词走词级高亮渲染', (tester) async {

@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:async';
 import 'dart:convert';
 
@@ -85,13 +89,13 @@ class RelayClient implements RelayConnection {
   final CompanionConnectionParams params;
   final void Function(String line)? onLog;
 
-  /// WS 连接超时（P1-3 附条/F2-P1-1：黑洞网络下 Upgrade
+  /// WS 连接超时（附条/：黑洞网络下 Upgrade
   /// 永不落定，无超时则 `_connectInFlight` 卡死至内核 TCP 超时 ~2min，
   /// poke/重连定时器全被互斥闸死）。对齐 V2 的 ackTimeout=15s 档；
   /// 测试可注短。
   final Duration wsConnectTimeout;
 
-  /// 认证超时（P3-5）：auth_init 发出后服务器持续沉默时 V1
+  /// 认证超时：auth_init 发出后服务器持续沉默时 V1
   /// 停在 authenticating 无限期（心跳只在拿到 pair_status 后才启动，此前
   /// 无任何定时器可救）。对齐 V2 的 handshakeDeadline 语义；测试可注短。
   final Duration handshakeTimeout;
@@ -141,10 +145,10 @@ class RelayClient implements RelayConnection {
   Timer? _reconnectTimer;
   Timer? _rewaitTimer;
 
-  /// F1 测试缝：出站帧观察者。
+  /// 测试缝：出站帧观察者。
   void Function(Map<String, dynamic>)? _debugSendSink;
 
-  /// 回前台探针看门狗（fullsweep-fix2 F1）：后台静默/慢心跳期入站天然
+  /// 回前台探针看门狗（fullsweep-fix2）：后台静默/慢心跳期入站天然
   /// 陈旧，poke 的 25s 死链阈值会把「刚回前台」误判成死链 → 整链重连
   /// +桥重开（V1 老档案每次退后台>25s 必触发）。V2 同款语义：先探针、
   /// 3s 无应答才重连。
@@ -184,7 +188,7 @@ class RelayClient implements RelayConnection {
 
   @override
   Future<void> start() async {
-    // P3-6：dispose 后不得复活——dispose 已 close 两个
+    // dispose 后不得复活——dispose 已 close 两个
     // controller，旧实现重置 `_disposed=false` 后首个 payload add 即
     // StateError（API 陷阱）。生命周期一次性，重建栈走新 RelayClient
     //（生产调用面 computer_stack 每栈新建，不受影响）。
@@ -199,7 +203,7 @@ class RelayClient implements RelayConnection {
     if (_connectInFlight || _disposed) return;
     _connectInFlight = true;
     final generation = ++_socketGeneration;
-    // finally 释放互斥（P1-1：黑洞网络下 connect 卡在
+    // finally 释放互斥（黑洞网络下 connect 卡在
     // await socket.ready 永不落定，此前 _connectInFlight=false 在各分支
     // 逐处手写，悬挂路径漏放 → poke/重连定时器被互斥闸死，永久卡在
     // connecting）。
@@ -208,7 +212,7 @@ class RelayClient implements RelayConnection {
       _handshakeDeadline = null;
       await _socketSub?.cancel();
       _socketSub = null;
-      // P3-4：web_socket 对死 socket 的 close 可抛
+      // web_socket 对死 socket 的 close 可抛
       // SocketException/WebSocketException——fire-and-forget 必须接住，
       // 否则成为 zone 级未处理错误噪音。
       _socket?.sink.close().catchError((_) {});
@@ -226,11 +230,11 @@ class RelayClient implements RelayConnection {
         await socket.ready;
       } catch (e) {
         _log('[relay] connect failed: $e');
-        // P2-3（阶段 2 波次 3c）：首连 DNS 未就绪（宿主网络慢启动）等瞬态
+        // （阶段 2 波次 3c）：首连 DNS 未就绪（宿主网络慢启动）等瞬态
         // 网络错误不进终态——此前 relay-unavailable 终态后不重试，真机
         // Wi-Fi 慢启动场景会卡死在"连接失败"。按瞬态退避重连。
         // TimeoutException=wsConnectTimeout 到点（黑洞悬挂，
-        // F2-P1-1），文案不含 "timed out" 故显式判定。
+        // ），文案不含 "timed out" 故显式判定。
         if (generation == _socketGeneration &&
             !_wasPaired &&
             (e is TimeoutException || _isTransientConnectError('$e'))) {
@@ -279,7 +283,7 @@ class RelayClient implements RelayConnection {
         'device_sid': params.deviceSid,
         'meta': {
           'platform': companionPlatformName(),
-          // QR 无 app_version 时兜底 'unknown'（P3-2/F3-P3-11）
+          // QR 无 app_version 时兜底 'unknown'
           // ——旧兜底 'web' 是字面量冒充版本号，桌面端"已连接客户端"排障
           // 误导。
           'version': params.appVersion ?? 'unknown',
@@ -287,7 +291,7 @@ class RelayClient implements RelayConnection {
         },
         'client_ts': DateTime.now().millisecondsSinceEpoch,
       });
-      // 握手 deadline（P3-5）：服务器持续沉默（含回未处理
+      // 握手 deadline：服务器持续沉默（含回未处理
       // 错误码的静默变体）时按超时转重连，不再无限期停在 authenticating。
       _handshakeDeadline?.cancel();
       _handshakeDeadline = Timer(handshakeTimeout, () {
@@ -312,7 +316,7 @@ class RelayClient implements RelayConnection {
     try {
       socket.sink.add(text);
     } catch (_) {
-      // P3-10：已关闭 sink 上的 add 抛 StateError——重连/心跳
+      // 已关闭 sink 上的 add 抛 StateError——重连/心跳
       // 机制会兜住，异常不得从定时器回调/业务调用方同步逃逸。
     }
   }
@@ -334,7 +338,7 @@ class RelayClient implements RelayConnection {
 
   @override
   void sendPayload(Map<String, dynamic> payload) {
-    // P3-6：dispose 后调用不得把载荷塞进死队列（V2 已有同款
+    // dispose 后调用不得把载荷塞进死队列（V2 已有同款
     // 守卫）。
     if (_disposed) return;
     if (state != RelayState.paired || _socket == null) {
@@ -342,7 +346,7 @@ class RelayClient implements RelayConnection {
         _log('[relay] queued (state=$state): ${payload['zcode_type']}');
         _outboundQueue.add(payload);
       } else {
-        // A6① 顺手修（2026-10-24 修复批）：V1 同病——溢出静默丢弃留痕。
+        // 顺手修（2026-10-24 修复批）：V1 同病——溢出静默丢弃留痕。
         _log('[relay] outbound queue overflow (100), drop: '
             '${payload['zcode_type'] ?? payload['type'] ?? 'payload'}');
       }
@@ -392,7 +396,7 @@ class RelayClient implements RelayConnection {
           'device_sid': params.deviceSid,
           'proof': calculateProof(
             passHash: params.passHash,
-            // P3-8：服务端发非字符串 nonce 时 `as String?`
+            // 服务端发非字符串 nonce 时 `as String?`
             // 在 onData 内抛 TypeError→未捕获 zone 异常——安全取值。
             nonce: frame['nonce'] is String ? frame['nonce'] as String : '',
             role: 'terminal',
@@ -403,7 +407,7 @@ class RelayClient implements RelayConnection {
         break;
       case 'auth_ack':
       case 'pair_status_ack':
-        // P3-6：auth_ack 校验 device_sid（V2 既有严格语义对齐
+        // auth_ack 校验 device_sid（V2 既有严格语义对齐
         // ——多电脑局域网内跨设备误配对防护；仅在服务端回带该字段且不匹配
         // 时忽略，兼容不回带的旧中继）。
         if (frame['type'] == 'auth_ack' &&
@@ -412,7 +416,7 @@ class RelayClient implements RelayConnection {
           _log('[relay] auth_ack device_sid mismatch, ignored');
           return;
         }
-        // P3-8：非字符串 pair_status。auth_ack 不得按 null 忽略——旧实现
+        // 非字符串 pair_status。auth_ack 不得按 null 忽略——旧实现
         // 在 _applyPairStatus(null) 里先取消握手 deadline 再分支，结果挂在
         // authenticating 无任何定时器（永久死态）；按 waiting 容错（30s
         // waitingTimer 给出 invalid-mobile-connection 终态与重试入口），
@@ -442,7 +446,7 @@ class RelayClient implements RelayConnection {
   }
 
   void _applyPairStatus(String? status) {
-    _handshakeDeadline?.cancel(); // 任意配对状态 ACK=握手完成（F3-P3-5）
+    _handshakeDeadline?.cancel(); // 任意配对状态 ACK=握手完成
     _lastPairStatusAckAt = DateTime.now();
     _staleProbeSent = false;
     if (status == 'waiting') {
@@ -473,7 +477,7 @@ class RelayClient implements RelayConnection {
     }
   }
 
-  /// 瞬态连接错误判定（P2-3）：DNS 未解析/网络未就绪/连接被重置等。
+  /// 瞬态连接错误判定：DNS 未解析/网络未就绪/连接被重置等。
   static bool _isTransientConnectError(String text) {
     final t = text.toLowerCase();
     return t.contains('failed host lookup') ||
@@ -530,7 +534,7 @@ class RelayClient implements RelayConnection {
       _socket?.sink.close().catchError((_) {});
       return;
     }
-    // P3-5/F2-P3-8：未处理错误码（WRONG_PARAM/INTERNAL/未来
+    // 未处理错误码（WRONG_PARAM/INTERNAL/未来
     // 枚举）此前静默忽略——打一行漂移信号日志（只观察不拦截；连接停滞
     // 由握手 deadline 兜底，错误帧后服务端通常还会主动 close）。
     _log('[relay] 未处理错误码（忽略）：$code $message');
@@ -546,7 +550,7 @@ class RelayClient implements RelayConnection {
     final mapped = relayCloseReason(code);
     _log('[relay] closed code=$code reason=$reason mapped=$mapped');
     if (_intentionallyClosed) return;
-    // P3-7：4009 close code 与 KICKED 帧同源（会话被其他终端
+    // 4009 close code 与 KICKED 帧同源（会话被其他终端
     // 接管）——旧实现经 `_wasPaired` 分支无限重连，两台手机互踢时形成
     // 慢速乒乓。并入 KICKED 帧路径同款 5 分钟自救预算。
     if (mapped == 'session-conflict') {
@@ -692,7 +696,7 @@ class RelayClient implements RelayConnection {
     if (_disposed || _intentionallyClosed) return;
     if (state == RelayState.paired) {
       if (DateTime.now().difference(_lastInboundAt) > _deadLinkThreshold) {
-        // F1：后台静默/30s 慢心跳下入站天然陈旧——先探针（pair_status
+        // 后台静默/30s 慢心跳下入站天然陈旧——先探针（pair_status
         // 查询），3s 内有任一入站帧即健康；无应答才重连（V2 poke 同款，
         // 替代旧的「陈旧即整链重连」，修每次回前台必重挂的回归）。
         if (_resumeProbeTimer != null) return; // 探针在飞，等看门狗裁决
@@ -813,19 +817,19 @@ class RelayClient implements RelayConnection {
   @visibleForTesting
   void debugSetRelayState(RelayState next) => _setState(next);
 
-  /// F1 测试缝：把入站时间钉到过去（模拟后台静默期陈旧）。
+  /// 测试缝：把入站时间钉到过去（模拟后台静默期陈旧）。
   @visibleForTesting
   void debugAgeInbound(Duration age) {
     _lastInboundAt = DateTime.now().subtract(age);
   }
 
-  /// F1 测试缝：捕获出站帧（探针断言用）。
+  /// 测试缝：捕获出站帧（探针断言用）。
   @visibleForTesting
   void debugCaptureSend(void Function(Map<String, dynamic>) sink) {
     _debugSendSink = sink;
   }
 
-  /// F1 测试缝：拦截 _reconnect（测试内不真连）。
+  /// 测试缝：拦截 _reconnect（测试内不真连）。
   @visibleForTesting
   bool debugBlockReconnect = false;
   int debugReconnectCount = 0;
@@ -857,7 +861,7 @@ class RelayClient implements RelayConnection {
     _setState(RelayState.closed);
     await _payloadController.close();
     await _failureController.close();
-    // P3-7/F3-P3-6：与 V2 对齐 dispose 状态通知器——两栈
+    // 与 V2 对齐 dispose 状态通知器——两栈
     // 生命周期收尾对称，防后续改动踩 "used after being disposed" 断言。
     _state.dispose();
   }

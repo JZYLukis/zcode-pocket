@@ -109,7 +109,7 @@ class InputBar extends StatelessWidget {
   final FocusNode focusNode;
   final bool running;
 
-  /// 本地发送在途（A3）：发送键转圈+禁用——原实现可点但静默无反应。
+  /// 本地发送在途：发送键转圈+禁用——原实现可点但静默无反应。
   final bool sending;
   final VoidCallback onSend;
   final VoidCallback onStop;
@@ -187,7 +187,7 @@ class InputBar extends StatelessWidget {
               // Paseo 参考（2026-10-23 用户拍板）：输入卡底深色降一档
               // （专用 token 不连坐 popover/menu/toast）。
               // Paseo 观感二轮（2026-10-23 用户）：圆角 20→16（Paseo
-              // borderRadius.2xl=16，refs/paseo theme.ts:616）、阴影降
+              // borderRadius.2xl=16，paseo 参考仓库 theme.ts:616）、阴影降
               // xs 档（轻浮起，Paseo shadow.sm 同量级）。
               color: context.colors.inputSurface,
               borderRadius: BorderRadius.circular(AppRadius.card),
@@ -237,7 +237,7 @@ class InputBar extends StatelessWidget {
                 // 分隔全靠留白（input.tsx:2206 gap 12）。行高随控件
                 // 收小再收一档。
                 Padding(
-                  // B5（2026-11-07 用户折中）：右内距 6→8——复核实测发送键
+                  // （2026-11-07 用户折中）：右内距 6→8——复核实测发送键
                   // 几乎贴边框（左 17/右 6 不对称）；不动左端（＋按钮独占）。
                   padding: const EdgeInsets.fromLTRB(6, 2, 8, 4),
                   child: Row(
@@ -322,7 +322,7 @@ class InputBar extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // 桌面对齐（F7 真机反馈）：发送键常驻（运行中点击=排队，
+                      // 桌面对齐（真机反馈）：发送键常驻（运行中点击=排队，
                       // hint 才不是空头支票）。V2 单键切换（评审 2.2#4）：
                       // 运行中且无草稿→主键变红实心停止键（消除红灰并排）；
                       // 有草稿→仍为发送键（保留「发送即排队」语义）+小描边
@@ -371,7 +371,7 @@ class InputBar extends StatelessWidget {
                                 children: [
                                   if (running) ...[
                                     SizedBox(
-                                      // A7③（2026-10-24 修复批）：描边停止
+                                      // （2026-10-24 修复批）：描边停止
                                       // 键统一 36×36 对齐发送键（修复前默认
                                       // 盒约 40，与右邻 36 并排错拍）。
                                       width: 36,
@@ -404,7 +404,6 @@ class InputBar extends StatelessWidget {
                                       // 长按不与点按冲突（无 onTap 竞技），
                                       // 触觉反馈提示已触发。
                                       child: GestureDetector(
-                                        // D1-P1/D2-P2/D3-P1-1
                                         //（语音直发静默丢弃）：发送在途
                                         //（_sending=RPC/附件上传/held 等待
                                         // 可达分钟级）时长按拉起语音面板，
@@ -433,7 +432,7 @@ class InputBar extends StatelessWidget {
                                                 .colors
                                                 .foregroundSubtlest,
                                           ),
-                                          // A3：发送在途时禁用+转圈；验收回填
+                                          // 发送在途时禁用+转圈；验收回填
                                           // （2026-10-22 可发现性）：空闲且无
                                           // 草稿时图标换麦克风、点按直达语音
                                           // （微信/Telegram 同款惯例；长按
@@ -449,7 +448,7 @@ class InputBar extends StatelessWidget {
                                                     : null)
                                               // 优化批 #1：发送键触觉反馈
                                               // （点按即轻震，确认已触发）。
-                                              // 18077 验收#13（M）：light
+                                              // 验收#13（M）：light
                                               // 档真机几乎无感——升 medium。
                                               : () {
                                                   HapticFeedback.mediumImpact();
@@ -606,7 +605,7 @@ class ToolbarPill extends StatelessWidget {
                 ),
               if (subLabel != null && subLabel!.isNotEmpty) ...[
                 const SizedBox(width: 4),
-                // Flexible（对抗审查 B2）：次级档位文字裸 Text 先量先占，
+                // Flexible（对抗审查）：次级档位文字裸 Text 先量先占，
                 // 档位名过长时会把 Flexible 的主模型名压到 0——同 label
                 // 处理，双弹性收缩。
                 Flexible(
@@ -701,7 +700,7 @@ class AddAction extends StatelessWidget {
 
 /// 离线发送排队条（6.6②，从页面内联块逐字提取为受控组件）：
 /// 断连期发送的消息在此排队，重连后自动按序发出；逐条可撤销。
-/// 18077 验收#12（优化意见 L）：灰小字升级为一眼可见的卡片——
+/// 验收#12（优化意见 L）：灰小字升级为一眼可见的卡片——
 /// 容器底+边框+品牌色图标、字号 uiXs→uiCaption。
 class OfflineSendQueueStrip extends StatelessWidget {
   final List<SendQueueEntry> entries;

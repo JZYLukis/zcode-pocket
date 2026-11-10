@@ -4,7 +4,7 @@
 //    + file_diffs 复数形态合计（官方 readFileDiffDisplays 双形态）
 // ②b 思考条流式摘要两行（一行信息量不足）
 // ③ 输入栏顺序对齐桌面：状态圈（空心）→模型药丸→发送
-// 注入路径同 ui_v4_visual_tour S03：AppState 覆写 readSessionCache
+// 注入路径同 ui_v4_visual_tour ：AppState 覆写 readSessionCache
 // 预渲 rows（缓存会话不建活流，widget 测试离线稳定）。
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -199,7 +199,7 @@ void main() {
     expect(bars, isNotEmpty, reason: '流式思考条应存在扫光摘要');
     expect(bars.first.maxLines, 2,
         reason: '批4 反馈②：摘要一行信息量不足，折叠态最多两行');
-    // 对抗审查 A3（2026-10-24 补——18039 批声称回填但从未落库，调用点
+    // 对抗审查 （2026-10-24 补—— 批声称回填但从未落库，调用点
     // 曾两次丢失）：minLines:2 必须在位（定高两行防 1↔2 行切换跳动）。
     expect(bars.first.minLines, 2,
         reason: '流式期定高两行占位——此断言丢失曾是「还跳」实锤根因');

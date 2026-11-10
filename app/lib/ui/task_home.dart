@@ -128,7 +128,7 @@ TaskCardData taskHomeEntry(Map<String, dynamic> task) {
       for (final r in (task['workflowRuns'] as List? ?? const []))
         if (r is Map) r.cast<String, dynamic>(),
     ],
-    // 守卫（P3-7）：本文件其余字段全部插值容错，唯此处
+    // 守卫：本文件其余字段全部插值容错，唯此处
     // 硬 cast——非 String 形态（num/bool/map）直接 TypeError 崩长按菜单。
     goalStatus: task['goalStatus'] is String
         ? task['goalStatus'] as String
@@ -278,7 +278,7 @@ bool _isWaiting(Map<String, dynamic> t) =>
 int _updated(Map<String, dynamic> t) => intOrZero(t['homeUpdatedAt']);
 
 /// 日期分档顺序（buildTaskHomeItems 消费）。
-/// 18077 验收#9（优化意见 D，用户拍板）：从官方九档简化回四组——
+/// 验收#9（优化意见 D，用户拍板）：从官方九档简化回四组——
 /// 今天/昨天/本周/以前（用户明确表示不需要上周/本月/上月/更早细分，
 /// 偏离官方口径）。教训延续：档键必须与
 /// taskHomeTimeBucket 返回值逐字相等。
@@ -289,7 +289,7 @@ const kTaskHomeTimeBuckets = ['今天', '昨天', '本周', '以前'];
 /// 折叠键经 UiPrefs.homeCollapsedGroups 持久化。
 const kTaskHomeRecentGroupPrefix = 'recent:';
 
-/// 最近视图默认全展的近两日档（优化批 #13 近四日；18077 四组化后前天/
+/// 最近视图默认全展的近两日档（优化批 #13 近四日； 四组化后前天/
 /// 3 天前并入本周）：单日任务量天然少，无需渐进披露；本周/以前档量大
 /// （「以前」可达 100+ 条），默认 5 条渐进。
 const kTaskHomeRecentFullBuckets = {'今天', '昨天'};
@@ -308,7 +308,7 @@ int taskHomeGroupDefaultVisible(String groupKey) {
   return 3;
 }
 
-/// 18077 验收#9（优化意见 D）：四组口径（用户拍板，取代 B30 官方八档
+/// 验收#9（优化意见 D）：四组口径（用户拍板，取代 官方八档
 /// 精确口径）——今天/昨天/本周（本周=同 ISO 自然周，不含今昨）/
 /// 以前（更早全部）。
 String taskHomeTimeBucket(int updatedAt, DateTime now) {
@@ -336,7 +336,7 @@ List<TaskHomeItem> buildTaskHomeItems({
   Map<String, int> groupVisibleCounts = const {},
   Set<String> fullyExpandedGroups = const {},
 }) {
-  // B7（2026-10-29 审查）：官方排序=running-first+updated
+  // （2026-10-29 审查）：官方排序=running-first+updated
   // （运行层禁 updated 决胜）——此前纯 updatedAt，运行中任务会被新完成
   // 的旧任务顶下去；taskId 决胜保证推送重放不换位（Dart List.sort 非稳定）。
   int byRecent(a, b) {

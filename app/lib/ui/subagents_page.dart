@@ -21,12 +21,12 @@ String friendlyError(Object e) {
   return '加载失败，请重试';
 }
 
-/// 子智能体管理（2.5 / D5 裁决：含定义 CRUD 编辑，复刻桌面设置-子智能体）。
+/// 子智能体管理（2.5 / 裁决：含定义 CRUD 编辑，复刻桌面设置-子智能体）。
 /// Channels.subagents：list（agents+userAgents+pluginAgents）/ setEnabled /
 /// createAgent / updateAgent / deleteAgent。
 ///
 /// 编辑范围：name / description / systemPrompt / tools / disallowedTools /
-/// maxTurns（SubAgentConfig 核心字段；color/modelSelection 等进阶项 P1）。
+/// maxTurns（SubAgentConfig 核心字段；color/modelSelection 等进阶项）。
 class SubagentsPage extends StatefulWidget {
   const SubagentsPage({super.key});
 
@@ -118,7 +118,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
 
   final Map<String, bool> _optimisticEnabled = {};
 
-  /// B29：列表搜索（官方 SubagentsSection 搜索框对位，
+  /// 列表搜索（官方 SubagentsSection 搜索框对位，
   /// 按名称/描述过滤三段全量）。
   String _searchQuery = '';
   bool _searchOpen = false;
@@ -176,7 +176,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
     if (ok != true || !mounted) return;
     try {
       await _channel('deleteAgent', {
-        // H4（审计）：官方 AgentDeleteParams {agentId, filePath} 必填——
+        // （审计）：官方 AgentDeleteParams {agentId, filePath} 必填——
         // 实现第一行就 rm(filePath)，缺失必 TypeError。
         'agentId': agent['id'],
         'filePath': agent['path'] ?? '',
@@ -189,7 +189,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
     }
   }
 
-  /// 内置/插件行的行内「模型/思考档覆盖」（18074 验收④：官方桌面
+  /// 内置/插件行的行内「模型/思考档覆盖」（验收④：官方桌面
   /// SubagentModelOverrideControl 对位——两只 32dp 行内下拉即改即存，
   /// 不再走底部弹层）。官方语义：这些档案只读，覆盖写用户级
   /// agents-state；modelSelection 传 null=清除覆盖恢复默认。
@@ -327,7 +327,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
     }
   }
 
-  /// A4：编辑时透传编辑器不管的既有字段（官方全字段覆写语义）。
+  /// 编辑时透传编辑器不管的既有字段（官方全字段覆写语义）。
   /// name 由 saved 决定（改名合法），skills/disallowedTools/
   /// permissionMode/background/mcpServers/injectAgentsMd 原样保留。
   Map<String, dynamic> _preserveEditorForeignFields(
@@ -388,7 +388,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
           // M3（审计）：官方 AgentUpdateParams 带 oldFilePath——改名/移动
           // 时缺失会写新文件不删旧文件，留下重复 agent。
           'oldFilePath': agent['path'] ?? '',
-          // A4（2026-10-29 审查实证）：官方 updateAgent=
+          // （2026-10-29 审查实证）：官方 updateAgent=
           // serialize(config)+整体覆写文件（subagentsService.ts:778-781）。
           // 编辑器只产出 7 字段——不透传既有字段的话，disallowedTools/
           // skills/permissionMode/background/mcpServers 会被抹掉。
@@ -424,7 +424,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
               )
             : const Text('子智能体', style: TextStyle(fontSize: AppType.uiLg)),
         actions: [
-          // B29：列表搜索（官方 SubagentsSection 搜索框
+          // 列表搜索（官方 SubagentsSection 搜索框
           // 对位，名称/描述过滤三段）。
           IconButton(
             key: const ValueKey('subagent-search-toggle'),
@@ -528,7 +528,7 @@ class _SubagentsPageState extends State<SubagentsPage> {
         for (final entry in sections.entries)
           if (entry.value.isNotEmpty) ...[
             Padding(
-              // B6（2026-11-07 用户批）：左 4→0——分组标签与卡片同一左
+              // （2026-11-07 用户批）：左 4→0——分组标签与卡片同一左
               // 基准线（复核实测 16 vs 12 差 4dp）。
               padding: const EdgeInsets.fromLTRB(0, 10, 4, 6),
               child: Text(
@@ -584,7 +584,7 @@ bool _isOverrideTarget(Map<String, dynamic> agent) {
       (name == 'general-purpose' || name == 'Explore');
 }
 
-/// 行内覆盖控制器（18074 验收④重排）：官方桌面 SubagentModelOverrideControl
+/// 行内覆盖控制器（验收④重排）：官方桌面 SubagentModelOverrideControl
 /// 对位——两只 32dp 行内下拉即改即存，按钮文字即覆盖状态（「继承默认」/
 /// 模型名），无额外角标。
 class _InlineOverride {
@@ -612,7 +612,7 @@ class _InlineOverride {
   final void Function(String? level) onPickThought;
 }
 
-/// 18077 验收#17（优化意见 P，视觉子代理七项分析）重排：主行=图标+
+/// 验收#17（优化意见 P，视觉子代理七项分析）重排：主行=图标+
 /// 「名称单行省略+副行模型摘要」双列+开关；模型/思考档下拉移入点按
 /// 展开区（原行内图标+名称+插件 chip+两只下拉+开关四件套把名称挤到
 /// 2 字符宽逐字断行+元素叠压的根除）；删与小节标题语义重复的插件
@@ -683,7 +683,7 @@ class _AgentTileState extends State<_AgentTile> {
     // L554-556 同款恒显+两行截断）——覆盖目标的「模型 · 继承默认」此前
     // 把它顶掉，恰好 general-purpose/Explore 与全部插件行全中（用户
     // 「看不出是什么类型的子代理」）；模型/思考覆盖状态由展开区行内
-    // chips 承载（18077 验收#17 形态），信息不丢。
+    // chips 承载（验收#17 形态），信息不丢。
     final d = '${widget.agent['description'] ?? ''}';
     return d.isEmpty ? null : d;
   }
@@ -706,7 +706,7 @@ class _AgentTileState extends State<_AgentTile> {
         child: InkWell(
           key: ValueKey('subagent-${agent['id']}'),
           // 自定义行整行点进编辑器；内置/插件行点按=展开/收起配置区
-          //（18074 的行内 chips 形态被 18077 验收#17 重排推翻）。
+          //（的行内 chips 形态被 验收#17 重排推翻）。
           onTap: widget.editable
               ? widget.onEdit
               : (o == null
@@ -814,9 +814,9 @@ class _AgentTileState extends State<_AgentTile> {
                     ),
                     const SizedBox(width: 8),
                     // 官方 supportsEnabledToggle：仅 user scope 可切换——
-                    // 内置/插件行恒启用（18074 验收④：官方 Switch 32×18，
+                    // 内置/插件行恒启用（验收④：官方 Switch 32×18，
                     // FittedBox scaleDown 收到同档）；不可切行为展开箭头。
-                    // B3（2026-11-07 用户批）：行尾三元素（开关/展开箭头/
+                    // （2026-11-07 用户批）：行尾三元素（开关/展开箭头/
                     // ⋮ 菜单）统一 32dp 宽槽右对齐——复核实测同列右缘
                     // 687 vs 694 差 3.5dp、图标规格三套并存。
                     if ('${agent['scope'] ?? 'user'}' == 'user')
@@ -1000,7 +1000,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
   String? _descriptionError;
   String? _promptError;
 
-  /// F13（WR 对齐）：模型/思考档（官方 SubAgentConfig.modelSelection；
+  /// （WR 对齐）：模型/思考档（官方 SubAgentConfig.modelSelection；
   /// 目录源=当前活跃会话的 getTaskConfigOptions，与模型面板同源）。
   String? _selectedModel; // "providerId/modelId" 或 null=继承默认
   String? _selectedThought;
@@ -1089,7 +1089,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
   Map<String, dynamic> _buildModelSelection() {
     // 官方 modelSelectionSchema（strict）：{providerId, modelId,
     // options?: {reasoningLevel}}——思考档在 options.reasoningLevel，
-    // 顶层多余字段（如 thoughtLevel）会被 strict 拒（F13 复查抓出）。
+    // 顶层多余字段（如 thoughtLevel）会被 strict 拒（复查抓出）。
     final v = _selectedModel!;
     final slash = v.indexOf('/');
     return {
@@ -1180,7 +1180,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
             ),
           ),
           const SizedBox(height: 10),
-          // F13：颜色（官方 8 色对位）。
+          // 颜色（官方 8 色对位）。
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1207,7 +1207,7 @@ class _AgentEditorSheetState extends State<_AgentEditorSheet> {
             ],
           ),
           const SizedBox(height: 10),
-          // F13：模型选择（目录=getTaskConfigOptions；空目录=继承默认）。
+          // 模型选择（目录=getTaskConfigOptions；空目录=继承默认）。
           DropdownButtonFormField<String?>(
             // 目录异步到达前 items 只有"继承默认"——value 必须在
             // items 中否则 debug 断言崩溃；不在目录时退回 null（继承）。

@@ -101,7 +101,7 @@ void main() {
     // 循环动画，用固定时长 pump（pumpAndSettle 永不静止）。
     await tester.pumpWidget(const MaterialApp(home: QrScanPage()));
     await tester.pump(const Duration(milliseconds: 500));
-    // 回填律（视觉验收 S07 实锤）：CustomPaint 在 Stack 松约束下曾塌缩
+    // 回填律（视觉验收 实锤）：CustomPaint 在 Stack 松约束下曾塌缩
     // 0×0——断言取景框盒子实际尺寸 240×240。
     final box = find
         .byKey(const ValueKey('corner-frame'))

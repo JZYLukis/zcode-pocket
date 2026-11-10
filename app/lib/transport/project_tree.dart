@@ -6,7 +6,7 @@
 /// 未开 tab 的项目用 bridge-open 的 project intent 现场准备（桌面
 /// prepareProjectWorkspace），不再受"必须在当前窗口 tabs"限制。
 ///
-/// 契约出处（refs/new-snapshot）：
+/// 契约出处（官方最新源码快照）：
 /// - services/src/project/contract.ts:33-37 readTree 签名；
 /// - services/src/project-storage/contract.ts:30-65
 ///   VirtualProject/ProjectTask/ProjectTree 字段（ProjectTask =
@@ -106,7 +106,7 @@ String? taskWorkspaceKey(Map<String, dynamic> task) {
 
 /// 按 workspace 键反查所属项目：先匹配任务聚合（projectId 归属），
 /// 再退回项目 roots 路径直配（空项目）。null=不属于任何已知项目。
-/// PF-3③（2026-10-24 修复批）：同键多任务归属不同项目时取 updatedAt
+/// ③（2026-10-24 修复批）：同键多任务归属不同项目时取 updatedAt
 /// 最新的归属（确定性 tie-break——原实现取数组首个，readTree 行序
 /// 漂移会让侧栏分组抖动）。
 Map<String, dynamic>? projectForWorkspaceKey({

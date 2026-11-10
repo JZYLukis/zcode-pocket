@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -100,7 +104,7 @@ void encodeValue(ValueWriter w, Object? value) {
   }
 }
 
-/// 解码递归深度上限（P3-3/G2-P3-12/G3-P3-8）：16MiB 上限
+/// 解码递归深度上限：16MiB 上限
 /// 内可构造百万级嵌套数组 → 栈溢出（handleMessage 的 catch 能兜 Error，
 /// 但栈溢出后恢复不可靠）。128 层远超任何合法载荷（快照嵌套 ~10 级）。
 const int maxValueDepth = 128;

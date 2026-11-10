@@ -15,7 +15,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     companion object {
-        // 帧看门狗 recreate 滑窗上限（开源审查 Q1 P2-2）：recreate 恢复的
+        // 帧看门狗 recreate 滑窗上限（开源审查）：recreate 恢复的
         // 是引擎表面而非根因（楔死根因在 Flutter/华为侧未根治），Dart 侧
         // 看门狗每次 recreate 后随新 isolate 重新武装，Dart 内存计数无法
         // 跨重建累积——进程级滑窗放这里：10 分钟内第 4 次起拒绝并留日志
@@ -27,10 +27,10 @@ class MainActivity : FlutterActivity() {
 
     private var pairingUrl: String? = null
     private var pairingName: String? = null
-    // V2 测试缝（ADR 0032）：am start --es relay_v2_origin/account_jwt
+    // V2 测试缝：am start --es relay_v2_origin/account_jwt
     private var relayV2Origin: String? = null
     private var accountJwt: String? = null
-    // 长按图标快捷入口（6.6①，ADR 0061）：冷启动经 getLaunchArgs 拉取，
+    // 长按图标快捷入口（6.6①）：冷启动经 getLaunchArgs 拉取，
     // 热启动（singleTop onNewIntent）原生→Dart 推送。
     private var shortcutAction: String? = null
     private var testChannel: MethodChannel? = null
@@ -50,7 +50,7 @@ class MainActivity : FlutterActivity() {
         super.onNewIntent(intent)
         // singleTop 复用时的热更新（自动化测试反复推链接）
         readExtras(intent)
-        // 快捷入口热路径（开源审查 Q1 P3-3/Q2 P2-2 修正留存语义）：
+        // 快捷入口热路径（开源审查、修正留存语义）：
         // Dart handler 在位并已消费时回 true 回执——只有拿到回执才清空
         // 留存值；无 handler 时 invokeMethod 不抛错（回执为 null），旧
         // 实现无条件清空=注释承诺的"下次冷启动 getLaunchArgs 兜底"实际
@@ -78,7 +78,7 @@ class MainActivity : FlutterActivity() {
         pairingUrl = intent.getStringExtra("pairing_url")
         pairingName = intent.getStringExtra("pairing_name")
         shortcutAction = intent.getStringExtra("shortcut_action")
-        // 凭据类测试缝（H01，ADR 0046）：仅 debuggable 构建读取——MainActivity
+        // 凭据类测试缝：仅 debuggable 构建读取——MainActivity
         // 为 exported 启动入口，release 下恶意应用可借启动参数把带 Bearer 令牌
         // 的请求引向自建服务器。此处为原生侧防线，Dart 应用侧另有闸门。
         // pairing_url/name 保留：release 冷启动/持久化验证依赖（域白名单在
@@ -100,7 +100,7 @@ class MainActivity : FlutterActivity() {
         // 无界面流式接线（companion/sys_asr）。
         SystemAsrPlugin.bind(flutterEngine, this)
         readExtras(intent)
-        // companion/test 通道（名字沿用历史测试缝，Q2 P3-7）：现承载
+        // companion/test 通道（名字沿用历史测试缝）：现承载
         // 生产功能——长按图标快捷入口（冷启动 getLaunchArgs + 热启动
         // shortcut 推送）与自动化配对缝。勿当测试面裁剪；app.dart 侧
         // 对位注释。
@@ -108,19 +108,19 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger, "companion/test"
         )
         testChannel = channel
-        // 帧看门狗的表面重建（18091 扫码黑屏根治层 3，ADR 0080 §9）：
+        // 帧看门狗的表面重建（扫码黑屏根治层 3）：
         // 相机纹理销毁后引擎偶发停止产帧（Dart 活/帧死/窗口黑，进程
         // 健康）——Dart 侧检测到楔死后调用 recreate 重建 Flutter 表面。
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger, "companion/surface"
         ).setMethodCallHandler { call, result ->
             if (call.method == "recreate") {
-                // 回测组5 P2-4：配对成功的确定性重建（ADR 0080 四层防线）
+                // 回测组5 ：配对成功的确定性重建（四层防线）
                 // 与看门狗楔死自愈不同源——楔死可能"根因未除"需要限流，
                 // 配对成功是已知健康路径，reason=paired 免滑窗（10 分钟内
                 // 第 4 台电脑扫码配对此前会被静默拒建=黑屏回归面）。
                 val exempt = call.argument<String>("reason") == "paired"
-                // 消费型 extras 先清（开源审查 Q2 P2-4）：recreate 保留
+                // 消费型 extras 先清（开源审查）：recreate 保留
                 // 原始 intent，新实例 readExtras 会把快捷动作/配对参数
                 // 重新装回 → 冷启动二次消费（快捷动作数小时后重放/同
                 // URL 二次配对）。
@@ -178,7 +178,7 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
-        // 本机应用版本（parity-fix-1 B27）：关于页显示自身 versionName
+        // 本机应用版本（parity-fix-1）：关于页显示自身 versionName
         // （release 含 HEAD 指纹）；零第三方依赖，走包管理器。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/appinfo")
             .setMethodCallHandler { call, result ->
@@ -242,7 +242,7 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "startForeground" -> {
                         try {
-                            // 开源审查 Q1 P3-7：初始文案由 Dart 侧按当前
+                            // 开源审查 ：初始文案由 Dart 侧按当前
                             // 语言传入；缺省时保留中文兜底（启动后
                             // updateForeground 会立即覆写为实时状态文案）。
                             val text = call.argument<String>("text")

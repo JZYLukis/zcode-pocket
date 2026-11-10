@@ -1,4 +1,4 @@
-// H11 窄修红绿（2026-10-25 批①，用户拍板"只修手动收起"）：
+// 窄修红绿（2026-10-25 批①，用户拍板"只修手动收起"）：
 // 运行中手动收起的回合，完成边沿不得按"末轮默认展开"强行弹开——
 // "手动收起不变"承诺的补落地。动态路径（区别于既有静态首帧
 // 夹具）：真 ConversationState + applySeed 推演，先点收起再推完成帧。
@@ -134,7 +134,7 @@ void main() {
     );
     expect(find.textContaining('live-keep-b.dart'), findsNothing);
 
-    // 完成帧到达（异常终态=failed 强开档）——H11：手动收起仍优先。
+    // 完成帧到达（异常终态=failed 强开档）——：手动收起仍优先。
     // 2026-10-26 语义下正常完成本就收起，failed 强开是唯一冲突档。
     sub.reseed(_rows('failed', 'success'), phase: 'idle');
     await _settle(tester);

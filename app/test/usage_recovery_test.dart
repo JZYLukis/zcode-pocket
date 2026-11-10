@@ -1,4 +1,4 @@
-// 18077 验收#18 红绿（Bug Q/R）：用量页断网不得永远转圈；网络恢复
+// 验收#18 红绿（Bug Q/R）：用量页断网不得永远转圈；网络恢复
 // 自动重试。修前：断网时 transport 挂死连 RPC 30s 都不触发（Q），恢复
 // 后也不重拉、须退出重进（R）。
 import 'dart:async';
@@ -72,7 +72,7 @@ class _RecoveryApp extends AppState {
   final _HangingBridge hangingBridge = _HangingBridge();
   bool onlineOverride = true;
   /// 模拟 relay 掉档（reconnecting）：桥为恢复保留、phase 非 online
-  /// ——真实断网形态（18076 反馈#6 同款语义）。
+  /// ——真实断网形态（反馈#6 同款语义）。
   bool offlinePhase = false;
 
   @override
@@ -136,7 +136,7 @@ void main() {
     await _pump(tester, 8);
     expect(find.textContaining('网络不佳'), findsWidgets);
 
-    // P3-7（终审批1）：后台边沿不 force 双拉的正向锁——paused 下
+    // （终审批1）：后台边沿不 force 双拉的正向锁——paused 下
     // offline→online 不得产生新 RPC（省电红线），回前台后必须重拉。
     final okBeforeEdge = app.hangingBridge.channel.okCalls;
     app.offlinePhase = false;
@@ -149,7 +149,7 @@ void main() {
     await _pump(tester, 5);
 
     // 网络恢复：挂死解除 + phase 回 online + app 通知（恢复横幅那次）。
-    // N1-P3-8 修复后后台边沿不 force 双拉（电量红线）——测试须显式置于
+    // 修复后后台边沿不 force 双拉（电量红线）——测试须显式置于
     // 前台 resumed（真机常见路径），否则恢复分支按设计早退。
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     app.hangingBridge.channel.hangNext = false;

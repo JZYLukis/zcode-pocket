@@ -10,7 +10,7 @@ void main() {
   test('官方静态文案、参数模板与手机端消歧', () {
     L10n.setTestLocale('en-US');
     expect(tr('归档管理'), 'Archive management');
-    // F7：Hook 项组合串整串直出（修复前先 tr('后台') 再拼=模式死代码）。
+    // Hook 项组合串整串直出（修复前先 tr('后台') 再拼=模式死代码）。
     expect(tr('PreToolUse · 后台 · 超时 30s'), 'PreToolUse · background · timeout 30s');
     expect(tr('PreToolUse · 前台 · 超时 5s'), 'PreToolUse · foreground · timeout 5s');
     expect(tr('设置'), 'Settings');
@@ -108,7 +108,7 @@ void main() {
     expect(tr('其他工作区 (2)'), 'Other workspaces (2)');
     // run() 失败前缀的 ASCII 冒号形态。
     expect(tr('删除失败: TimeoutException'), 'Delete failed: TimeoutException');
-    // 归档页三件套 + P3-1 独立键（Restore 而非 Resume）。
+    // 归档页三件套 + 独立键（Restore 而非 Resume）。
     expect(tr('恢复任务'), 'Restore task');
     expect(tr('已恢复「修复登录」'), 'Restored “修复登录”');
     expect(tr('将删除 12 个归档任务（不可恢复）。确定继续？'),
@@ -141,7 +141,7 @@ void main() {
     L10n.setTestLocale('en-US');
     expect(tr('等待中'), 'Waiting');
     expect(tr('终端 · 4 个命令，1 个失败'), 'Terminal · 4 commands, 1 failed');
-    // 思考时长：片段预译 + 整串 pattern（B2-6 同根因两步走）。
+    // 思考时长：片段预译 + 整串 pattern（同根因两步走）。
     expect(tr('思考 · 持续了 ${tr('2 分 3 秒')}'), 'Thought for 2m 3s');
     expect(tr('排队中 (2) · 回合结束后自动发送'),
         'Queued (2) · auto-send when the turn ends');
@@ -153,7 +153,7 @@ void main() {
 
   test('批C组1：重置礼包徽标与 FGS 常驻通知（N1/Q1）', () {
     L10n.setTestLocale('en-US');
-    // 徽标（单机会）：倒计时片段预译后整串 pattern（N1 P2-2）。
+    // 徽标（单机会）：倒计时片段预译后整串 pattern。
     final badge = '1 次重置额度 · 剩余 ${tr('2 小时 3 分')}';
     expect(tr(badge), '1 reset credit · 2h 3m left');
     // FGS 常驻通知：任务标题为用户内容，pattern 捕获段必须保持原文。
@@ -174,7 +174,7 @@ void main() {
         'Changes to 3 files will be restored to the state before this turn; '
         '1 cannot be safely undone and 2 are ignored (skipped '
         'automatically). Chat history is not affected.');
-    // 源串已对齐官方词表空格口径（D2-07）。
+    // 源串已对齐官方词表空格口径。
     expect(tr('… 还有 3 条'), '… 3 more');
     expect(tr('连接失败：SocketException'), 'Connection failed: SocketException');
   });

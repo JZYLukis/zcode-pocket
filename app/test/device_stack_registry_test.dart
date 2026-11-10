@@ -220,7 +220,7 @@ void main() {
       h.registry.activeSid,
       'sid-b',
       reason: '修复前：next 从删除前的陈旧列表选出，命中排首的被删档案自身'
-          '（PF-4 自复活面）',
+          '（自复活面）',
     );
     expect(
       h.created
@@ -274,7 +274,7 @@ void main() {
     h.registry.dispose();
   });
 
-  test('按账号拆栈（18079 反馈②）：只拆该账号名下，其他账号与档案保留', () async {
+  test('按账号拆栈（反馈②）：只拆该账号名下，其他账号与档案保留', () async {
     final h = _Harness([
       _profile('sid-a1', accountId: 'acc-a'),
       _profile('sid-a2', accountId: 'acc-a'),
@@ -314,7 +314,7 @@ void main() {
 
     // 红：修复前 activeSid/activeProfile 悬空（仍指向已拆栈的档案），
     // phase 掉 offline 但 AppBar 还显示已删账号的电脑——且无任何重连
-    // 路径，用户只能大退 app（18079 反馈②「须大退才能恢复」根因）。
+    // 路径，用户只能大退 app（反馈②「须大退才能恢复」根因）。
     expect(h.registry.activeSid, isNull, reason: '活跃指针显式清空');
     expect(h.registry.activeProfile, isNull);
     expect(h.store.active, isNull, reason: '持久 activeDeviceSid 同步清（防冷启自动激活已删凭据档案）');

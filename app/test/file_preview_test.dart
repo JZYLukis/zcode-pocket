@@ -426,7 +426,7 @@ void main() {
     );
     expect(card, findsOneWidget);
     expect(find.textContaining('::visualize'), findsNothing,
-        reason: '原始指令串不得再进正文（用户 18074 实锤的代码串）');
+        reason: '原始指令串不得再进正文（用户 实锤的代码串）');
     expect(find.text('已生成可视化：'), findsOneWidget);
 
     // 点卡 → 经 fileChanges 取全文 → 渲染页。

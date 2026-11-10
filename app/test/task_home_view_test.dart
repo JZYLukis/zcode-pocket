@@ -177,7 +177,7 @@ void main() {
     _task('t4', '项目A置顶任务', 'p1', now - 90000, pinned: true),
   ];
 
-  // 候选 15 验收 A2：run 线未读可见/已读隐藏（真机实锤常驻的是
+  // 候选 15 验收 ：run 线未读可见/已读隐藏（真机实锤常驻的是
   // WorkflowRunLines 而非 preview——三种卡变体全部加未读门）。
   testWidgets('run 线：未读任务可见 run 行，已读任务隐藏', (tester) async {
     await _narrow(tester);
@@ -498,7 +498,7 @@ void main() {
   });
 
 
-  testWidgets('18077 验收#10（Bug E）：跨项目任务长按弹菜单不切工作区，动作执行时才切', (tester) async {
+  testWidgets('验收#10（Bug E）：跨项目任务长按弹菜单不切工作区，动作执行时才切', (tester) async {
     await _narrow(tester);
     final app = _HomeApp()..tasks = rows();
     await tester.pumpWidget(_host(app));
@@ -562,7 +562,7 @@ void main() {
     expect(find.byType(ConversationPage), findsNothing,
         reason: '多选模式点行=切换选中，不进会话');
 
-    // 归档：18077 优化意见 F——先出二次确认，确认后才执行。
+    // 归档： 优化意见 F——先出二次确认，确认后才执行。
     await tester.tap(find.byKey(const ValueKey('multi-archive')));
     await tester.pump();
     expect(find.text('归档选中的 2 个任务？'), findsOneWidget,

@@ -26,7 +26,7 @@ class _SearchApp extends AppState {
   LinkPhase get phase => LinkPhase.online;
   @override
   ConversationTransport get conversation => _FakeConversation();
-  /// 服务器搜索/任务卡守卫的判据是 bridge（三轮审查 D2 M-1 改判）——
+  /// 服务器搜索/任务卡守卫的判据是 bridge（三轮审查 改判）——
   /// fake 须覆写非空桥，否则测试误判离线。
   @override
   BridgeSession get bridge => _FakeBridge();
@@ -194,7 +194,7 @@ void main() {
   });
 }
 
-//L2/ 归档护栏用：记录 switchWorkspace/archiveTask 的触发顺序。
+//归档护栏用：记录 switchWorkspace/archiveTask 的触发顺序。
 class _ArchiveOrderApp extends _SearchApp {
   _ArchiveOrderApp(super.onSearch);
 

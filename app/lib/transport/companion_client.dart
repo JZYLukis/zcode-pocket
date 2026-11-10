@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -209,7 +213,7 @@ class CompanionClient {
       return true;
     }
     if (session._disposed) return true;
-    // relay 未配对时不发探测/开桥请求（对抗审查 B4 双路交叉命中）：
+    // relay 未配对时不发探测/开桥请求（对抗审查 双路交叉命中）：
     // V2 出站通道非 paired 态把载荷排进 _outboundQueue（上限 100），
     // 无限恢复循环每轮 2 条请求会把队列积满，重连同刻冲刷几十条陈旧
     // bridge-open 给桌面（桥重建风暴， 同类风险）。跳过本轮
@@ -230,7 +234,7 @@ class CompanionClient {
         // await 期间桥可能已被上层释放（切工作区）——notifier 已 dispose，
         // 再写会抛 "used after being disposed"（真机 2026-10-15 复现）
         if (session._disposed) return true;
-        // R1/R2/R3 统一根因修复（2026-10-17，真机日志实锤 + refs 官方语义）：
+        // 统一根因修复（2026-10-17，真机日志实锤 + refs 官方语义）：
         // workspace-reconnect-request 是 SSH/远程主机恢复语义（官方
         // WebRemoteControlMobileTaskHome 的断开工作区按钮），对本地桥恒返
         // success 但**不重建桥**。relay 掉线重连后服务端桥已随旧终端销毁，
@@ -311,7 +315,7 @@ class CompanionClient {
       if (router != null) {
         router(payload);
       } else if (id != null) {
-        // P3-10/G3-P3-6：无上限缓冲对永不注册的 bridge id
+        // 无上限缓冲对永不注册的 bridge id
         // 无限蓄积（open 超时失败/换桥后 relay 重放旧帧）。每 id 上限
         // 64 帧，超限丢最旧；孤儿 id 的清理见 openBridge 失败路径与
         // _attachStack/onDispose 的换桥清退。
@@ -391,12 +395,12 @@ class CompanionClient {
     return (res['result'] as Map?)?.cast<String, dynamic>() ?? res;
   }
 
-  /// 机会项#1（2026-11-08 拍板）：workspace-create L2 直发（官方
+  /// 机会项#1（2026-11-08 拍板）：workspace-create 直发（官方
   /// webRemoteControlActions：name 非空且不含 / \，同名复用）→
   /// response {success, workspacePath, workspaceKey, projectId?, hostId?}。
   Future<Map<String, dynamic>> createWorkspace(String name) async {
     final id = _reqId('workspace-create');
-    // F5（对抗审查·协议低×2）：app-error=旧桌面「不支持该动作」的
+    // （对抗审查·协议低×2）：app-error=旧桌面「不支持该动作」的
     // 立即降级信号（官方 webRemoteControlManager :1457）——不认会干等
     // 满 30s；超时 45s 留桌面 Renderer 30s 上限的往返余量。
     final res = await request(
@@ -510,7 +514,7 @@ class CompanionClient {
         timeout: timeout,
       );
     } catch (e) {
-      // P3-10/G3-P3-6：open 失败（超时/error）后该
+      // open 失败（超时/error）后该
       // bridgeSessionId 永不注册——已缓冲的待定帧成孤儿，随即清退。
       _pendingBridgePayloads.remove(bridgeSessionId);
       rethrow;
@@ -533,7 +537,7 @@ class CompanionClient {
         _slowRecoveryBridges.remove(s);
         final id = s.bridge['bridgeSessionId'];
         _frameRouters.remove(id);
-        // P3-10/G3-P3-6：销桥时同步清退该 id 的待定帧缓冲。
+        // 销桥时同步清退该 id 的待定帧缓冲。
         if (id != null) _pendingBridgePayloads.remove(id);
       },
     );
@@ -576,7 +580,7 @@ class CompanionClient {
     transport.messages.listen(channels.handleMessage);
     // 病②：物理丢帧 → 立即失败在途 RPC（响应可能已丢，秒级重试）。
     transport.onGapDetected = channels.failPendingOnGap;
-    // H1-P1-01：旧 bridgeSessionId 必须在 _swap 之前读——swap
+    // 旧 bridgeSessionId 必须在 _swap 之前读——swap
     // 后 session._bridge 已是新桥，oldId 恒等于新 id，remove 永不生效
     // （每代桥泄漏一个 router 条目，且迟到旧帧会打进已 dispose 的旧
     // transport）。
@@ -588,7 +592,7 @@ class CompanionClient {
     final id = transport.bridgeSessionId;
     if (oldId != null && oldId != id) {
       _frameRouters.remove(oldId);
-      // 旧桥 id 的待定帧随换代清退（P3-10/G3-P3-6）。
+      // 旧桥 id 的待定帧随换代清退。
       _pendingBridgePayloads.remove(oldId);
     }
     _frameRouters[id] = transport.acceptPayload;
@@ -658,11 +662,11 @@ class CompanionClient {
       },
         'deviceInfo': {
           'platform': companionPlatformName(),
-          // P3-2/F3-P3-11：缺省版本不得用字面量 'web' 冒充
+          // 缺省版本不得用字面量 'web' 冒充
           //（桌面端"已连接客户端"展示）——统一兜底 'unknown'。
           'version': _appVersion ?? 'unknown',
           'name': companionAppName,
-        // B5 修复（2026-10-16）：官方 deviceInfo 四必填（platform/version/
+        // 修复（2026-10-16）：官方 deviceInfo 四必填（platform/version/
         // name/updatedAt，z.number().finite()）——此前漏 updatedAt，整条
         // 载荷被桌面端 parseWebRemoteControlAppPayload 判 invalid 丢弃。
         'updatedAt': DateTime.now().millisecondsSinceEpoch,

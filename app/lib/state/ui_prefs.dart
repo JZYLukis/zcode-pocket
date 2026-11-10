@@ -32,7 +32,7 @@ class UiPrefs extends ChangeNotifier {
   /// （缓存快照）——默认关。实现纯读 LocalCacheStore，不建连接不订阅。
   static const _keyShowOtherComputers = 'ui.showOtherComputers';
 
-  /// PF-1（2026-10-24 修复批）：Start Plan 低额提醒"展示即记录"持久化
+  /// （2026-10-24 修复批）：Start Plan 低额提醒"展示即记录"持久化
   /// （官方 startPlanQuotaReminderStore 语义）——值=JSON {reminderKey:
   /// expiresAt}，到期判据用快照时间（毫秒），不信任设备时钟。
   static const _keyQuotaReminders = 'ui.quotaReminders';
@@ -41,12 +41,12 @@ class UiPrefs extends ChangeNotifier {
   /// 界面偏好不同步）：值=JSON {deviceSid: [projectId…]}——按电脑分开记。
   static const _keyProjectOrders = 'ui.projectOrders';
 
-  /// B28：提问自动采纳（官方
+  /// 提问自动采纳（官方
   /// askUserQuestionAutoResolutionEnabled 同款默认开）——经
   /// zcode-agent.syncAppRuntimePreferences 下发 CLI。
   static const _keyAskAutoResolution = 'ui.askAutoResolution';
 
-  /// B30：任务主页折叠组（官方 localStorage 每项目
+  /// 任务主页折叠组（官方 localStorage 每项目
   /// expanded 对位；JSON 数组，全局集合）。
   static const _keyHomeCollapsedGroups = 'ui.homeCollapsedGroups';
 
@@ -84,10 +84,10 @@ class UiPrefs extends ChangeNotifier {
   String? _voiceApiKey;
   String _voiceApiProvider = 'zhipu';
 
-  /// B28：提问自动采纳（默认开，官方同款）。
+  /// 提问自动采纳（默认开，官方同款）。
   bool _askAutoResolutionEnabled = true;
 
-  /// B30：任务主页折叠组键集合。
+  /// 任务主页折叠组键集合。
   Set<String> _homeCollapsedGroups = {};
   bool loaded = false;
 
@@ -118,7 +118,7 @@ class UiPrefs extends ChangeNotifier {
   String? get lastThought => _lastThought;
 
 
-  /// D19（2026-10-24 修复批）：偏好写失败哨兵——统一 write/delete+catch+
+  /// （2026-10-24 修复批）：偏好写失败哨兵——统一 write/delete+catch+
   /// 留痕（此前 12 处 catch(_){} 静默回跳，偏好写失败零信号；内存值仍
   /// 生效，仅本次会话丢失持久化）。
   Future<void> _persist(String key, String? value) async {
@@ -135,7 +135,7 @@ class UiPrefs extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      // K1-P3-9/K2-P3-3：16 个键此前串行 await（每键一次平台
+      // 16 个键此前串行 await（每键一次平台
       // 通道+Keystore 解密往返）阻塞启动链——Future.wait 并行读（键间
       // 无顺序依赖），解码与默认值语义不变。
       final reads = await Future.wait<String?>([
@@ -233,7 +233,7 @@ class UiPrefs extends ChangeNotifier {
         debugPrint('[prefs] project-orders decode-fail: $e');
       }
     } catch (e) {
-      // 读取失败按默认值走，不阻塞启动（D19：留痕不再静默）。
+      // 读取失败按默认值走，不阻塞启动（留痕不再静默）。
       debugPrint('[prefs] load-fail: $e');
     }
     loaded = true;
@@ -290,7 +290,7 @@ class UiPrefs extends ChangeNotifier {
   }
 
   Future<void> setChannelMute(String channel, bool muted) async {
-    // K1-P3-12/K2-P3-4：双 switch 冗余（第一个只算 key，第二
+    // 双 switch 冗余（第一个只算 key，第二
     // 个 default: return 后 `if (key == null) return` 不可达）——合并
     // 单 switch：case 内同时落内存字段与持久化键。
     final String key;
@@ -337,7 +337,7 @@ class UiPrefs extends ChangeNotifier {
   Set<String> get homeCollapsedGroups =>
       Set.unmodifiable(_homeCollapsedGroups);
 
-  /// B28：自动采纳开关（下发副作用由调用方处理——设置页直发 CLI）。
+  /// 自动采纳开关（下发副作用由调用方处理——设置页直发 CLI）。
   Future<void> setAskAutoResolutionEnabled(bool value) async {
     if (_askAutoResolutionEnabled == value) return;
     _askAutoResolutionEnabled = value;
@@ -345,7 +345,7 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyAskAutoResolution, value ? 'true' : 'false');
   }
 
-  /// B30：主页折叠组增删（整集合落盘 JSON）。
+  /// 主页折叠组增删（整集合落盘 JSON）。
   Future<void> setHomeGroupCollapsed(String key, bool collapsed) async {
     final changed = collapsed
         ? _homeCollapsedGroups.add(key)
@@ -419,7 +419,7 @@ class UiPrefs extends ChangeNotifier {
     int referenceTime,
   ) async {
     if (key.isEmpty || expiresAt <= referenceTime) return;
-    // K2 P1：只有**仍有效**的记录才挡新落账——陈旧条目（周期已滚动）
+    // 只有**仍有效**的记录才挡新落账——陈旧条目（周期已滚动）
     // 视同不存在，走正常清理+记新（否则同 key 新周期的 expiresAt 永远
     // 落不进去，跨实例/重启横幅每周期反复弹）。
     final existing = _quotaReminders[key];
@@ -434,7 +434,7 @@ class UiPrefs extends ChangeNotifier {
     );
   }
 
-  /// 项目排序（按电脑 sid 分桶；null=未自定义）。 K1-P3-10：
+  /// 项目排序（按电脑 sid 分桶；null=未自定义）。 ：
   /// 返回不可变视图（对齐同文件 homeCollapsedGroups 惯例，防内部列表
   /// 被调用方原地变更绕过持久化）。
   List<String>? projectOrder(String deviceSid) {

@@ -60,7 +60,7 @@ class _RowsApp extends AppState {
   final List<Map<String, dynamic>> rows;
   final Map<String, dynamic>? config;
 
-  /// true=缓存条目不带 snapshotControl（模拟快照未就绪——A5 超时兜底
+  /// true=缓存条目不带 snapshotControl（模拟快照未就绪—— 超时兜底
   /// 用例：乐观写回落空，挂起只能靠 15s 兜底退位）。
   final bool noSnapshotControl;
 
@@ -349,7 +349,7 @@ void main() {
       st.applyFrame(snapFrame({'mode': 'build'}, 5), onGap: () {});
       st.writeBackConfig({'mode': 'yolo'});
       expect(st.currentMode, 'yolo');
-      // 桌面端外部改档 → 新快照到达 → config 跟随（A3 病灶=旧实现
+      // 桌面端外部改档 → 新快照到达 → config 跟随（病灶=旧实现
       // _appliedMode 永不失效，药丸滞留旧值）。
       st.applyFrame(snapFrame({'mode': 'edit'}, 6), onGap: () {});
       expect(st.currentMode, 'edit');

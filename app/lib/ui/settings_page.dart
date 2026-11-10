@@ -298,7 +298,7 @@ class _SegmentSelector extends StatelessWidget {
 }
 
 /// 关于行副标题：本机版本（release 含 HEAD 指纹）+ 桌面端版本。
-/// B27：官方快照 channel 读包管理器，测试环境回落静态文案。
+/// 官方快照 channel 读包管理器，测试环境回落静态文案。
 class _AppVersionText extends StatefulWidget {
   const _AppVersionText();
 

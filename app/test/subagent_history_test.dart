@@ -82,7 +82,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('lineage-invalid 人话化：子目录子会话不再怼协议原文（18075 验收 C）', (tester) async {
+  testWidgets('lineage-invalid 人话化：子目录子会话不再怼协议原文（验收 C）', (tester) async {
     final app = _SlowApp();
     app.overrideEnsureError = StateError(
       'ChannelRpcError: Failed to resume persisted session child-1: '

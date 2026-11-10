@@ -5,7 +5,7 @@ import 'package:zcode_pocket/transport/companion_client.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 
-/// H08-8A 红绿（2026-10-29 批次）：zcode-task.prepareWorkspace（zemote
+/// -8A 红绿（2026-10-29 批次）：zcode-task.prepareWorkspace（zemote
 /// 遗产，官方快照零命中）兜底退役——readWorkspacePresentation 失败时
 /// 走重试+缓存回落，不再回退自创 RPC。修复前红：旧兜底应答使调用
 /// 成功且 legacy RPC 被调用。

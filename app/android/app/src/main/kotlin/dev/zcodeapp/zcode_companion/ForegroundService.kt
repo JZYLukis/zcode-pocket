@@ -16,8 +16,8 @@ import android.util.Log
  * 档位表：开=后台实时通知，关=退后台约 90s 断连）。
  *
  * FGS 类型=specialUse（Manifest 注释详述理由：dataSync 在 Android 14+
- * 有每 24h 累计 6h 运行硬限，与过夜保活职责冲突，开源前审查 Q1 P2-1 /
- * Q2 P1-1 修正）。
+ * 有每 24h 累计 6h 运行硬限，与过夜保活职责冲突，开源前审查 /
+ * 修正）。
  *
  * 通知为 LOW 重要性（不打扰）、ongoing、无 action；点击回到 app。
  */
@@ -28,7 +28,7 @@ class ForegroundService : Service() {
         const val NOTIFICATION_ID = 100
         const val ACTION_START = "dev.zcodeapp.zcode_companion.action.START"
         const val ACTION_STOP = "dev.zcodeapp.zcode_companion.action.STOP"
-        // 更新动作用自定义常量（开源审查 Q1 P3-11）：原借用公共
+        // 更新动作用自定义常量（开源审查）：原借用公共
         // Intent.ACTION_EDIT（标准"编辑数据"语义）当私有标记，易误读且
         // 与隐式 action 解析器有理论碰撞面（服务 exported=false 实际无
         // 害，仍改同族自定义常量）。
@@ -67,7 +67,7 @@ class ForegroundService : Service() {
         super.onCreate()
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // 渠道名/描述走 strings.xml（开源审查 Q1 P3-7/Q2 P3-1 残项）：
+            // 渠道名/描述走 strings.xml（开源审查、残项）：
             // values-en 已建基建，英文系统下系统通知设置页不再露中文
             // （渠道创建后文案不可变，仅新装+英文系统受益）。
             nm.createNotificationChannel(
@@ -134,7 +134,7 @@ class ForegroundService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        // 显式 intent 兜底（开源审查 Q2 P3-5）：启动入口被禁用等非常态下
+        // 显式 intent 兜底（开源审查）：启动入口被禁用等非常态下
         // getLaunchIntentForPackage 可返回 null，原实现直接 NPE 崩服务。
         val launch = packageManager.getLaunchIntentForPackage(packageName)
             ?: Intent(this, MainActivity::class.java)

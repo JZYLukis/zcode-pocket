@@ -6,7 +6,7 @@ import 'pairing_page.dart';
 import 'task_center_page.dart';
 
 /// 根入口：无任何档案 → 全屏配对页；有档案 → 任务中心（档案切换在
-/// 任务中心顶栏一级入口，D4 裁决）。
+/// 任务中心顶栏一级入口， 裁决）。
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -15,7 +15,7 @@ class HomeShell extends StatefulWidget {
 }
 
 class _HomeShellState extends State<HomeShell> {
-  /// 换页打点只报一次（18088 黑屏取证：bootstrap 首配对瞬间的主线程
+  /// 换页打点只报一次（黑屏取证：bootstrap 首配对瞬间的主线程
   /// 负载定位）。
   bool _announcedSwap = false;
 

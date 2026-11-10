@@ -28,7 +28,7 @@ IconData fileTypeIcon(String path) {
   return Icons.insert_drive_file_outlined;
 }
 
-/// 额度快照档位推断（18077 验收#2 抽纯）：当前会话 provider 一票
+/// 额度快照档位推断（验收#2 抽纯）：当前会话 provider 一票
 /// 定档（非空即定，多会话不同套餐互不串档）＞挂起草稿 provider＞
 /// 全局扫描保底（老行为兼容）。provider 形态如
 /// `account:bigmodel-start-plan` / `account:bigmodel-individual-coding-plan`。
@@ -85,8 +85,8 @@ class FileSummaryCardState extends State<FileSummaryCard> {
   Map<String, dynamic>? get _target {
     final header = widget.header;
     if (header == null) return null;
-    // B3：entityId 必填（strict）——缺失返回 null，明细
-    ///加载与回滚降级为不可用（与 H1 行菜单口径一致）。
+    // entityId 必填（strict）——缺失返回 null，明细
+    ///加载与回滚降级为不可用（与 行菜单口径一致）。
     final entityId = '${header['entityId'] ?? ''}'.trim();
     if (entityId.isEmpty) return null;
     return {'rowId': header['rowId'], 'entityId': entityId};
@@ -154,7 +154,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
   @override
   void initState() {
     super.initState();
-    // 18077 验收#16（优化意见 N）：单文件纯新增轮（html 报告典型形态，
+    // 验收#16（优化意见 N）：单文件纯新增轮（html 报告典型形态，
     // files==1 且 deletions==0）静默预载明细——命中可渲染 html 即默认
     // 展开（预览入口可发现性：维护者本人都没在折叠卡里找到过）。判定
     // 窗口刻意收窄+用户操作过的卡不碰，不为通用轮引入自动 RPC。
@@ -248,7 +248,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
 
   @override
   Widget build(BuildContext context) {
-    // 数字守卫（ C1-P2-1）：同一份 header['fileChanges'] 流入
+    // 数字守卫：同一份 header['fileChanges'] 流入
     // 本卡后此前仍是裸 as num?——String 形态漂移即 build 期 TypeError。
     final fc = widget.fileChanges ?? const {};
     final files = intOrZero(fc['files']);
@@ -261,7 +261,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
     final actions = widget.header?['actions'];
     final canRewind =
         !reverted && actions is Map && actions['canRewindFiles'] == true;
-    // 对抗审查 B6：files==0 但 subagents>0（只读不改文件的轮）仍渲染
+    // 对抗审查 ：files==0 但 subagents>0（只读不改文件的轮）仍渲染
     // ——「N 个子代理」胶囊不随文件数消失；两者皆 0 才收缩。
     if (files == 0 && widget.subagentCount == 0) {
       return const SizedBox.shrink();
@@ -378,7 +378,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
                       const SizedBox(width: 8),
                       if (canRewind)
                         Tooltip(
-                          // C1 P2-3：Tooltip message 需显式 tr()。
+                          // Tooltip message 需显式 tr。
                           message: tr('回滚到本轮前'),
                           child: InkWell(
                             key: ValueKey(
@@ -453,7 +453,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
                                   ),
                                   child: Row(
                                     children: [
-                                      // 18077 验收#16（优化意见 O）：
+                                      // 验收#16（优化意见 O）：
                                       // 行首类型图标（html=网页/代码/
                                       // 图片/数据/文档）。
                                       Padding(

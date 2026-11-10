@@ -6,7 +6,7 @@ import '../core/payload_guard.dart';
 import '../state/app_state_scope.dart';
 import '../transport/conversation.dart';
 
-/// Goal 面板（2.4，设计稿 §3.4）：会话页顶部目标卡。
+/// Goal 面板（2.4，设计稿）：会话页顶部目标卡。
 /// 数据源 snapshot.goal（goalStateSchema：objective/status/iteration/
 /// verifications/timeUsedSeconds）；操作 sendGoalCommand/pauseGoal/resumeGoal。
 class GoalPanel extends StatefulWidget {

@@ -369,7 +369,7 @@ void main() {
     });
   });
 
-  group('notificationTtlMs 通道过期映射（ADR 0029 决策 1）', () {
+  group('notificationTtlMs 通道过期映射（决策 1）', () {
     test('approvals 不过期（可操作性强，保留到处理或回前台对账清理）', () {
       expect(notificationTtlMs('approvals'), isNull);
     });
@@ -384,7 +384,7 @@ void main() {
     });
   });
 
-  group('shouldConvergeSingles 补发收敛阈值（ADR 0029 决策 2）', () {
+  group('shouldConvergeSingles 补发收敛阈值（决策 2）', () {
     test('≤3 逐条照发；>3 收敛只发聚合', () {
       expect(shouldConvergeSingles(0), isFalse);
       expect(shouldConvergeSingles(3), isFalse,

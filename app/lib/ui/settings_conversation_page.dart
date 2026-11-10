@@ -64,7 +64,7 @@ class SettingsConversationPage extends StatelessWidget {
                 style: TextStyle(fontSize: AppType.uiCaption),
               ),
             ),
-            // B28：提问自动采纳开关（官方
+            // 提问自动采纳开关（官方
             // askUserQuestionAutoResolutionEnabled 对位，默认开）——经
             // zcode-agent.syncAppRuntimePreferences 下发 CLI；未连接时
             // 只存偏好，下次连接不自动补发（官方语义=设置页改即推）。
@@ -81,7 +81,7 @@ class SettingsConversationPage extends StatelessWidget {
                   try {
                     // /M2/M3 三路同报：payload 只含本端拥有的键。
                     // modelIoFullRetentionEnabled 官方契约为 optional
-                    //（refs/snapshot-3171 zcodeAgent.ts:634），官方桌面 UI
+                    //（官方 3.17.1 源码快照 zcodeAgent.ts:634），官方桌面 UI
                     // 下发的是 setting.json 当前值——本端不拥有该偏好也无从
                     // 读回，硬编码 false 会静默覆写桌面端已开启的「完整保留
                     // 模型 I/O」。注：现行 CLI 对缺省键按 === true 归一为

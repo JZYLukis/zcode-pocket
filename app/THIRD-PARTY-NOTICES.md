@@ -11,12 +11,15 @@
 ## zemote (MIT)
 
 `lib/transport/` 下的协议层部分模块（connection_params / crc32 / id /
-ipc_codec / channel_client / relay_client / rpc_frame_transport /
-companion_client / conversation / automation_client / device_info 等）
-最初移植自 [HumanAILoop/zemote](https://github.com/HumanAILoop/zemote)
+ipc_codec / proof / channel_client / relay_client / rpc_frame_transport
+（原 rpc_transport）/ companion_client（原 zemote_client）/ conversation /
+automation_client / device_info）最初移植自
+[HumanAILoop/zemote](https://github.com/HumanAILoop/zemote)
 （MIT License，已停更仓库），类名已从 Zemote* 重命名为 Companion*；
 其后各模块持续对照官方开源实现进行了重写与加固（详见各文件内溯源
-注释）。
+注释）。上述文件头部均带 `SPDX-License-Identifier: MIT` 标记单文件
+来源；`lib/transport/` 其余模块（project_tree / protocol_drift /
+relay_v2 / z_transport）为本项目原创，不属移植范围。
 
 MIT License 全文（内嵌于本文件，满足 MIT 保留许可声明的要求）：
 

@@ -90,7 +90,7 @@ class MarkdownView extends StatelessWidget {
         ),
       },
       // 点链接的响应分两类（批4 反馈④，2026-10-23 用户拍板）：
-      // - 本地文件路径：协议层无文件内容读取 RPC（refs/ZCode
+      // - 本地文件路径：协议层无文件内容读取 RPC（ZCode 官方开源实现
       //   zcode-protocol-v4 全量 grep 实证，桌面预览是本地读盘），复制
       //   路径在手机端无实用价值——点击不做任何响应（绿色渲染保留）。
       // - 网络链接：保持可点（提示+复制）。
@@ -254,7 +254,7 @@ class _PreHighlightBuilder extends MarkdownElementBuilder {
     // 块级 builder 不允许返回 null（包内 _inlines.isEmpty 断言，禁用
     // 路径实证踩坑）——不高亮时自兜底复刻默认渲染（横向滚动+滚动条+
     // padding+mono 文本），保证关闭开关后与旧纯文本观感一致。
-    // 审查 A1（双员交叉命中）：包默认 formatText 会剥一个尾换行
+    // 审查 （双员交叉命中）：包默认 formatText 会剥一个尾换行
     // （widget.dart:454-459），自定义路径原样渲染=每块多一行空行——
     // 高亮/纯文本两路都先剥（与缓存 key 一致性由 trim 保证）。
     var source = text.text;

@@ -1,6 +1,6 @@
 /// 协议载荷安全读取守卫（批C 组3 铺满方针，单源）。
 ///
-/// 威胁模型（turn_model.dart 2026-10 对抗审查 B2 首立，本批铺满全库
+/// 威胁模型（turn_model.dart 2026-10 对抗审查 首立，本批铺满全库
 /// build/投影路径）：协议 zod 保证 number，但服务端形态漂移（数字字段
 /// 变 String、List 变 Map、字段缺失）时，裸 `as num?`/`as Map?`/
 /// `as List?` 强转直接 TypeError——发生在 build 期即整页灰屏（release
@@ -31,7 +31,7 @@ int? intOf(dynamic v) => numOf(v)?.toInt();
 int intOrZero(dynamic v) => intOf(v) ?? 0;
 
 /// Map 安全读取：非 Map 返回 null。
-/// P3-2（D-8 批4）：不再返回懒 `cast` 视图——键/值类型异常会推迟到访问处
+/// （批4）：不再返回懒 `cast` 视图——键/值类型异常会推迟到访问处
 /// （paint/build 期崩溃），与本文件"铺满守卫"的目标相反；`from` 立即转换，
 /// 畸形表降级 null。
 Map<String, dynamic>? mapOf(dynamic v) {

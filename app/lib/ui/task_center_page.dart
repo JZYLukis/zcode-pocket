@@ -35,7 +35,7 @@ import 'task_home.dart';
 
 /// 卡片摘要剥 Markdown 记号（**强调**/`代码`/标题# 等）——纯文本场景
 /// 裸符号观感糙（视觉审查 2026-10-18）。
-/// C2（2026-10-19 审查）：结果缓存——preview 串跨重建稳定（卡实例每
+/// （2026-10-19 审查）：结果缓存——preview 串跨重建稳定（卡实例每
 /// rebuild 新建，键必须用串）；上限超限整清，规模=可见卡量级。
 final _stripMarkdownCache = <String, String>{};
 String _stripMarkdown(String raw) {
@@ -260,7 +260,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     }
   }
 
-  // 18077 验收#10（优化意见 F）：批量操作全量二次确认（用户拍板——
+  // 验收#10（优化意见 F）：批量操作全量二次确认（用户拍板——
   // 误触归档/已读与删除同样是不可逆烦恼，归档可恢复但找回成本高）。
   Future<void> _batchArchive() async {
     final count = _selectedTaskIds.length;
@@ -313,7 +313,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     final sid = app.activeProfile?.deviceSid;
     if (sid == _lastSeenDeviceSid) return;
     _lastSeenDeviceSid = sid;
-    // P3-1（D-8 批3）：必须走 _closeSearch ——只清开关会让在飞 300ms 防抖
+    // （批3）：必须走 _closeSearch ——只清开关会让在飞 300ms 防抖
     // 打到新电脑上发全文 RPC，并把 fetch/hits 状态留脏。
     if (_searchOpen) _closeSearch();
     setState(() {
@@ -356,7 +356,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
 
   /// 300ms 防抖 + 序号防竞态：输入停顿后才发官方全文查询，旧查询的迟到
   /// 结果按序号丢弃。清空/未连接直接回退本地标题/预览过滤。
-  /// 三轮审查 D2 M-1：判据从 conversation==null 改为 bridge==null——
+  /// 三轮审查 ：判据从 conversation==null 改为 bridge==null——
   /// 全文查询（searchTaskList）只依赖桥；切工作区窗口内 conv 已被提前
   /// 置空但桥仍活，旧判据会让服务器搜索静默退化为本地过滤。
   void _scheduleServerSearch(String raw) {
@@ -499,7 +499,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       );
       return;
     }
-    // F4（对抗审查）：宽屏右栏同传 deepLinkAtMs——平板深链浮层此前恒不弹。
+    // （对抗审查）：宽屏右栏同传 deepLinkAtMs——平板深链浮层此前恒不弹。
     setState(() {
       _paneSelection = (
         sessionId: sessionId,
@@ -548,7 +548,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   /// 主页/跨区/搜索行统一长按菜单入口（页面级 context 更长寿）。
   void _openTaskActionsMenu(Map<String, dynamic> task) {
     if (!mounted) return;
-    // 18077 验收#10（Bug E）：ensureTaskContext 从「弹菜单前」移到
+    // 验收#10（Bug E）：ensureTaskContext 从「弹菜单前」移到
     // 「菜单动作执行前」（run helper 统一接入）——弹菜单是零副作用
     // 轻操作；此前弹菜单前切工作区会让首页重建跳回「最近」。
     _showTaskActions(
@@ -572,7 +572,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     final app = AppStateScope.of(context);
     // 桥未就绪不再静默吞点击（2026-10-23 真机：退出会话回列表后点卡
     // /新建均无反应，只有切工作区能恢复）——至少给出可见反馈。
-    // 三轮审查 D2 M-1/C1 L3：判据从 conversation==null 改为 bridge==null
+    // 三轮审查 / ：判据从 conversation==null 改为 bridge==null
     // ——切工作区窗口内 conv 被提前置空但桥仍活，点任务卡应照常走
     // switchToTask（HEAD 同款窗口宽度），不再误弹"还在重连"。
     if (app.bridge == null) {
@@ -585,7 +585,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     _openConversation(entry.sessionId, entry.title);
   }
 
-  /// F18 跨工作区搜索：点按其他工作区的任务 → 切换工作区（等待桥与
+  /// 跨工作区搜索：点按其他工作区的任务 → 切换工作区（等待桥与
   /// 任务索引就绪）→ 打开会话。：目标不在当前 tabs 时依次回退
   /// 项目归属（project intent）→ 任务 intent（未归类/无项目任务兜底，
   /// 官方手机壳打开侧栏任务同路径）。导航期间保留当前首页，不闪连接中。
@@ -638,7 +638,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
             ?.showSnackBar(const SnackBar(content: Text('工作区切换未完成，请稍后重试')));
         return;
       }
-      // A5：跨工作区打开即已读（best-effort+compare-and-clear）。
+      // 跨工作区打开即已读（best-effort+compare-and-clear）。
       // 对抗审查中⑥修：合成行 unreadAt=1（card.unread 布尔折叠）
       // 不是真实 CAS marker——只有 >1 的时间戳才带 CAS（==1 时传
       // null 走无条件写，未读可清）。
@@ -716,12 +716,12 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     // （build 内不做导航副作用），消费后清空防重放。
     if (app.pendingOpenTask != null) {
       final target = app.pendingOpenTask!;
-      // 欠账盘点 B5 接线修复（2026-11-08）：pendingOpenTask 在此清空，
+      // 欠账盘点 接线修复（2026-11-08）：pendingOpenTask 在此清空，
       // 而会话页的 pendingDeepLinkTarget getter 依赖它——晚于此读取
       // 恒 null=深链浮层永不弹（Explore 核查实锤）。先捕获 atMs 随
       // 导航参数透传（waitForWorkspace 同款模式），不再依赖全局时序。
       final deepAt = app.pendingDeepLinkAt;
-      // F4：归属随 pendingDeepLinkTaskId 走（pendingOpenTask 即将被清，
+      // 归属随 pendingDeepLinkTaskId 走（pendingOpenTask 即将被清，
       // 全局 getter 不再依赖它）。
       app.pendingOpenTask = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -789,7 +789,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
             homeNow: widget.homeNow,
             holdForTaskNavigation: _taskNavigationPending,
             compact: _wideLayout,
-            // 18075 验收反馈①：新建任务行随列表渲染（分组之下），搜索期隐藏。
+            // 验收反馈①：新建任务行随列表渲染（分组之下），搜索期隐藏。
             showNewTaskNav: _wideLayout && _searchQuery.isEmpty && !_searchOpen,
             selectedSessionId: _paneSelection?.sessionId,
             // 批量操作（优化批 #22）：多选态下到任务行（首页与搜索结果）。
@@ -827,9 +827,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
         // 更高，取 34% 并夹 232~320dp——展开态真机（约 740dp）实际
         // ≈250dp，右栏占约三分之二。
         final paneWidth = (size.width * 0.34).clamp(232.0, 320.0);
-        // 18074 验收②（用户反馈+提案）：双栏下 Scaffold 级 FAB 悬在右栏
+        // 验收②（用户反馈+提案）：双栏下 Scaffold 级 FAB 悬在右栏
         // 会话输入栏正上方=遮挡——宽屏档去掉 FAB，新建入口=左栏列表尾部的
-        // 「新建任务」行（18075 验收反馈①：从列首移到最新/项目分组之下，
+        // 「新建任务」行（验收反馈①：从列首移到最新/项目分组之下，
         // 官方桌面侧栏对位——新建在侧栏底部）；窄屏保留 FAB 原行为。
         final homeColumn = Column(
           children: [
@@ -985,7 +985,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       sessionId: sel.sessionId,
       title: sel.title,
       waitForWorkspace: sel.waitForWorkspace,
-      // F4：右栏同传深链时刻（平板浮层此前恒不弹）。
+      // 右栏同传深链时刻（平板浮层此前恒不弹）。
       deepLinkAtMs: sel.deepLinkAtMs,
     );
   }
@@ -1065,7 +1065,7 @@ class _MultiSelectBar extends StatelessWidget {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                // 整串走 pattern 翻译（ A7 教训：拼接串不留
+                // 整串走 pattern 翻译（教训：拼接串不留
                 // 英文残留），见 custom_l10n 的 已选 (\d+) 个 模板。
                 '已选 $selectedCount 个',
                 maxLines: 1,
@@ -1077,7 +1077,7 @@ class _MultiSelectBar extends StatelessWidget {
                 ),
               ),
             ),
-            // 18077 验收#10（优化意见 G）：图标+文字并示（用户实锤仅
+            // 验收#10（优化意见 G）：图标+文字并示（用户实锤仅
             // 图标无法区分归档/已读/删除）；小号紧凑防挤。
             TextButton.icon(
               key: const ValueKey('multi-archive'),
@@ -1156,7 +1156,7 @@ String? _workspaceLabelOf(Map<String, dynamic> ws) {
 
 /// 顶栏（V1 审美优化 2026-10-22：GlassChrome 退役，全库 chrome 统一
 /// 实体白 + 底 hairline——摘除模糊后仅剩的半透明白在纯白底上零收益）。
-/// D4：顶栏常驻当前电脑名，点击弹出档案面板。
+/// 顶栏常驻当前电脑名，点击弹出档案面板。
 class _GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
@@ -1182,13 +1182,13 @@ class _GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   // 带 bottom hairline（1px）的 delegate 应把 bottom
   // 计入 preferredSize（52+1=53）——Scaffold 布局按实测子高度定位 body
-  // 无实际重叠（L2 排除项 2 已实证），此处修契约防未来 Sliver 场景偏差。
+  // 无实际重叠（排除项 2 已实证），此处修契约防未来 Sliver 场景偏差。
   Size get preferredSize => const Size.fromHeight(53);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      // H07-7A（2026-10-29 批次）：外层 preferredSize 声明 52，内层此前
+      // -7A（2026-10-29 批次）：外层 preferredSize 声明 52，内层此前
       // 用 Material 默认 56——声明与实际不符。校准为 52（设计语言
       // ui-references §V1：AppBar 统一 52 高；会话页同款）。
       toolbarHeight: 52,
@@ -1200,7 +1200,7 @@ class _GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
           // 批次A 触控（设计审计）：竖向命中垫 ≥48——minHeight 保证与
           // 标题内容行数无关；AppBar 工具栏 56 容得下，文字仍居中。
           constraints: const BoxConstraints(minHeight: 48),
-          // 左对齐（视觉验收 S02：center 在展开态宽约束下把两行标题
+          // 左对齐（视觉验收 ：center 在展开态宽约束下把两行标题
           // 漂到可用空间中央，与折叠态左对齐不一致）。
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -1467,7 +1467,7 @@ class _TaskHomeView extends StatefulWidget {
   /// 右栏当前打开的会话（=taskId）——紧凑行选中填充信号。
   final String? selectedSessionId;
 
-  /// 18075 验收反馈①：宽屏左栏「新建任务」行（列表尾部，最新/项目
+  /// 验收反馈①：宽屏左栏「新建任务」行（列表尾部，最新/项目
   /// 分组之下——官方桌面侧栏新建在底部的对位）。窄屏入口=FAB 不传。
   final bool showNewTaskNav;
   final VoidCallback? onNew;
@@ -1523,7 +1523,7 @@ class _TaskHomeView extends StatefulWidget {
 }
 
 class _TaskHomeViewState extends State<_TaskHomeView> {
-  // B30：折叠组持久化（官方 localStorage 每项目
+  // 折叠组持久化（官方 localStorage 每项目
   // expanded 对位）——启动从 UiPrefs 预填，增删即时落盘。
   Set<String> _collapsedGroups = {};
   bool _collapsedSeeded = false;
@@ -1579,7 +1579,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
   bool _otherLoading = false;
   bool _otherExpanded = true;
 
-  /// 聚合缓存读盘 TTL（ P2-5：此前每次 build 都对全部候选电脑
+  /// 聚合缓存读盘 TTL（此前每次 build 都对全部候选电脑
   /// 读盘+JSON 解码——与批4 省电红线相悖）。60s 内同签名直接复用。
   DateTime? _otherLoadedAt;
 
@@ -1646,7 +1646,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
     }
     final now = DateTime.now();
     String ago(int savedAt) {
-      // P2-3：时间片段先 tr 再拼——'缓存于 {time}' 的 pattern
+      // 时间片段先 tr 再拼——'缓存于 {time}' 的 pattern
       // 捕获段不递归（词条已有 刚刚/N 分钟前/N 小时前/N 天前）。
       final d = now.difference(DateTime.fromMillisecondsSinceEpoch(savedAt));
       if (d.inMinutes < 1) return tr('刚刚');
@@ -1738,14 +1738,14 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
     DeviceProfile profile,
     Map<String, dynamic> task,
   ) async {
-    // P1-3：缓存白名单（cacheHomeTaskRows keys）只有 taskId——
+    // 缓存白名单（cacheHomeTaskRows keys）只有 taskId——
     // 此前读 sessionId??id 恒空串早退，聚合行点击零效果。
     final taskId = '${task['taskId'] ?? task['id'] ?? ''}';
     if (taskId.isEmpty) return;
     try {
       await app.activate(profile);
     } catch (_) {
-      // P3-3（D-8 批3）：静默失败=点了没反应——给人话提示。
+      // （批3）：静默失败=点了没反应——给人话提示。
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(tr('切换电脑失败，请重试'))),
@@ -1785,7 +1785,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
               expandedInsets: L10n.resolvedLocale == 'en-US'
                   ? EdgeInsets.zero
                   : null,
-              // 18077 审美门建议①（用户拍板）：选中段默认色来自主题
+              // 审美门建议①（用户拍板）：选中段默认色来自主题
               // colorScheme（紫系）与全局「黑白骨架+智谱蓝点睛」离群，
               // 且与 FAB 同屏双强调色——显式归一品牌蓝。
               style: SegmentedButton.styleFrom(
@@ -1844,7 +1844,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
     );
   }
 
-  /// 宽屏左栏「新建任务」导航行（18074 验收② FAB 遮挡改版；18075 验收
+  /// 宽屏左栏「新建任务」导航行（验收② FAB 遮挡改版； 验收
   /// 反馈①从列首移到列表尾部=官方桌面侧栏新建在底部对位）。
   Widget _newTaskNavRow() {
     return Material(
@@ -1923,7 +1923,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
             else
               AppEmptyState(
                 icon: Icons.chat_bubble_outline,
-                // 宽屏无 FAB（18074 起）——空态
+                // 宽屏无 FAB（起）——空态
                 // 文案不得指向不存在的右下角按钮。
                 text: widget.compact
                     ? '还没有任务\n点下方「新建任务」开始对话'
@@ -1972,7 +1972,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
               child: _buildOtherComputers(app),
             );
             }
-            // 列表尾「新建任务」行（18075 验收反馈①：最新/项目分组之下）。
+            // 列表尾「新建任务」行（验收反馈①：最新/项目分组之下）。
             if (index == items.length) {
               return KeyedSubtree(
               key: const ValueKey('home-new-task'),
@@ -2092,7 +2092,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                   child: Row(
                     children: [
-                      // 18077 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
+                      // 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
                       // 统一低灰文字钮（对齐 fold-dual-pane-2 宽屏档；用户
                       // 拍板弱化：原品牌色实心钮太抢眼且占空间）。
                       Expanded(
@@ -2292,7 +2292,7 @@ class _TaskList extends StatelessWidget {
   final void Function(TaskCardData) onOpen;
   final VoidCallback onNew;
 
-  /// F18：跨工作区任务点按（先切工作区再开会话）。
+  /// 跨工作区任务点按（先切工作区再开会话）。
   final void Function(Map<String, dynamic> task)? onOpenCross;
   final String query;
 
@@ -2361,7 +2361,7 @@ class _TaskList extends StatelessWidget {
     final app = AppStateScope.of(context);
     final index = app.sessionsIndex;
     if (holdForTaskNavigation && query.trim().isEmpty) {
-      // 2026-11-05 反馈②P4：三分支统一 Column[strip 槽, Expanded(Home)]
+      // 2026-11-05 反馈②：三分支统一 Column[strip 槽, Expanded(Home)]
       // 树形——槽位恒在（在线=SizedBox.shrink），_TaskHomeViewState 在
       // hold↔在线↔恢复三分支切换间不再销毁重建（滚动位置/展开计数
       // 静默重置的「整页刷新了一下」观感根因）。
@@ -2482,7 +2482,7 @@ class _TaskList extends StatelessWidget {
     }
     // B 方案：空查询=全部任务主页；搜索时仍走既有当前/跨工作区结果。
     if (query.trim().isEmpty) {
-      // P4 同构包装（strip 槽=SizedBox.shrink，与 hold/恢复分支同树形）。
+      // 同构包装（strip 槽=SizedBox.shrink，与 hold/恢复分支同树形）。
       return Column(
         children: [
           const SizedBox.shrink(),
@@ -2595,7 +2595,7 @@ class _TaskList extends StatelessWidget {
             if (error != null) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
-                // D1（2026-10-26 断线批）：重放原打开意图（含 project/task
+                // （2026-10-26 断线批）：重放原打开意图（含 project/task
                 // intent）——失败切换残留的 activeWorkspace 是占位键，
                 // 裸 switchWorkspace 会被桌面"目标工作区不在当前窗口"再拒。
                 onPressed: app.retryWorkspaceOpen,
@@ -2607,12 +2607,12 @@ class _TaskList extends StatelessWidget {
         ),
       );
     }
-    // C2（2026-10-19 审查）监听收窄：外层 ListenableBuilder(merge) 已监听
+    // （2026-10-19 审查）监听收窄：外层 ListenableBuilder(merge) 已监听
     // model——原内层 AnimatedBuilder(model) 同源二重监听，每通知双份重建
     // 包整个列表。此处不再包监听；列表改 builder 化（滚出视口的卡不构建
     // ——原 children: 全量构建，250 卡积压场景是桌面冻结链同源风险）。
     final q = query.trim().toLowerCase();
-    // F18 + 双源：本地 workspace-list 标题命中（即时）+ 官方
+    // + 双源：本地 workspace-list 标题命中（即时）+ 官方
     // listTaskList 全文命中（标题+对话正文，带片段）。纯函数单测见
     // test/segment3_features_test.dart。
     final activeKey = workspaceKeyOf(app.activeWorkspace ?? const {});
@@ -2652,7 +2652,7 @@ class _TaskList extends StatelessWidget {
     }
     // 空库早退只限空查询——搜索态（q 非空）
     // 走下方零结果/搜索状态行分支，否则“没有匹配”文案与 searching/failed
-    // 状态行被这里吞掉；文案按宽窄分档（宽屏无 FAB，18074 起）。
+    // 状态行被这里吞掉；文案按宽窄分档（宽屏无 FAB， 起）。
     if (model.cards.isEmpty && q.isEmpty && crossTasks.isEmpty) {
       if (!model.channelLoaded) {
         return const AppLoading('正在同步任务索引…');
@@ -2662,7 +2662,7 @@ class _TaskList extends StatelessWidget {
         text: compact ? '暂无任务\n点下方「新建任务」开始对话' : '暂无任务\n点右下角「新建」开始对话',
       );
     }
-    // C2：空搜索走模型缓存分区（每通知重算一次，原来每次 build 过滤+复制
+    // 空搜索走模型缓存分区（每通知重算一次，原来每次 build 过滤+复制
     // 三份）；带搜索时对过滤子集就地分区（键入路径，量小）。
     final List<TaskCardData> pinned;
     final List<TaskCardData> running;
@@ -2703,7 +2703,7 @@ class _TaskList extends StatelessWidget {
             : '没有匹配「$query」的任务，换个关键词试试',
       );
     }
-    // C2：行描述表（轻量）+ builder 惰性构建。统一 1min ticker 只为刷新
+    // 行描述表（轻量）+ builder 惰性构建。统一 1min ticker 只为刷新
     // 可见卡的相对时间标签（替代原"每卡每帧 DateTime.now"的隐式刷新，
     // 静默期标签也能走「刚刚→N 分钟前」）。
     const kDormant = 0,
@@ -2891,7 +2891,7 @@ class _TaskList extends StatelessWidget {
     );
   }
 
-  /// F1 冷工作区降级提示（官方 dormant 语义）：历史任务照常，
+  /// 冷工作区降级提示（官方 dormant 语义）：历史任务照常，
   /// 点开会话自动唤醒运行时。
   Widget _dormantBanner(BuildContext context) {
     return Container(
@@ -2924,7 +2924,7 @@ class _TaskList extends StatelessWidget {
   }
 }
 
-/// C2：每分钟一次重建 builder 内容（可见卡相对时间标签刷新）——一个
+/// 每分钟一次重建 builder 内容（可见卡相对时间标签刷新）——一个
 /// ticker 服务整页可见卡，替代原每卡每帧 DateTime.now() 的散布取时。
 class _MinuteTicker extends StatefulWidget {
   final WidgetBuilder builder;
@@ -3019,7 +3019,7 @@ class _SearchRow extends StatelessWidget {
   }
 }
 
-/// 任务卡：白卡 + 状态徽章胶囊 + 最新预览一行（§1.4 组件基线）。
+/// 任务卡：白卡 + 状态徽章胶囊 + 最新预览一行（组件基线）。
 /// 长按任务菜单（波次 3a 任务管理）：置顶/归档/删除——桌面同款三件套。
 /// 移动归属：项目选择 sheet → moveTask（官方 project.moveTask，
 /// ）。任务目录不在目标项目 roots 时服务端抛
@@ -3168,7 +3168,7 @@ void _showTaskActions(
   /// 任务并进入多选模式（归档/标已读/删除批量执行）。
   void Function(String taskId)? onEnterMultiSelect,
 
-  /// 18077 验收#10（Bug E）：动作执行前的归属护栏（跨项目任务 RPC
+  /// 验收#10（Bug E）：动作执行前的归属护栏（跨项目任务 RPC
   /// 带所属工作区 scope）；弹菜单本身不再触发（零副作用）。
   Future<void> Function()? ensureContext,
 }) {
@@ -3212,7 +3212,7 @@ void _showTaskActions(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   entry.title.isEmpty ? '(未命名任务)' : entry.title,
-                  // /P2 P2-2：用户任务标题不得过词典
+                  // 用户任务标题不得过词典
                   // （短 CJK 标题如「设置」会被整键误译）；与同文件其余
                   // 三处标题渲染同款守卫，仅空标题占位词走翻译。
                   translate: entry.title.isEmpty,
@@ -3252,7 +3252,7 @@ void _showTaskActions(
                   );
                 },
               ),
-              // F17（WR 对齐）：桌面 TaskActionMenu 同款三项。
+              // （WR 对齐）：桌面 TaskActionMenu 同款三项。
               ListTile(
                 leading: const Icon(Icons.drive_file_rename_outline, size: 20),
                 title: const Text('重命名'),
@@ -3346,7 +3346,7 @@ void _showTaskActions(
                   Navigator.of(sheetContext).pop();
                   // 成功提示与撤销入口等 RPC 真成功后再给——
                   // 旧实现先弹"已归档"，失败时两条信息自相矛盾。
-                  // L2/L3（P1）：归档与同菜单其余动作同走 run()（先
+                  // 归档与同菜单其余动作同走 run（先
                   // ensureContext 归属护栏）——跨工作区任务直发
                   // archiveTask 会把当前工作区 scope 打偏。
                   run(() async {
@@ -3404,7 +3404,7 @@ void _showTaskActions(
   );
 }
 
-/// F18 跨工作区搜索结果行：workspace-list 任务条目（非活跃工作区）——
+/// 跨工作区搜索结果行：workspace-list 任务条目（非活跃工作区）——
 /// 标题 + 工作区标签 + 状态 pill；点按=切工作区后打开。
 class _CrossTaskCard extends StatelessWidget {
   final Map<String, dynamic> task;
@@ -3499,7 +3499,7 @@ class _CrossTaskCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    // A5：未读蓝点（官方行未读标记对位；
+                    // 未读蓝点（官方行未读标记对位；
                     // home 行由 card.unread 映射 unreadAt，跨工作区/搜索行
                     // 同判 unread 字段）。
                     if (task['unreadAt'] != null || task['unread'] == true)
@@ -3510,7 +3510,7 @@ class _CrossTaskCard extends StatelessWidget {
                           height: 7,
                           decoration: BoxDecoration(
                             // 未读=智谱蓝点睛（brand 是黑白单色 token——
-                            // 深色下纯白被用户看成"白点"，18075 验收②）。
+                            // 深色下纯白被用户看成"白点"， 验收②）。
                             color: context.colors.brandAccent,
                             shape: BoxShape.circle,
                           ),
@@ -3582,7 +3582,7 @@ class _CrossTaskCard extends StatelessWidget {
                   ],
                 ),
                 // A 批（拍板⑧）：工作流运行行（home 窄卡）。
-                // 候选 15 验收 A2：未读可见/已读隐藏（同窄卡门）。
+                // 候选 15 验收 ：未读可见/已读隐藏（同窄卡门）。
                 if (_cardRuns(task).isNotEmpty &&
                     (task['unreadAt'] != null || task['unread'] == true))
                   WorkflowRunLines(runs: _cardRuns(task)),
@@ -3760,7 +3760,7 @@ class _CompactTaskRow extends StatelessWidget {
   /// B 批：闲时任务月亮标（官方对位）。
   final String? offPeakTaskId;
 
-  /// F3：工作流运行行（官方 compact 同款第二行）。
+  /// 工作流运行行（官方 compact 同款第二行）。
   final List<Map<String, dynamic>> workflowRuns;
   final String? selectedSessionId;
 
@@ -3822,7 +3822,7 @@ class _CompactTaskRow extends StatelessWidget {
     running: normalizePhase(entry.phase) == 'running',
     unread: entry.unread,
     updatedAt: entry.lastActivityAt,
-    // F3：fromEntry 补 offPeak/runs（宽屏搜索行与主页行同权）。
+    // fromEntry 补 offPeak/runs（宽屏搜索行与主页行同权）。
     offPeakTaskId: entry.offPeakTaskId,
     workflowRuns: entry.workflowRuns,
     selectedSessionId: selectedSessionId,
@@ -3893,7 +3893,7 @@ Widget build(BuildContext context) {
                                 width: 6,
                                 height: 6,
                                 decoration: BoxDecoration(
-                                  // 未读=智谱蓝点睛（brand 黑白单色，18075 验收②）。
+                                  // 未读=智谱蓝点睛（brand 黑白单色， 验收②）。
                                   color: context.colors.brandAccent,
                                   shape: BoxShape.circle,
                                 ),
@@ -3914,7 +3914,7 @@ Widget build(BuildContext context) {
                         ),
                       ),
                     ),
-                    // F5（对抗审查·月亮压未读）：月亮归元信息列
+                    // （对抗审查·月亮压未读）：月亮归元信息列
                     //（官方 TaskListItem 月亮在时间前 meta 位）。
                     if ((offPeakTaskId ?? '').isNotEmpty) ...[
                       Icon(
@@ -3937,8 +3937,8 @@ Widget build(BuildContext context) {
                     const SizedBox(width: 6),
                   ],
                 ),
-                // F3：紧凑行 run 线（官方 TaskWorkflowRunLines compact 对位）。
-                // 候选 15 验收 A2：未读可见/已读隐藏。
+                // 紧凑行 run 线（官方 TaskWorkflowRunLines compact 对位）。
+                // 候选 15 验收 ：未读可见/已读隐藏。
                 if (workflowRuns.isNotEmpty && unread)
                   Padding(
                     padding: const EdgeInsets.only(left: 24),
@@ -3981,7 +3981,7 @@ class _TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, surface, label) = _statusOf(context, entry);
-    // PF-3 方向 B 真机验收裁决（2026-10-24 用户）：两版归属标注均撤——
+    // 方向 B 真机验收裁决（2026-10-24 用户）：两版归属标注均撤——
     // 用户工作流=工作区维度浏览（列表本就是同工作区窗口），主列表上的
     // 项目归属是冗余信息；归属可见性需求不存在（官方语义仲裁结论
     // "目录列表保留已移走任务"即正确形态）。
@@ -4114,7 +4114,7 @@ class _TaskCard extends StatelessWidget {
                   ],
                 ),
                 // A 批（拍板⑧）：工作流运行行（搜索/列表窄卡）。
-                // 候选 15 验收 A2 修正：run 行同样未读可见/已读隐藏
+                // 候选 15 验收 修正：run 行同样未读可见/已读隐藏
                 //（上一轮只门了 preview——真机实锤常驻的是这条 run 线）。
                 if (entry.workflowRuns.isNotEmpty && entry.unread)
                   WorkflowRunLines(runs: entry.workflowRuns),
@@ -4309,7 +4309,7 @@ Future<void> _createProjectFlow(
   var progressOpen = false;
   var createdDone = false;
   late Map<String, dynamic> created;
-  // F8（复审）：进度层必须整段持有自己的 route、用 removeRoute 精确
+  // （复审）：进度层必须整段持有自己的 route、用 removeRoute 精确
   // 摘除——此前 closeProgress 裸 pop 顶层，创建窗口内任何程序化导航
   // （通知深链推会话页）会先把新页压到进度层之上，pop 弹掉的是**新页**
   // 而进度层被永久钉死（barrier 不可点 + 返回键被 PopScope 吞）。
@@ -4378,7 +4378,7 @@ Future<void> _createProjectFlow(
     return;
   }
   if (cancelled) return;
-  // F5（对抗审查高·并发路）：官方约定=workspace-bridge-open.project
+  // （对抗审查高·并发路）：官方约定=workspace-bridge-open.project
   //（无 project intent 的开桥只在当前窗口 tabs 里找，workspace-create
   // 只建目录不建 tab——全新项目（主用例）必失败）。走 project intent：
   // 构造项目档案交 switchToProject（projectId 随创建返回携带）。
@@ -4673,7 +4673,7 @@ Future<void> showNewTaskSheet(
                             onTap: openDraft,
                           ),
                         // 机会项#1（2026-11-08 拍板）：新建项目行——
-                        // workspace-create L2 直发（电脑 ~/ZCodeProject/
+                        // workspace-create 直发（电脑 ~/ZCodeProject/
                         // <名字> 建目录，同名复用），成功后切换进新项目
                         /// 继续新建对话流程。
                         ListTile(
@@ -4899,7 +4899,7 @@ class _ProjectOrderSheetState extends State<_ProjectOrderSheet> {
   }
 }
 
-/// P3-7（D-8 批3）：其他电脑聚合只取最近任务——缓存行带 updatedAt，
+/// （批3）：其他电脑聚合只取最近任务——缓存行带 updatedAt，
 /// 此前直接 take(5) 恒取缓存序前 5 条，可能展示很久以前的而藏掉最近的。
 List<Map<String, dynamic>> _recentTasks(
     List<Map<String, dynamic>> tasks, int count) {
@@ -4921,7 +4921,7 @@ double compactTaskRowHeight(int runCount, TextScaler scaler) {
       : (runCount > WorkflowRunLines.maxLines
           ? WorkflowRunLines.maxLines + 1
           : runCount);
-  // F9（复审）：系数按 M3 bodyMedium 实际行高 1.43 取 1.45（+逐行
+  // （复审）：系数按 M3 bodyMedium 实际行高 1.43 取 1.45（+逐行
   // padding 预算 3px）——1.25 会让 3 行 + 1.3× 字号仍轻微溢出。
   return 48 + lines * (scaler.scale(10) * 1.45 + 3);
 }
@@ -4931,7 +4931,7 @@ double compactTaskRowHeight(int runCount, TextScaler scaler) {
 class WorkflowRunLines extends StatelessWidget {
   final List<Map<String, dynamic>> runs;
 
-  /// F3：紧凑行档（图标/字号再收一档）。
+  /// 紧凑行档（图标/字号再收一档）。
   final bool compact;
   const WorkflowRunLines({super.key, required this.runs, this.compact = false});
 
@@ -5014,7 +5014,7 @@ class WorkflowRunLines extends StatelessWidget {
   }
 }
 
-/// A 批+F3：任务行携带的 workflow 运行摘要。live 首页行键=
+/// A 批+：任务行携带的 workflow 运行摘要。live 首页行键=
 /// workflowActivity.runs（controllerRowToTaskMap 直通）；兜底行
 /// （workspaceTasks 空时的 taskHomeCardRow 序列化）键=workflowRuns。
 List<Map<String, dynamic>> _cardRuns(Map<String, dynamic> task) {

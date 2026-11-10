@@ -10,7 +10,7 @@ import 'fake_relay_v2.dart';
 
 /// 工作区项目树（ 工作区列表修复）：
 /// - 纯函数层（project_tree.dart）对照官方契约
-///   （refs/new-snapshot services/src/project-storage/contract.ts:30-65）；
+/// （官方最新源码快照 services/src/project-storage/contract.ts:30-65）；
 /// - openBridge 的 project intent 线上载荷（对照 shared/src/validation.ts
 ///   :258-286 的互斥与字段约束）走 FakeRelayV2 全链路验证。
 void main() {
@@ -194,7 +194,7 @@ void main() {
       );
     });
 
-    test('PF-3③ tie-break：同键多归属取 updatedAt 最新（确定性，修复前红=数组序）',
+    test('③ tie-break：同键多归属取 updatedAt 最新（确定性，修复前红=数组序）',
         () {
       final projects = [
         {'id': 'p-a', 'name': 'A', 'roots': const []},

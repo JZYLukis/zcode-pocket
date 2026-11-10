@@ -61,7 +61,7 @@ class SystemAsr {
       } on MissingPluginException {
         _availableCache = false;
       } on PlatformException {
-        // 瞬时异常不落缓存（ P1 P3-4）：开机识别服务暂不可用等
+        // 瞬时异常不落缓存：开机识别服务暂不可用等
         // 一次性错误若缓存 false，本会话语音入口永久隐藏（重启才恢复）。
         // 本次返回 false，下次再探（probeIfUnknown 消费点兜底）；
         // 插件缺席（MissingPlugin）才是终态 false。
@@ -100,7 +100,7 @@ class SystemAsr {
     return session;
   }
 
-  /// 单槽 handler 会话守卫（ P1 P3-3/P2 P2-4/）：
+  /// 单槽 handler 会话守卫：
   /// companion 通道是全进程单 handler 槽——后 start 覆盖、先 cancel
   /// 无差别置 null 会让并存会话互踩（前者失聪/后者被摘）。约定同通道
   /// 同一时刻至多一个活动会话：bind 时登记，cancel 只在槽位仍属于

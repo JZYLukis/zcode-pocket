@@ -3,8 +3,8 @@ import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/ui/turn_model.dart';
 
 /// 断线恢复/真实数据形态不变量（2026-10-16 B 轮立）。
-/// 背景：真机复验暴露"快照已到（rows=60）页面仍停在载入"（B1）与
-/// release 吞渲染异常（B2 黑屏）——自动化此前只测机制层，此文件固化
+/// 背景：真机复验暴露"快照已到（rows=60）页面仍停在载入"与
+/// release 吞渲染异常（黑屏）——自动化此前只测机制层，此文件固化
 /// 人类视角不变量：快照到达 ⇒ 载入条件必须解除 ⇒ 投影必须可产出。
 void main() {
   // 与 reducer_test 同款帧构造。
@@ -90,12 +90,12 @@ void main() {
     s.addListener(() => notifications++);
     final rows = richRows();
     s.applyFrame(snapshotFrame(rows), onGap: () => fail('不应 gap'));
-    // 不变量一（B1 核心）：会话页 loading 条件 !ready && rows.isEmpty 必须为假
+    // 不变量一（核心）：会话页 loading 条件 !ready && rows.isEmpty 必须为假
     expect(s.ready, true, reason: '快照后 ready 必须为真');
     expect(s.rows.isEmpty, false, reason: '快照后 rows 必须非空');
     // 不变量二：UI 必须被通知到（页面靠它重建离开 loading）
     expect(notifications, greaterThan(0), reason: 'applyFrame 必须 notifyListeners');
-    // 不变量三（B2 关联）：真实形态投影不抛异常且产出条目
+    // 不变量三（关联）：真实形态投影不抛异常且产出条目
     final items = buildChatItems(s.rows);
     expect(items, isNotEmpty, reason: 'buildChatItems 必须产出聊天条目');
   });
@@ -106,7 +106,7 @@ void main() {
     final v0 = s.dataVersion;
     final rowsBefore = s.rows.length;
     // row.appended / row.delta 均为原地变更——版本不递增则页面
-    // 记忆化永真（R1-part2 真机"回复不可见"根因）。
+    // 记忆化永真（-part2 真机"回复不可见"根因）。
     s.applyFrame({
       'fromSeq': 4200,
       'toSeq': 34313,

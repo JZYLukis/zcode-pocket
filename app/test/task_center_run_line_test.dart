@@ -62,7 +62,7 @@ void main() {
       greaterThan(three),
       reason: '大字号必须加高（旧固定 68px 溢出的根因）',
     );
-    // F9：行高系数覆盖实际渲染（M3 ≈1.43 行高 + 逐行 padding）——
+    // 行高系数覆盖实际渲染（M3 ≈1.43 行高 + 逐行 padding）——
     // 3 行 noScaling 至少 48+3*(14.5+3)=100.5（1.25 系数只给 97.25）。
     expect(three, greaterThanOrEqualTo(100),
         reason: '系数 1.25 低估实际行高，3 run+1.3× 仍溢出');

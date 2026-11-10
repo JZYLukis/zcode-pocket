@@ -85,7 +85,7 @@ void main() {
       ),
     );
     // 首载两路调用（entitlement + cp + app）；平台消息往返需要多个
-    // 事件循环节拍，分小步泵（游览 S27 同款节奏）。
+    // 事件循环节拍，分小步泵（游览 同款节奏）。
     for (var i = 0; i < 18; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }

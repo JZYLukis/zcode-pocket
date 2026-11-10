@@ -12,7 +12,7 @@ import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/automation_page.dart';
 
-//（O2 P2-4/O3 P1-1）：automation「立即运行」是本页唯一
+//automation「立即运行」是本页唯一
 /// 未包 `_runActions` 错误处理的写操作——runNow 是 15s 超时的通道 RPC，
 /// 断网/超时异常逃逸成未处理异步错误且零反馈。锁：失败=SnackBar 人话
 /// +无异常逃逸；成功=按 status 分档提示+列表刷新（成功路径不被收窄）。

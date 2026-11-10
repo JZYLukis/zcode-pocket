@@ -223,7 +223,7 @@ void main() {
     expect(sent['workspacePath'], r'C:\demo',
         reason: 'scope 平铺在 params 顶层（官方 commandParams 同构）');
     // 官方 3.17 给 compact 加了可选 modelSelection——{} 仍合法（对照
-    // refs/snapshot-3171 command.ts:169）。
+    // 官方 3.17.1 源码快照 command.ts:169）。
   });
 
   test('cancelBackgroundWork 命令信封：workId 载荷（B 批 2026-11-08）',

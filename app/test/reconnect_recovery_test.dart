@@ -19,12 +19,12 @@ import 'fake_relay_v2.dart';
 
 /// 断线恢复批（2026-10-26，用户真机报障"一直断线重连不回来，退出后
 /// 切工作区才能恢复 + 切工作区第一下点不动"）红绿：
-/// - D1 工作区重驱动：断线窗口内切换/打开失败留下的死端（relay paired
+/// - 工作区重驱动：断线窗口内切换/打开失败留下的死端（relay paired
 ///   但桥未建）此前无任何自动补开——用户必须手点工作区自救；修复后
 ///   paired 时自动重放原打开意图（含 project/task intent）。
-/// - D2 状态详情真话：computeStatusDetail 对 reconnecting/connecting/
+/// - 状态详情真话：computeStatusDetail 对 reconnecting/connecting/
 ///   error 档此前返回空串 → 横幅渲染"连接恢复中…（）"空括号。
-/// - D4 pause/resume 竞态：resume 落在 suspend 的 await 窗口内时按
+/// - pause/resume 竞态：resume 落在 suspend 的 await 窗口内时按
 ///   suspended（_client==null）误判而只 poke，栈被留在悬挂态无人恢复。
 const _timing = RelayV2Timing(
   heartbeatBase: Duration(milliseconds: 40),
@@ -81,7 +81,7 @@ class _StubBridge implements BridgeSession {
   void dispose() {}
 }
 
-/// dispose 可阻塞的 si 替身（D4 竞态窗口控制：suspend 卡在
+/// dispose 可阻塞的 si 替身（竞态窗口控制：suspend 卡在
 /// _closeWorkspaceStack 的 await 上）。
 class _BlockingSi implements SessionsIndexSubscription {
   _BlockingSi(this.gate);
@@ -135,7 +135,7 @@ void main() {
   group('relay 自愈（T1：网络中断→恢复，relay 必须自己连回来）', () {
     test('服务器关闭→重启同端口+桌面上线 → client 回 paired', () async {
       final fake = FakeRelayV2();
-      // P2-4/R2-P2-2：固定端口 bind 冲突即整文件环境性红——
+      // 固定端口 bind 冲突即整文件环境性红——
       // 首绑走 port: 0 内核分配；"同端口重启"语义保留（重启复用同一
       // 分配端口，客户端端点不变、自愈不换端点）。
       await fake.start();
@@ -188,7 +188,7 @@ void main() {
 
     setUp(() async {
       fake = FakeRelayV2();
-      await fake.start(); // 动态端口（无同端口重启语义，R1-P2-4/R2-P2-2）
+      await fake.start(); // 动态端口（无同端口重启语义，/）
       final sid = fake.registerDevice('jwt-alice');
       final device = await fake.connectDevice(sid);
       // 假桌面：workspace-bridge-open 一律快速拒（真机"桌面拒开桥"形态，
@@ -346,7 +346,7 @@ void main() {
   group('D2 状态详情（空括号根治）', () {
     test('reconnecting 档给真话（修复前=空串）', () async {
       final fake = FakeRelayV2();
-      await fake.start(); // 动态端口（无同端口重启语义，R1-P2-4/R2-P2-2）
+      await fake.start(); // 动态端口（无同端口重启语义，/）
       final sid = fake.registerDevice('jwt-alice');
       final device = await fake.connectDevice(sid);
 
@@ -466,7 +466,7 @@ void main() {
     });
   });
 
-  // H1-P1-01：_attachStack 的旧 bridgeSessionId 在 _swap 之后才
+  // _attachStack 的旧 bridgeSessionId 在 _swap 之后才
   // 读——swap 后 session._bridge 已是新桥，oldId 恒等于新 id，remove 永不
   // 生效。后果：每次桥重开泄漏一个 router 条目（指向已 dispose 的旧
   // transport），迟到旧帧（relay 对旧帧有重投/乱序语义）会打进已 close
@@ -475,7 +475,7 @@ void main() {
   group('桥重开后旧 bridgeSessionId 路由残留（开源审查 H1-P1-01）', () {
     test('reopen 换新桥 id：旧 id 路由摘除，迟到旧帧不打进已 dispose 的 transport', () async {
       final fake = FakeRelayV2();
-      await fake.start(); // 动态端口（无同端口重启语义，R1-P2-4/R2-P2-2）
+      await fake.start(); // 动态端口（无同端口重启语义，/）
       addTearDown(() => fake.close());
       final sid = fake.registerDevice('jwt-alice');
       final device = await fake.connectDevice(sid);

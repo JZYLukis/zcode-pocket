@@ -12,7 +12,7 @@ class _MemoryStore extends SendQueueStore {
   _MemoryStore() : super(File('nul'));
   final data = <String, List<SendQueueEntry>>{};
 
-  // 红绿（E2-P1-1/E3-P2-1）：记录"钉 ID 后尚未 flush"状态——
+  // 红绿：记录"钉 ID 后尚未 flush"状态——
   // replay 发起前必须已落盘（flush 清零），否则崩溃窗内重启换新 ID
   // 重放=同消息双发。
   int flushes = 0;
@@ -126,11 +126,11 @@ class _Harness {
   bool sending = false;
   bool failNext = false;
 
-  /// A1-P1/A2-P1-1：页面 _draftIdentity 在 draftRestore 内部
+  /// 页面 _draftIdentity 在 draftRestore 内部
   /// 异步就绪——arm 的同步 refresh 读 bucket 为 null（false=模拟未就绪）。
   bool bucketReady = true;
 
-  /// A2-P1-2：单条 replay 抛意外异常（页面退页后收尾异常等）。
+  /// 单条 replay 抛意外异常（页面退页后收尾异常等）。
   bool throwNext = false;
   bool expectFlushedBeforeReplay = false;
   int notifications = 0;
@@ -258,7 +258,7 @@ void main() {
     h.dispose();
   });
 
-  // A1-P1/A2-P1-1（离线开页死锁）：bucketProvider 依赖页面
+  // （离线开页死锁）：bucketProvider 依赖页面
   // _draftIdentity——它在 draftRestore 内部异步就绪，arm 的同步 refresh
   // 必然空跑；老实现 draftRestore 完成后只调 drain，离线早退不 refresh，
   // 已持久化的排队消息既不显示（排队条隐身）也永不补发（online 边沿以
@@ -306,7 +306,7 @@ void main() {
     h.dispose();
   });
 
-  // A2-P1-2：重放收尾异常（页面退页 setState-after-dispose 等）
+  // 重放收尾异常（页面退页 setState-after-dispose 等）
   // 曾外泄为 zone 未处理错误并跳过 store.remove——条目留存再次重放=
   // 重复建会话。单条异常按失败同语义处理（不外泄、条目留存、
   // commandId 幂等保护下重试）。
@@ -324,7 +324,7 @@ void main() {
     h.dispose();
   });
 
-  // P1-1/E3-P2-1（双发红线）：setCommandId 只等内存不等盘尾
+  // （双发红线）：setCommandId 只等内存不等盘尾
   // 即发起 replay——进程在「服务端已接受该 commandId」后、落盘 rename
   // 完成前被杀，重启后磁盘条目无 commandId，drain 分配新 UUID 重放=
   // 同消息双发，击穿 「永不自动重发已尝试发送」。

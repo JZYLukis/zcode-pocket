@@ -202,7 +202,7 @@ void main() {
           home: Scaffold(
             body: WorkflowRunCard(
               sessionId: 's1',
-              // F3：v4 工具行 output 只有散文——runId/status 在
+              // v4 工具行 output 只有散文——runId/status 在
               // workflowRuns 投影按 toolCallId 联接。
               runs: const [
                 {

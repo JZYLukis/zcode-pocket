@@ -120,7 +120,7 @@ void main() {
     await registry.demote();
     final sub = _Sub('s-demote');
     current.gates.single.complete(sub);
-    // 对抗审查 M1：迟到订阅必须以错误收场，不得静默返回死订阅。
+    // 对抗审查 ：迟到订阅必须以错误收场，不得静默返回死订阅。
     await expectLater(pending, throwsStateError);
     expect(registry.subscriptionOf('s-demote'), isNull);
     expect(sub.disposeCalls, 1);
@@ -233,7 +233,7 @@ void main() {
     // 给 demote 进入 flush 闸门一拍（微任务链落定）。
     await Future<void>.delayed(Duration.zero);
     await Future<void>.delayed(Duration.zero);
-    // 窗口内（三轮审查 C1 M1）：demote 还卡在 flush，此时新发起的注册
+    // 窗口内（三轮审查）：demote 还卡在 flush，此时新发起的注册
     // 捕获的是已递增的 epoch——旧两段失效修法下它会"先落地交付、再被
     // 收尾悄悄 dispose"（页面拿到死订阅哑弹）。_closing 同步闸门让它在
     // 预检即抛错（连注定作废的 subscribe 都不发），交给包装层重试。

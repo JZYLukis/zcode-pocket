@@ -17,7 +17,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_secure_storage: ^10.0.0 # 钉 10.x：11 改加密参数需真机迁移验证后再升
   mobile_scanner: ^7.4.0
-  webview_flutter: ^4.13.0 # V2 登录（ADR 0032）：官方 OAuth 页取 zcodejwttoken
+  webview_flutter: ^4.13.0 # V2 登录：官方 OAuth 页取 zcodejwttoken
   flutter_markdown_plus: ^1.0.12 # 原 flutter_markdown 已停更；此为其官方推荐续作（API 兼容，2026-11-04 换）
   path_provider: ^2.1.5
   flutter_local_notifications: ^22.3.2

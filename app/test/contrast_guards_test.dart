@@ -1,7 +1,7 @@
 // 深色模式批2-6：守卫自动化。
-// ①结构成对断言（design_scan R6 的架构等效落地）：批1 架构=单类双实例
+// ①结构成对断言（design_scan 的架构等效落地）：批1 架构=单类双实例
 //   （AppColors 等五类共用构造器，浅/深两实例字段集编译期强制同构），
-//   R6 原语义"token 缺深色对应即挂"由编译器天然保证；此处补运行期
+// 原语义"token 缺深色对应即挂"由编译器天然保证；此处补运行期
 //   可查的部分：两套图表列表长度一致（索引取色安全）+扩展挂载完备。
 // ②对比度红线单测（ 决策⑦）：正文 4.5:1/图标·大字·交互边界
 //   3:1，浅深两套全算；官方/等效果偏低组合按底账"记录在案放行留档"
@@ -44,7 +44,7 @@ void check(String name, Color fg, Color bg, double min, String note) {
   final r = ratio(composite(fg, bg), bg);
   expect(r >= min, isTrue,
       reason: '「$name」对比度 ${r.toStringAsFixed(2)}:1 低于红线 $min:1'
-          '（$note）。修正值或调整 Exemptions 须留痕 ADR。');
+          '（$note）。修正值或调整 Exemptions 须留痕 决策记录。');
 }
 
 void main() {
@@ -117,7 +117,7 @@ void main() {
       // 深 subtlest 36%（2.67:1）/ 浅 45%（2.68:1）：辅助文字档——
       // 2026-11-05 反馈④用户拍板折中（正文 vs 工具行/思考行层级差此前
       // 只达官方 40%/30% 档的六成；官方本档 2.35:1，此处保留一档可读
-      // 性），等效果成对回撤，A3/B1+本批记录在案。
+      // 性），等效果成对回撤，/+本批记录在案。
       expect(ratio(composite(d.foregroundSubtlest, d.background), d.background),
           allOf(greaterThan(2.5), lessThan(3.0)),
           reason: '深 subtlest 应处 2.5-3 辅助档；越界=校准漂移');
@@ -129,7 +129,7 @@ void main() {
           ratio(composite(d.foregroundSubtle, d.card), d.card),
           greaterThan(4.4),
           reason: '深 subtle on card 官方档临界带 4.4-4.5，跌破=漂移');
-      // 浅错误横幅红字 on 8% 粉底 3.79（A3 B1：基线既有，待用户解锁修正）。
+      // 浅错误横幅红字 on 8% 粉底 3.79（基线既有，待用户解锁修正）。
       final pink = Color.lerp(l.background, l.destructive, 0.08)!;
       expect(ratio(l.destructive, pink), greaterThan(3.5),
           reason: '浅错误横幅红字（记录在案 3.79，跌破 3.5=恶化）');

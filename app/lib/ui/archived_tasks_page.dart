@@ -206,7 +206,7 @@ class _ArchivedTasksPageState extends State<ArchivedTasksPage> {
                           style: const TextStyle(fontSize: AppType.uiBase),
                         ),
                         subtitle: Text(
-                          // P1 P2-2：pattern 占位不递归 tr——
+                          // pattern 占位不递归 tr——
                           // 相对时间片段在拼接前先 tr（'3 天前'→'3 days
                           // ago'），整串再由 custom pattern 译为
                           // 'Archived 3 days ago'。

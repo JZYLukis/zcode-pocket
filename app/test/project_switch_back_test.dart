@@ -9,12 +9,12 @@ import 'package:zcode_pocket/transport/relay_v2.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/transport/z_transport.dart';
 
-/// H10 红绿（2026-10-25 批①）：「任务」聚合视图点回原项目被幂等门
+/// 红绿（2026-10-25 批①）：「任务」聚合视图点回原项目被幂等门
 /// 误跳过——真 ComputerStack 状态机旅程（门逻辑跑本尊，桥/索引/客户端
 /// 为离线替身；种子缝=debugSeedProjectWorkspaceForTest）。
 /// 修复前红：P→任务→点回 P 后 activeProjectId 停在伪项目（界面不动）。
 /// 原有 unclassified_tasks_test 用 FakeAppState 覆写切换方法，覆盖不到
-/// 本状态组合（审查 H10 测试盲区实证）。
+/// 本状态组合（审查 测试盲区实证）。
 
 class _StubBridge implements BridgeSession {
   @override

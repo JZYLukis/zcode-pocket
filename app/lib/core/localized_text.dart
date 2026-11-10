@@ -24,7 +24,7 @@ class L10nScope extends InheritedWidget {
 
 InlineSpan _localizeSpan(InlineSpan span) {
   if (span is! TextSpan) return span;
-  // 透传全部构造参数（ P1 P3-11：此前漏 semanticsIdentifier；
+  // 透传全部构造参数（此前漏 semanticsIdentifier；
   // 本 SDK TextSpan 无 onTap 字段——recognizer/mouseCursor 已覆盖点击语义）。
   return TextSpan(
     text: span.text == null ? null : tr(span.text!),
@@ -117,7 +117,7 @@ class Text extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // P3 P3-4：显式原文（translate:false，用户内容大量使用）
+    // 显式原文（translate:false，用户内容大量使用）
     // 不订阅语言变更——语言切换时全 app Text 重建的放大只保留给会翻译
     // 的子集（L10nScope 依赖仍注册，作用域翻转照常触发重建）。
     if (!translate) {
@@ -133,7 +133,7 @@ class Text extends StatelessWidget {
   }
 
   Widget _buildText(BuildContext context, {required bool enabled}) {
-    // P2 P3-3/P3 P3-6：key 原样透传会让外层 State element 与
+    // key 原样透传会让外层 State element 与
     // 内层 material.Text 同挂一个 GlobalKey（Duplicate keys 运行时异常）。
     // fullsweep-1108：本地 key 也不再透传——透传会让 find.byKey 对任何
     // 带 key 的本地化 Text 命中两层（外层+内层），断言恒 findsN(2) 的

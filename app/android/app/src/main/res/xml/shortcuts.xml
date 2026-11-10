@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 长按图标快捷入口（阶段 6.6①，ADR 0061）：静态 shortcuts（API 25+，
+<!-- 长按图标快捷入口（阶段 6.6①）：静态 shortcuts（API 25+，
      minSdk 24 的 7.0 机型自动忽略）。动作经 extra 传入 MainActivity，
      冷启动走 getLaunchArgs 拉取、热启动走 onNewIntent 原生→Dart 推送。 -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">

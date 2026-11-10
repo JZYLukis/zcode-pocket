@@ -16,7 +16,7 @@ class TurnBar extends StatefulWidget {
   /// 会话 id（轮尾操作行的反馈/分支命令用；null=协议按钮禁用）。
   final String? sessionId;
 
-  /// F3：快照 workflowRuns 投影（run 卡 toolCallId 联接权威源）。
+  /// 快照 workflowRuns 投影（run 卡 toolCallId 联接权威源）。
   final List<Map<String, dynamic>>? workflowRuns;
   final TurnWork work;
   final bool showTools;
@@ -107,7 +107,7 @@ class TurnBarState extends State<TurnBar> {
   /// 用户点开仍见全部步骤（桌面三层折叠语义）。
   late bool _liveCollapsed = !widget.showTools;
 
-  /// H11 窄修（2026-10-25 批①，用户拍板"只修手动收起"）：运行中被用户
+  /// 窄修（2026-10-25 批①，用户拍板"只修手动收起"）：运行中被用户
   /// 收起=显式选择，完成边沿不得按末轮默认档强行展开覆盖（
   /// "手动收起不变"承诺的补落地；重新点开则回到自动档）。上轮失去末轮
   /// 身份的自动收起不在本修范围（用户拍板接受现状）。
@@ -118,7 +118,7 @@ class TurnBarState extends State<TurnBar> {
   @override
   void initState() {
     super.initState();
-    // B1-P3-2/B2-3：挂载即运行的轮（搜索跳转/懒列表重挂进
+    // 挂载即运行的轮（搜索跳转/懒列表重挂进
     // running 但桌面静默的回合）没有 didUpdateWidget 驱动——秒表冻在
     // 挂载瞬间值。与 ReasoningTile 的 initState→_startTicker 同构。
     _wasRunning = _effectiveRunning;
@@ -151,7 +151,7 @@ class TurnBarState extends State<TurnBar> {
     if (_wasRunning && !running) {
       // 官方语义：defaultOpen 翻转时 effect 重置展开态——正常轮收起
       // （含运行完成/phaseRunning 解除，"完成后收起只剩最后回复"），
-      // 异常/无正文按默认档展开。例外（H11）：运行中被手动收起=用户
+      // 异常/无正文按默认档展开。例外：运行中被手动收起=用户
       // 选择优先，保持收起。
       _open = _manuallyCollapsedWhileRunning
           ? false
@@ -169,7 +169,7 @@ class TurnBarState extends State<TurnBar> {
   bool get _effectiveRunning =>
       widget.work.stateLabel == 'running' || widget.phaseRunning;
 
-  /// B1-P3-4：折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
+  /// 折叠覆盖键改 TurnWork.collapseKeyId 单源（有头
   /// 按 header rowId、无头半截回合按段内首行 rowId）——多个 -1 哨兵键会让
   /// 折叠状态跨回合串扰；页面侧写入同源。
   int get _turnId => widget.work.collapseKeyId;
@@ -214,7 +214,7 @@ class TurnBarState extends State<TurnBar> {
                         : !widget.liveCollapsedByRow![_turnId]!)));
     // ③（2026-10-20 二轮澄清）：展开=用户显式想看步骤列表，不受工具
     // 显示开关限制（开关只管运行中的实时展示）；仅无工作行才不可展开。
-    // B1-P3-3：controlOnly 不再钉死收起分支——旧实现把设置轮
+    // controlOnly 不再钉死收起分支——旧实现把设置轮
     // 钉进收起态（只显最后一段正文，轮内更早正文/工具行永不渲染、
     // 搜索命中也无法展开）；「不出工作条」语义由下方 header 隐藏承接，
     // 有工作行的 controlOnly 轮照走展开分支（内容直出）。
@@ -281,7 +281,7 @@ class TurnBarState extends State<TurnBar> {
             onTap: () => setState(() {
               if (running) {
                 _liveCollapsed = !_liveCollapsed;
-                // H11：运行中的收起是显式选择（重开=回到自动档）。
+                // 运行中的收起是显式选择（重开=回到自动档）。
                 _manuallyCollapsedWhileRunning = _liveCollapsed;
                 widget.onLiveCollapsedChanged?.call(_liveCollapsed);
               } else {
@@ -310,7 +310,7 @@ class TurnBarState extends State<TurnBar> {
           if (vt != null) ...[
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              // 底边距清零（间距堆栈整改六轮定稿，用户验收 18051
+              // 底边距清零（间距堆栈整改六轮定稿，用户验收
               // 拍板"差不多了"——收起态正文统一无底边距，卡侧空隙
               // 由卡自身表达）。
               child: SearchTargetFrame(
@@ -329,9 +329,9 @@ class TurnBarState extends State<TurnBar> {
             ),
             // 轮尾操作行（2026-10-23 用户反馈批，桌面 ConversationRowView
             // :1580-1649 对位）：复制/点赞/点踩/分支 ghost 一排。
-            // 对抗审查 B2/B3：仅轮正常完成（官方只认 complete）且为轮内
+            // 对抗审查 /：仅轮正常完成（官方只认 complete）且为轮内
             // 最后一个工作段（guided 追问一轮多段只挂末段）才渲染；
-            // 复制内容=整轮正文合并（官方 join("\n\n")，B1）。
+            // 复制内容=整轮正文合并（官方 join("\n\n")）。
             // 2026-10-24 验收：发了文件卡的轮操作行改挂卡后（官方
             // deferAssistantActions 顺序——hasSummaryCard 由 closeTurn 标记）。
             if (work.completedOk && work.isLastSegment && !work.hasSummaryCard)
@@ -378,7 +378,7 @@ class TurnBarState extends State<TurnBar> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // L2：子步骤一行摘要（各自收起态，点开是 L3 细节）——不按
+            // 子步骤一行摘要（各自收起态，点开是 细节）——不按
             // showTools 过滤（③语义：显式展开永远可见步骤列表）。
             // 对抗审查 3-1/4-4（2026-10-22）：连续同类工具成组——官方
             // EXPLORE/TERMINAL 分组开关默认开（CHANGES 关=编辑不合并，
@@ -386,7 +386,7 @@ class TurnBarState extends State<TurnBar> {
             // 「终端 · N 个命令」；单条不造组（官方同款）。
             for (var unitIdx = 0; unitIdx < expandedUnits.length; unitIdx++)
               switch (expandedUnits[unitIdx]) {
-                // 合并卡（H12 批②）：Agent 工具行原位置，含工具状态。
+                // 合并卡（批②）：Agent 工具行原位置，含工具状态。
                 SubagentPairUnit(:final toolRow, :final subagentRow) =>
                   SearchTargetFrame(
                     rowId: intOf(toolRow['rowId']),
@@ -419,7 +419,7 @@ class TurnBarState extends State<TurnBar> {
                     ),
                   ),
                 RowUnit(:final row) => switch ('${row['kind']}') {
-                  // B2-1（lane 语义）：mid-turn auto-compact
+                  // （lane 语义）：mid-turn auto-compact
                   //（lane=assistantWork）落在回合内部的标记行——内嵌
                   // 分隔线渲染，不劈开运行中轮。
                   'timelineMarker' => () {
@@ -443,11 +443,11 @@ class TurnBarState extends State<TurnBar> {
                         (running ||
                             unitIdx != lastTextUnitIdx ||
                             '${row['state']}' == 'streaming' ||
-                            // 对抗审查 B3：中断/失败轮不出操作行（官方
-                            // 只认 complete）；B2：guided 只挂末段。
+                            // 对抗审查 ：中断/失败轮不出操作行（官方
+                            // 只认 complete）；：guided 只挂末段。
                             !work.completedOk ||
                             !work.isLastSegment ||
-                            // B2-2：发了文件卡的轮操作行改挂卡尾
+                            // 发了文件卡的轮操作行改挂卡尾
                             //（收起态 316 行同款守卫）——展开态漏守卫会
                             // 与 FileSummaryCard 尾部各出一条=双操作行。
                             work.hasSummaryCard)
@@ -490,7 +490,7 @@ class TurnBarState extends State<TurnBar> {
                           ),
                   ),
                   'subagent' => SubagentTile(row: row, openSession: widget.openSession),
-                  // B5（2026-10-29 审查）：TodoWrite 待办
+                  // （2026-10-29 审查）：TodoWrite 待办
                   // 清单官方有专用渲染（renderers/todo.tsx：状态图标+
                   // 完成计数+当前项）——此前降级为通用文本行。
                   'toolCall'
@@ -559,7 +559,7 @@ class TurnBarState extends State<TurnBar> {
   }
 }
 
-/// 思考条（官方 reasoning.tsx 对位，F8 重做）：**流式与完成态都默认收起**；
+/// 思考条（官方 reasoning.tsx 对位， 重做）：**流式与完成态都默认收起**；
 /// 收起时流式显示「正在思考」+ 最后一行思考的单行摘要，完成态显示
 /// 「思考 · 持续了 N 秒」（无时长→「持续了几秒」）；静态大脑图标（长流式
 /// 不做旋转/动画省渲染）；展开为 240px 限高内滚 + 自动吸底 + 左导线。
@@ -670,7 +670,7 @@ class ReasoningTileState extends State<ReasoningTile> {
         if (line.trim().isNotEmpty) {
         // 对抗审查 2-2：保尾不保头——官方语义"永远显示最新 token"，
         // 截头 60 字会让长行摘要冻结在旧内容；手机不做横滚（触屏手势
-        // 冲突），前省略号截尾为等价实现。 B2-14：截点走代理对
+        // 冲突），前省略号截尾为等价实现。 ：截点走代理对
         // 安全版（劈开 emoji=replacement 字形）。
         return clipHeadSafe(line.trim(), 60);
       }
@@ -747,7 +747,7 @@ class ReasoningTileState extends State<ReasoningTile> {
                   const SizedBox(width: 7),
                   Expanded(
                     // V3 动效包#6：运行中文字扫光（官方 animated-gradient-text
-                    // 复刻；ui-references §1.4 承诺补交付）。
+                    // 复刻；ui-references 承诺补交付）。
                     child: _streaming
                         ? ShimmerText(
                             text:
@@ -756,7 +756,7 @@ class ReasoningTileState extends State<ReasoningTile> {
                                 : _label(),
                             // 批4 反馈②（2026-10-23 用户）：折叠态摘要一行
                             // 信息量太少（流速快看不清）——升两行。
-                            // 同日反馈二修（18039 批因中途丢失重落地）：内容
+                            // 同日反馈二修（批因中途丢失重落地）：内容
                             // 时长短 1↔2 行切换会让下方内容上蹿下跳——
                             // minLines 固定两行占位（短句第二行留空）。
                             maxLines: 2,
@@ -843,12 +843,12 @@ class ReasoningTileState extends State<ReasoningTile> {
   }
 }
 
-/// 工具行（官方 ToolSummaryRow/ToolLayout 对位，F8 重做）：**逐行独立
+/// 工具行（官方 ToolSummaryRow/ToolLayout 对位， 重做）：**逐行独立
 /// 折叠、默认收起**，展开态按 rowId 记忆（页面级）；无 spinner——运行态
 /// 用状态词+颜色表达（官方 animated-gradient-text 的手机化）；展开显示
 /// 完整入参与结果摘要。状态词官方词表：等待中/执行中/已执行/执行失败/
 /// 已拒绝/已停止。
-/// TodoWrite 待办清单行（B5，官方 renderers/todo.tsx 对位）：收起=
+/// TodoWrite 待办清单行（官方 renderers/todo.tsx 对位）：收起=
 /// 「待办 · 当前项（完成数/总数）」；展开=逐项状态图标（进行中=箭头/
 /// 完成=勾/未做=空圈，完成项降灰）。todos 取结构化 input（官方
 /// readTodoPlan 同源），缺 todos 时由分派层兜底回通用行。
@@ -1002,7 +1002,7 @@ class ToolGroupTileState extends State<ToolGroupTile> {
 class SubagentTile extends StatelessWidget {
   final Map<String, dynamic> row;
 
-  /// 配对的 Agent 工具行（H12 批② 合并卡）：null=未配对的独立 subagent
+  /// 配对的 Agent 工具行（批② 合并卡）：null=未配对的独立 subagent
   /// 卡（fail-open 保留）。工具状态参与终态判定——官方 agentToolCall 块
   /// 同携两者（配对后唯一的状态出口，不能只剩 subagent 视角）。
   final Map<String, dynamic>? toolRow;
@@ -1017,7 +1017,7 @@ class SubagentTile extends StatelessWidget {
     final toolStatus = '${toolRow?['status'] ?? ''}';
     // 终态合成（官方状态词表：subagent running/success/failed/cancelled；
     // toolCall …/error/cancelled）：失败/取消必须可读——合并卡是配对后
-    // 唯一的状态出口，灰卡无字=失败不可见（审查 H12 实锤）。优先级：
+    // 唯一的状态出口，灰卡无字=失败不可见（审查 实锤）。优先级：
     // 失败/取消取两侧并集；运行只认 subagent 行（子代理终态压过滞后的
     // 工具行——工具行 running 只在 subagent 状态缺席时兜底）。
     final failed = status == 'failed' || toolStatus == 'error';
@@ -1119,6 +1119,6 @@ class SubagentTile extends StatelessWidget {
     );
   }
 }
-// （ B1-P3-10/B2-12：排队条已随 迁出本文件——
+// （排队条已随 迁出本文件——
 //  OfflineSendQueueStrip 见 conversation_composer.dart、QueueStrip 的
 //  sendQueuedNow/deleteQueueItem 转发层见 app_state.dart。）

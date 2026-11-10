@@ -60,7 +60,7 @@ void main() {
     expect(prefs.showOtherComputers, isFalse, reason: '默认关（拍板）');
     await prefs.setShowOtherComputers(true);
     expect(prefs.showOtherComputers, isTrue);
-    // P3-6（D-8 批3）：同一存储实例重启往返（旧断言是 expect(true,true) 占位）。
+    // （批3）：同一存储实例重启往返（旧断言是 expect(true,true) 占位）。
     final reloaded = UiPrefs(storage: storage);
     await reloaded.load();
     expect(reloaded.showOtherComputers, isTrue, reason: '重启后保持开启');

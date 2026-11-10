@@ -76,7 +76,7 @@ String? debugRefineEndpointOverride;
 @visibleForTesting
 Duration? debugBodyReadTimeout;
 
-/// body 读取超时（ D1-P2-3/D2-P2-03/D3-P2-2/P3-P2-4 四路同报）：
+/// body 读取超时（四路同报）：
 /// connectionTimeout/postUrl/close 三级超时只覆盖连接与响应头，body
 /// `.join()` 无界——弱网/劣化代理下服务端发完头后 body 停滞时，语音面板
 /// refining 态 PopScope canPop=false（voice_input_sheet.dart）会把用户锁死

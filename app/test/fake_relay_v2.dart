@@ -23,7 +23,7 @@ class FakeRelayV2 {
   /// 看门狗重连）。
   bool terminalAcksEnabled = true;
 
-  /// WS Upgrade 黑洞开关（传输层批，F1-P1-3/F2-P1-1）：接受
+  /// WS Upgrade 黑洞开关（传输层批，/）：接受
   /// TCP/HTTP 但永不回 101、也不关连接——复现 VPN 断隧道/防火墙 DROP
   /// 的"连接悬挂"（Upgrade 永不落定，socket.ready 永不完成）。
   bool wsUpgradeBlackHole = false;

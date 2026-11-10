@@ -9,7 +9,7 @@ import '../transport/protocol_drift.dart';
 import 'cache_policy.dart';
 import 'task_list.dart';
 
-/// 工作区 scope 构造（唯一真源—— J2 P3-9/J3 P3-4 轻量合并）：
+/// 工作区 scope 构造（唯一真源—— / 轻量合并）：
 /// TaskCatalog 与 WorkspaceController 此前各持一份逐字重复，TaskCatalog
 /// 内部另有 _taskScope 与 deleteArchivedTasks 的手写内联共三份，协议
 /// scope 字段演进时漏改面 ×3。
@@ -90,7 +90,7 @@ class TaskCatalog {
       onLog: _onLog,
     );
     model.applyChannelLists(
-      // channelActive 预渲 running 清洗（ J3 P3-6）：tasks-index
+      // channelActive 预渲 running 清洗：tasks-index
       // 合并把 liveStatus='running' 写进通道行 status——workspaceTasks 路
       // 已在读取侧 sanitize，本路原样落 dormant 模型会把已结束回合渲染
       // 成运行中。白名单裁剪覆盖合并层消费的全部键。
@@ -112,7 +112,7 @@ class TaskCatalog {
   }) {
     // 模型换代即作废在飞任务索引拉取（旧响应不得落到新模型的账上）。
     _taskIndexGeneration++;
-    // 先摘引用再 dispose（D2 L-3，HEAD 同序）：dispose 的 await 窗口内
+    // 先摘引用再 dispose（HEAD 同序）：dispose 的 await 窗口内
     // 任何重入读 taskList 不得摸到已死模型。
     final oldModel = _taskList;
     _taskList = null;
@@ -139,7 +139,7 @@ class TaskCatalog {
 
   void _onBridgeRecoveredReloadTasks() {
     if (_taskList != null) unawaited(loadTaskIndex());
-    // 恢复边沿两类数据收敛对称（ J1-7）：桥短暂断链期间
+    // 恢复边沿两类数据收敛对称：桥短暂断链期间
     // loadProjects 失败会置 readTreeStatus='failed'——桥恢复后任务三列表
     // 自动重拉而项目树不会，侧栏停留 tabs 兜底+失败提示直到手动刷新。
     // 仅失败态重拉（ok/loading 态无需）。
@@ -201,7 +201,7 @@ class TaskCatalog {
   Future<void> loadProjects() async {
     final bridge = _bridgeProvider();
     if (bridge == null) return;
-    // 代际计数（ J3 P3-8）：多入口并发（openActiveWorkspace/
+    // 代际计数：多入口并发（openActiveWorkspace/
     // refreshWorkspaces/moveTask/bridge recovered）只校验 bridge 身份不
     // 校验"更新鲜"——15s 超时窗口内慢的旧请求后到覆盖新树（瞬时错树，
     // 下一次拉取才自愈）。旧代际结果整体丢弃。
@@ -271,7 +271,7 @@ class TaskCatalog {
     await loadProjects();
   }
 
-  /// 订阅在飞单槽（fullsweep-fix2 F2）：pause→resume 竞态下第二个
+  /// 订阅在飞单槽（fullsweep-fix2）：pause→resume 竞态下第二个
   /// subscribe 会与在飞的第一个并行落地，后者覆盖 _tasksIndex 后前者
   /// 永不 dispose（5s 级活订阅=电量红线）。全部入口共享同一在飞 Future。
   Future<void>? _subscribeInFlight;
@@ -300,7 +300,7 @@ class TaskCatalog {
         }
         return;
       }
-      // F2：resume 竞态下另一路订阅可能已先落地——保留先到者，废弃
+      // resume 竞态下另一路订阅可能已先落地——保留先到者，废弃
       // 重复者（此前直接覆盖=先到者永不 dispose）。
       if (_tasksIndex != null) {
         await sub.dispose();
@@ -347,7 +347,7 @@ class TaskCatalog {
   Future<void> resumeTasksIndexFromBackground() async {
     _pausedForBackground = false;
     if (_tasksIndex != null) return;
-    // F2：经公共入口（在飞单槽）——pause 期间在飞的订阅落地与此处
+    // 经公共入口（在飞单槽）——pause 期间在飞的订阅落地与此处
     // 的重订阅合并为一次，不再各起一个。
     await subscribeTasksIndex();
   }
@@ -365,7 +365,7 @@ class TaskCatalog {
       _tasksIndexSnapshotLogged = true;
       _onLog('[tasks-index] snapshot: ${state.rows.length} rows');
     }
-    // 守卫（ J3-P2-2）：updatedAt 硬转换抛 TypeError 会落在
+    // 守卫：updatedAt 硬转换抛 TypeError 会落在
     // _acceptLogicalFrame 的 catch 里触发 _resync——同一快照重放再抛，
     // 形成 resync 无界循环；改安全读取按 0 兜底。
     final mapped =
@@ -401,7 +401,7 @@ class TaskCatalog {
   int _taskIndexGeneration = 0;
 
   /// 在飞去重（状态层批）：每条 [markTaskUnread] 都触发一次 4×RPC 重拉，
-  /// 批量 50 条=200 RPC——撞 ADR 0020 桌面负载纪律。同模型并发调用合并
+  /// 批量 50 条=200 RPC——撞 桌面负载纪律。同模型并发调用合并
   /// 到同一 Future；模型换代后的调用另起一轮（旧轮代际失效丢弃）。
   Future<void>? _taskIndexInFlight;
   TaskListModel? _taskIndexInFlightModel;
@@ -498,7 +498,7 @@ class TaskCatalog {
     // 桥抖动窗口内 RPC 失败会拿到全空三列表——直接应用会把已剔除的
     // 归档任务复活、清掉置顶。**四路都成功且全空**才跳过（bridge 恢复
     // 会重拉）；任一路失败时用上一轮集合补齐，不构成"全空"。
-    // 守卫必须纳入 deleted（ J1-4/J3 P1-2/L2/L3 四路）：官方
+    // 守卫必须纳入 deleted（四路）：官方
     // listTasks 契约=所有已持久化任务（含软删墓碑行，refs
     // zcodeTaskService.ts:428-432），"三列表全空+deleted 非空"是删光最后
     // 一个任务的合法终态——照旧跳过会把 deletedIds 负向 join 一起冻结，
@@ -680,16 +680,16 @@ class TaskCatalog {
     _taskIndexReloadTimer?.cancel();
     _taskIndexReloadTimer = null;
     _tasksIndexSnapshotLogged = false;
-    // 切工作区清残留（ J2 P3-2）：workspaceTasks/archivedTasks 是
+    // 切工作区清残留：workspaceTasks/archivedTasks 是
     // 上一工作区的现场——不清则开桥窗口内首页/跨区搜索继续消费旧行，
     // 点旧行会以新工作区的 conv/作用域去开旧任务（服务端找不到/开错
     // 目录）。projects/projectTasks 按设计保留（同电脑切换数据仍有效，
-    // J2 排除项 12）；首页在 workspaceTasks 空时自有 currentTasks 兜底。
+    // 排除项 12）；首页在 workspaceTasks 空时自有 currentTasks 兜底。
     // 2026-11-05 反馈②A（keepHomePreview）：跨工作区打开任务的窗口内
     // 保留旧首页行（SWR 式防闪「正在加载任务…」）——安全边界：旧行
     // 点按走跨区路径按任务自身工作区解析（_openCrossWorkspaceTask），
     // 不走 sessionId 直开；打开失败由调用方 clearStaleHomePreview()
-    // 收口恢复 J2 清残留语义。
+    // 收口恢复 清残留语义。
     if (keepHomePreview && workspaceTasks.isNotEmpty) {
       homePreviewStale = true;
     } else {
@@ -709,7 +709,7 @@ class TaskCatalog {
     oldModel?.dispose();
   }
 
-  /// 2026-11-05 反馈②A：打开失败时显式清保住的旧首页行（恢复 J2
+  /// 2026-11-05 反馈②A：打开失败时显式清保住的旧首页行（恢复
   /// 清残留语义——防旧行以新工作区作用域被消费）。
   void clearStaleHomePreview() {
     if (!homePreviewStale) return;

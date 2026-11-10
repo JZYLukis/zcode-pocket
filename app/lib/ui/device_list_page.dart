@@ -163,7 +163,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
     if (!mounted) return;
     final jwt = result?['jwt'];
     if (jwt is String) {
-      // P2-3：重登可能换了账号（lastUsed 变）——chip 重解析。
+      // 重登可能换了账号（lastUsed 变）——chip 重解析。
       unawaited(_resolveAccountChip());
       unawaited(_load());
     }
@@ -196,7 +196,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('改绑这台电脑的账号？'),
-          // P2-1：整句插值进不了词表（此前 EN 整段中文）——
+          // 整句插值进不了词表（此前 EN 整段中文）——
           // 拆四段各自 tr 后拼接（词条=前缀/中缀/后缀，见 custom_l10n）。
           content: Text(
             tr('该电脑当前绑定「') +
@@ -219,7 +219,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
         ),
       );
       if (ok != true) {
-        // 用户取消（ P2-1）：调用方仅收起连接态，不得 pop 整页。
+        // 用户取消：调用方仅收起连接态，不得 pop 整页。
         return false;
       }
       await app.addV2Profile(
@@ -234,7 +234,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
   Future<void> _connect(CompanionV2Params params) async {
     debugPrint('[app] [v2-ui] connect sid=${params.deviceSid}');
     if (_connecting) return;
-    // P3-8（D-8 批3）：新连接开始即清上次失败红条，不与之并存到本次结束。
+    // （批3）：新连接开始即清上次失败红条，不与之并存到本次结束。
     setState(() {
       _connecting = true;
       _connectError = null;
@@ -388,7 +388,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
           ],
         ),
         actions: [
-          // 网页备用入口（阶段 4.2 最小版 / H08-8B，2026-10-29 批次）：
+          // 网页备用入口（阶段 4.2 最小版 / -8B，2026-10-29 批次）：
           // 零协议依赖逃生舱——协议漂移/握手失败时仍可用官方 Web 远控。
           IconButton(
             key: const ValueKey('web-fallback-entry'),

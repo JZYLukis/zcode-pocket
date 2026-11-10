@@ -203,22 +203,22 @@ class _QueueApp extends AppState {
   final SendQueueStore queueStore;
   BridgeSession? bridgeOverride;
 
-  /// 18076 反馈#6：模拟 relay 重连档（桥保留、链路断）。
+  /// 反馈#6：模拟 relay 重连档（桥保留、链路断）。
   bool reconnectingOverride = false;
-  /// 18077 验收#12：默认在线（无栈假体 super.phase=offline，而 drain
+  /// 验收#12：默认在线（无栈假体 super.phase=offline，而 drain
   /// 现要求 online 才重放）；离线行为由 reconnectingOverride 显式模拟。
   bool onlineOverride = true;
   final sendTexts = <String>[];
   final sentCommandIds = <String?>[];
   bool failNextSend = false;
 
-  /// fullsweep-fix2 F3：注入自定义失败形态（如 ChannelRpcError frameLost）。
+  /// fullsweep-fix2 ：注入自定义失败形态（如 ChannelRpcError frameLost）。
   Object? failNextSendError;
 
   /// 重放在途闸门（#1 高：在途期间用户新输入的可观测窗口）。
   Completer<void>? sendGate;
 
-  /// A2-P1-2：createSession 闸门——挂起期间可模拟退页
+  /// createSession 闸门——挂起期间可模拟退页
   ///（重放建会话的网络往返窗口）。
   Completer<void>? createSessionGate;
 
@@ -380,7 +380,7 @@ void main() {
       expect(entries.map((x) => x.text), ['好条目']);
     });
 
-    // P2-2：close 只置 _closed 不等盘尾——dispose→进程退出
+    // close 只置 _closed 不等盘尾——dispose→进程退出
     // 窗口里最后一次 add/remove 的落盘可丢。对齐 DraftStore.close（内部
     // 先 await flush）。
     test('close 先等盘尾写完成再关门（收尾不丢最后一次落盘）', () async {
@@ -399,7 +399,7 @@ void main() {
   });
 
   group('断网排队旅程（会话页，内存桩）', () {
-    testWidgets('relay 重连中发送→立即入队不发起 RPC（18076 反馈#6）', (tester) async {
+    testWidgets('relay 重连中发送→立即入队不发起 RPC（反馈#6）', (tester) async {
     final app = _QueueApp(_MemorySendQueueStore({}));
     await tester.pumpWidget(_host(app, sessionId: 's1'));
     await _pump(tester);
@@ -621,7 +621,7 @@ void main() {
       expect(find.textContaining('发送失败'), findsOneWidget,
           reason: '错误横幅照常呈现');
 
-      // 15s 失败退避到点自动重试（E3-P2-3：非边沿 notify 不得旁路退避，
+      // 15s 失败退避到点自动重试（非边沿 notify 不得旁路退避，
       // 由 _retryTimer 统一驱动）。桥/phase 未变=不是恢复边沿。
       await tester.pump(const Duration(seconds: 16));
       await _pump(tester, 25);
@@ -630,7 +630,7 @@ void main() {
     });
   });
 
-  group('18077 验收#12：离线不白挂 + 重连边沿 + 失败重试', () {
+  group('验收#12：离线不白挂 + 重连边沿 + 失败重试', () {
     testWidgets('离线期（桥保留+reconnecting）drain 不发起 RPC、按钮不转圈（Bug J）', (tester) async {
       final app = _QueueApp(_MemorySendQueueStore({}));
       await tester.pumpWidget(_host(app, sessionId: 's1'));

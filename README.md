@@ -50,12 +50,58 @@ ZCode account and a running desktop.
   session)
 - Logical screen width 320dp–840dp (portrait is the only main orientation)
 
+Desktop compatibility (pairing uses the account-based channel, which needs
+desktop **3.16+**):
+
+| Desktop version | Status |
+|---|---|
+| 3.17.x (current) | Verified on 3.17.1 on-device; 3.17.2 reviewed against official sources |
+| 3.16 – 3.16.3 | Verified end-to-end (pairing, tasks, conversations) |
+| 3.15.x | Legacy QR pairing only (old channel; no longer exercised by the maintainer) |
+| 3.14 and earlier | Untested |
+
+The protocol is additive by design: unknown message types and fields are
+ignored rather than rejected, so a newer desktop usually keeps working — but
+verify after major desktop upgrades before filing a protocol bug.
+
 ## Installation
 
 Grab a prebuilt APK from [Releases](https://github.com/JZYLukis/zcode-pocket/releases)
 (most phones: `arm64-v8a`) — or build from source below. Before mixing the two,
 read [Signing and switching builds](#signing-and-switching-builds): the
 signatures differ and switching requires uninstalling, which erases local data.
+Per-version changes and upgrade notes are in [CHANGELOG.md](CHANGELOG.md).
+
+## Verifying downloads
+
+You don't have to trust the APKs — you can verify them:
+
+1. **Signature**. All prebuilt APKs are signed with the same release key:
+
+   ```
+   Certificate SHA-256: 2e079b31d61d3f6fbbc5aa4fc9ed0cb0d2787b4de7e558345b630a59c546b681
+   ```
+
+   This fingerprint will not change across versions (changing it would break
+   updates for every installed user; if it ever must, the change will be
+   announced in a release). Verify with:
+
+   ```bash
+   apksigner verify --print-certs app-arm64-v8a-release.apk
+   ```
+
+2. **Checksums**. Recent releases (v1.0.2 onward) list the SHA-256 of every
+   APK in their CHANGELOG.md "Checksums" section. Verify with
+   `sha256sum <apk>`.
+
+3. **Provenance**. Each release is built from this repository at the release
+   tag (recorded in the release notes). When present, the APK's `versionName`
+   embeds the commit it was actually built from — e.g. v1.0.0 is
+   `1.0.0-7fe66058e900`; check it with `aapt dump badging <apk> | head -1`.
+   CI builds the same tree on every push (analyze + tests + debug and
+   release compile), so the released source is continuously
+   machine-verified. Self-built APKs are debug-signed unless you configure
+   your own keystore (see below), so their signature will differ by design.
 
 ## Build
 
@@ -129,20 +175,48 @@ with your own API keys in settings.
 
 ## Known limitations
 
-- Portrait-first; wide screens and foldables unfolded (≥600dp) use a
-  dual-pane layout (task list + conversation); the large-tablet layout is
-  still being polished.
-- No built-in image/PDF preview (the protocol has no file-byte channel);
-  only newly created HTML files can be previewed.
+Each of these is also tracked as a `known-limitation` issue with its current
+status and workaround.
+
+- Portrait is the only main orientation; wide screens and foldables unfolded
+  (≥600dp) use a dual-pane layout (task list + conversation); the
+  large-tablet layout is still being polished.
+- No built-in image/PDF preview — the remote-control protocol has no
+  file-byte channel; only newly created HTML files can be previewed. View
+  other files on the desktop.
+- QR pairing shows a static viewfinder instead of a live camera preview
+  (a renderer workaround for some devices), and the screen rebuilds once
+  after a successful pairing.
+- The app disconnects about 90 seconds after backgrounding (battery by
+  design); you don't get real-time task-completion notifications in the
+  background unless "approval alerts" is enabled.
+- "Approval alerts" keeps a background connection for real-time alerts, with
+  correspondingly higher battery use.
+- Off-peak (idle-time) tasks cannot be edited from the phone — the remote
+  protocol only exposes create/list; edit them on the desktop.
+- One terminal per desktop: connecting a second phone/account to the same
+  desktop kicks the previous connection (different desktops run in parallel
+  fine); time-share one desktop by switching accounts.
+- The prebuilt APK and your own build have different signatures; switching
+  between them requires uninstalling, which erases local data (no cloud
+  backup).
 - Not applicable to HarmonyOS NEXT (Android APK).
 - Verified mainly on mainstream Android and foldable devices; other devices
   are welcome to open issues.
 
 ## Maintenance
 
-Maintained by [@JZYLukis](https://github.com/JZYLukis). Please open an issue
-for problems and feedback.
+Maintained by [@JZYLukis](https://github.com/JZYLukis) — a solo maintainer,
+best effort. The primary target is the desktop version the maintainer
+currently runs; other desktop versions are supported on a best-effort basis.
+See [CHANGELOG.md](CHANGELOG.md) for release notes. Please open an issue for
+problems and feedback.
 
 ## License
 
-Apache License 2.0 (see LICENSE).
+Apache License 2.0 (see LICENSE). Transport-layer modules under
+`app/lib/transport/` were initially ported from
+[zemote](https://github.com/HumanAILoop/zemote) (MIT) and have since been
+rewritten and hardened against the official open-source implementation — see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the attribution details
+and the full MIT text.

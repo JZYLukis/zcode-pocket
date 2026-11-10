@@ -8,11 +8,11 @@ import '../state/app_state_scope.dart';
 /// 会话内联 diff 预览（编辑/写入工具行展开区首块，官方
 /// EditInlineDiffContent 对位）。2026-10-23 Paseo 参考批从
 /// conversation_page 抽出公开（独立可测）；同批 DiffViewer 语法高亮
-/// 清偿 P1 欠账时一并对齐官方：文字色=语法 token 色（官方
+/// 清偿 欠账时一并对齐官方：文字色=语法 token 色（官方
 /// EditInlineDiffContent.tsx:68-80 内联 diff 同样带 shiki 高亮），
 /// 增删由行底 tint+行首竖条表达，marker 不作为代码内容显示。
 ///
-/// 18077 验收#6（优化意见 A）：[collapsible]=true 时大 diff 折叠——
+/// 验收#6（优化意见 A）：[collapsible]=true 时大 diff 折叠——
 /// 超过 [kInlineDiffCollapseLines] 行默认截断+「显示全部」展开（审批
 /// 卡场景滚动百行 diff 的替代）。默认 false=旧全量滚动行为（工具行
 /// 展开区不变）。
@@ -39,7 +39,7 @@ class _InlineDiffPreviewState extends State<InlineDiffPreview> {
   Widget build(BuildContext context) {
     final hunks = widget.display['structuredPatch'];
     // 语言按文件路径推（协议 file_diff display 带 filePath，
-    // toolDisplay.ts:27）。总开关关闭时降 null 回落纯色（对抗审查 B3：
+    // toolDisplay.ts:27）。总开关关闭时降 null 回落纯色（对抗审查 ：
     // 同一展开区里预览变纯色而内联 diff 仍彩色=自相矛盾）。裸树容错：
     // 本组件公开承诺可独立挂树（无 AppStateScope 时默认开）。
     final scope = context.getInheritedWidgetOfExactType<AppStateScope>();
@@ -152,7 +152,7 @@ class _InlineDiffPreviewState extends State<InlineDiffPreview> {
             : Border(left: BorderSide(width: 3, color: diffColor)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-      // 长行软换行（对抗审查 A-1：此前 maxLines:1+ellipsis 使 80+ 字符
+      // 长行软换行（对抗审查 ：此前 maxLines:1+ellipsis 使 80+ 字符
       // 的代码行尾部永久不可见且无任何表面能看整行——软换行是官方
       // wrapLongLines 模式的手机化，窄屏优先可读性）。
       child: v.spans != null

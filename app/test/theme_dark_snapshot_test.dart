@@ -1,9 +1,9 @@
-// 深色色板快照单测（深色模式批 1，dark-mode-plan §3 底账为判卷标准）。
+// 深色色板快照单测（深色模式批 1，dark-mode-plan 底账为判卷标准）。
 //
 // 目的：钉住官方 zai-dark 1:1 搬运值——任何深色值笔误/漂移即挂；批 1
 // 横向校准（智谱蓝/热力图/阴影裁量）调整值时须同步改本文件并留痕
 // 补记（与浅色冻结不同：深色值允许按校准结论调整，但必须显式）。
-// 来源：refs/ZCode/packages/ui/src/styles.css:638-783（已核 3.16.1 零变化）。
+// 来源：ZCode 官方开源实现/packages/ui/src/styles.css:638-783（已核 3.16.1 零变化）。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,7 +15,7 @@ String hex(Color c) =>
 void expectHex(Color actual, int expected, String name) {
   expect(hex(actual), hex(Color(expected)),
       reason: '深色 token「$name」漂移：实际 ${hex(actual)} ≠ 底账 '
-          '${hex(Color(expected))}（dark-mode-plan §3；校准改值须留痕）');
+          '${hex(Color(expected))}（dark-mode-plan；校准改值须留痕）');
 }
 
 void main() {
@@ -172,7 +172,7 @@ void main() {
     final lt = buildAppTheme();
     expect(lt.dialogTheme.backgroundColor, isNull, reason: '浅色 dialogTheme 直通');
     expect(lt.canvasColor, isNot(equals(0xFF2B2B2B)), reason: '浅色 canvasColor 出厂');
-    // 浅色 textTheme 出厂即烤 #1D1B20（M3 light onSurface——A3 审查 B2
+    // 浅色 textTheme 出厂即烤 #1D1B20（M3 light onSurface—— 审查
     // 记录在案的既有浅色行为）；钉住该值防漂移（改动须解锁）。
     expectHex(lt.textTheme.bodyMedium!.color!, 0xFF1D1B20,
         '浅色 textTheme 出厂烤色');

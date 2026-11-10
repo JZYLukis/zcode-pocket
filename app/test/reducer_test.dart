@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 
 /// ConversationState / SessionsIndexState reducer 单元测试。
-/// 帧结构依据 /§3.2（v4 规范 apply 三分支：
+/// 帧结构依据 /（v4 规范 apply 三分支：
 /// snapshot 整体替换 / toSeq<=本地seq 迟到重复丢弃 / fromSeq!=本地seq gap→resync）。
 void main() {
   ConversationState state() => ConversationState();
@@ -186,7 +186,7 @@ void main() {
     expect(s.seq, 5, reason: 'gap 帧不推进 seq');
   });
 
-  test('迟到/重复帧（toSeq <= 本地 seq）静默丢弃——规范 §2.4 三分支之二', () {
+  test('迟到/重复帧（toSeq <= 本地 seq）静默丢弃——规范 三分支之二', () {
     final s = state()
       ..applyFrame(
         snapshotFrame(

@@ -47,11 +47,11 @@ class BatteryJournal with WidgetsBindingObserver {
   _BatterySample? _prev;
   bool _channelBroken = false;
 
-  /// 通道破坏后的采样计数（P3-7：重试判据此前用 _tick，
+  /// 通道破坏后的采样计数（重试判据此前用 _tick，
   /// 而 lifecycle 强制采样路径不递增 _tick——重试窗口漂移）。
   int _brokenSamples = 0;
 
-  /// P3-6：start 幂等门（重复调用=双定时器+双观察者+双 sink）。
+  /// start 幂等门（重复调用=双定时器+双观察者+双 sink）。
   bool _started = false;
   File? _file;
   IOSink? _sink;
@@ -91,7 +91,7 @@ class BatteryJournal with WidgetsBindingObserver {
     _timer?.cancel();
     _timer = null;
     WidgetsBinding.instance.removeObserver(this);
-    // P3-7：flush 完成后再 close、错误面收口（两个裸
+    // flush 完成后再 close、错误面收口（两个裸
     // unawaited 的任一失败都会成未处理异步错误）。
     final sink = _sink;
     _sink = null;
@@ -177,7 +177,7 @@ class BatteryJournal with WidgetsBindingObserver {
       _writtenBytes += line.length + 1;
       // 低频落地（flush 策略：每次写即 flush——量极小，换数据安全）。
       unawaited(sink.flush());
-      // P3-6：轮转不再只在 start() 执行（长驻进程无界增长）
+      // 轮转不再只在 start 执行（长驻进程无界增长）
       // ——写入路径按累计字节触发截半轮转（tmp+rename 原子替换）。
       if (_writtenBytes > _maxFileBytes) {
         unawaited(_rotateNow());
@@ -198,7 +198,7 @@ class BatteryJournal with WidgetsBindingObserver {
       _brokenSamples = 0;
     }
     try {
-      // P3-8：平台通道无超时——native 挂死会让
+      // 平台通道无超时——native 挂死会让
       // _sampleAndMaybeWrite 永不返回、tick 链永久停摆、journal 静默
       // 停写。10s 超时兜底（超时按无样本跳过本轮）。
       final res = await _channel
@@ -223,7 +223,7 @@ class BatteryJournal with WidgetsBindingObserver {
     }
   }
 
-  /// 写入路径触发的截半轮转（P3-6）：flush+close 当前 sink →
+  /// 写入路径触发的截半轮转：flush+close 当前 sink →
   /// tmp+rename 原子替换（轮转重写中途被杀不截断日志）→ 重开 append。
   /// 轮转期间新写入用旧 sink 抛错被上层 catch 吞（探针丢 1-2 行可接受）。
   Future<void> _rotateNow() async {

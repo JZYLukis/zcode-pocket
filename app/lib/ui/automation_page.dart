@@ -106,7 +106,7 @@ class _AutomationPageState extends State<AutomationPage> {
   Future<void> _runNow(AutomationEntry e) async {
     final client = _actionClient(e);
     if (client == null) return;
-    // （O2 P2-4/O3 P1-1）：本页唯一未包错误处理的写操作
+    // 本页唯一未包错误处理的写操作
     // ——runNow 是 15s 超时的通道 RPC，断网/超时异常逃逸成未处理异步
     // 错误且零反馈。对齐 _runActions 包裹范式，成功路径保留按 status
     // 分档提示。

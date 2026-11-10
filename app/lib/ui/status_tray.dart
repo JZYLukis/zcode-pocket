@@ -142,7 +142,7 @@ class StatusTray extends StatelessWidget {
     // warning/running 同 token（浅 #B45309/深 #FF8A30）使「三色三义」
     // 不可实现。定档：点色=类别（蓝=排队待发/橙=需注意），字色=统一
     // 高对比；warning 与 running 的真分色是全局 token 议题（backlog
-    // VR-11 对比度口径一并拍板）。
+    // 对比度口径一并拍板）。
     final dotColor = s.accent ?? context.colors.foregroundSubtle;
     return Row(
       mainAxisSize: MainAxisSize.min,

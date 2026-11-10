@@ -32,7 +32,7 @@ LineChartPainter _line(List<ChartSeries> series) => LineChartPainter(
 
 void main() {
   group('A6 柱状图 shouldRepaint（原实现为长度比较，同天数数据刷新漏重绘）', () {
-    // 批3 复扫 B-1：Bar 颜色族回归靶（55c55e8 修复当时漏配靶，与 Line 对称）。
+    // 批3 复扫 ：Bar 颜色族回归靶（55c55e8 修复当时漏配靶，与 Line 对称）。
     test('柱图颜色参数变化（barColor/selectedColor/gridColor/labelStyle）：重绘', () {
       BarChartPainter mk(Color c1, Color c2, Color c3, TextStyle st) =>
           BarChartPainter(
@@ -99,7 +99,7 @@ void main() {
       );
     });
 
-    // 深色模式批1 对抗审查路A2 A-1 回归靶：labelStyle/gridColor 随主题
+    // 深色模式批1 对抗审查路 回归靶：labelStyle/gridColor 随主题
     // 变化（数据不变）必须重绘，否则深浅切换图表标签残留旧主题色。
     test('颜色参数变化（labelStyle/gridColor/主题切换）：重绘', () {
       final a = LineChartPainter(
@@ -375,7 +375,7 @@ void main() {
       expect(a.shouldRepaint(b), isTrue);
       expect(a.shouldRepaint(DonutPainter(series: [_s('a', [1])])), isFalse);
     });
-    // heatDayDetailLine 已随生产代码删除（ N1 P3-2：18074
+    // heatDayDetailLine 已随生产代码删除（
     // 结构化明细卡替代后全仓零调用的死代码）。
   });
 }

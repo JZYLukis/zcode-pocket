@@ -5,7 +5,7 @@
 /// 挂接各电脑栈的协调器在 notify_coordinator.dart。
 ///
 /// 差分天然去重：重连后 sessions-index 重放历史快照，与已存基线比对
-/// 无变化就不产事件（替代指纹方案，refs-scan §C3 裁决）。
+/// 无变化就不产事件（替代指纹方案，refs-scan § 裁决）。
 library;
 
 /// 通知通道（官方四通道裁剪为三，各自可静音——设置页三开关）。
@@ -44,7 +44,7 @@ enum NotifyEventKind {
   /// Goal 落定（verified=达成；notSatisfied/failed=未达成/验证失败）。
   goalSettled,
 
-  /// F25（2026-10-24 修复批）：Goal 验证回合开始（协议 verifying——
+  /// （2026-10-24 修复批）：Goal 验证回合开始（协议 verifying——
   /// product-projection.ts:5147 验证回合开始即置并经 sessions-index
   /// 透传）。里程碑级低频通知，迭代循环去重见 PhaseSnapshot.goalVerifyingSeen。
   goalVerifying,
@@ -78,18 +78,18 @@ class PhaseSnapshot {
   final String? interactionId;
   final String? pendingKind;
 
-  /// F26（2026-10-24 修复批）：审批正文点名工具——si pendingInteraction
+  /// （2026-10-24 修复批）：审批正文点名工具——si pendingInteraction
   /// 摘要可选携带的轻量工具身份（sessions-index.ts:17-18，不带问题/
   /// 答案 payload）。随审批事件透传（NotifyEvent.tool）。
   final String? pendingTool;
 
-  /// F26：完成正文兜底（si lastAssistantPreview——最后回复预览，比
+  /// 完成正文兜底（si lastAssistantPreview——最后回复预览，比
   /// 标题更贴近"完成了什么"）。不参与判等（每条新消息都变）。
   final String? preview;
   final String? goalStatus;
   final String title;
 
-  /// F25：verifying 里程碑记账——迭代循环（verifying→active→verifying）
+  /// verifying 里程碑记账——迭代循环（verifying→active→verifying）
   /// 不重发；goal 落定重置（新一轮目标重新通知）。纯记账非协议状态，
   /// 不参与判等；由 diffSnapshots 写入下一轮基线并持久化。
   final bool goalVerifyingSeen;
@@ -154,14 +154,14 @@ class NotifyEvent {
   final String taskId;
   final String title;
 
-  /// 通知正文素材（F26）：审批=pendingKind 或 toolName；goal=goalStatus；
+  /// 通知正文素材：审批=pendingKind 或 toolName；goal=goalStatus；
   /// 聚合=完成任务数。
   final String? detail;
 
-  /// F26：审批点名的工具（si 轻量工具身份原样）——通知正文用。
+  /// 审批点名的工具（si 轻量工具身份原样）——通知正文用。
   final String? tool;
 
-  /// F26：完成/失败正文兜底（lastAssistantPreview 截断后使用）。
+  /// 完成/失败正文兜底（lastAssistantPreview 截断后使用）。
   final String? preview;
   final String? interactionId;
   final int atMs;
@@ -239,7 +239,7 @@ bool _isTerminal(String phase) =>
 bool _isGoalSettled(String? status) =>
     status == 'verified' || status == 'notSatisfied' || status == 'failed';
 
-/// F25：verifying 记账保留规则（diffSnapshots 聚合路径与协调器逐条
+/// verifying 记账保留规则（diffSnapshots 聚合路径与协调器逐条
 /// upsert 写回共用——批尾对抗审查 A 级修正 2026-10-24：si 行构造的
 /// 快照 goalVerifyingSeen 恒 false，逐条写回若不保留旧记账，
 /// verifying→active 的迁移 upsert 即摧毁去重标记，迭代循环每轮重发）。
@@ -285,7 +285,7 @@ List<NotifyEvent> diffTask(
         now.lastActivityAt > sinceMs) {
       final events = <NotifyEvent>[];
       if (_isTerminal(now.phase)) {
-        // H1-P2-03/H2-P3-5：首见分支按当前终态分派（与主分支
+        // 首见分支按当前终态分派（与主分支
         // 同口径）——completedSuccess 计入聚合，error/completedInterrupted
         // 归 singles 单发（失败高优先级本就不聚合）。此前只认
         // completedSuccess，断连/死亡窗口内"新建即失败"的任务零通知零
@@ -345,7 +345,7 @@ List<NotifyEvent> diffTask(
     // 对账兜底（介入点2自证轮实锤 2026-10-19）：基线可能陈旧（写盘
     // 防抖饿死/异常丢失），"终态→终态"但完成时间在水位之后=我们不在
     // 时又完整跑过一轮——计一次该轮终态，否则该轮次对死亡窗口不可见。
-    // （H1 P2-02/H2 P1-1）：kind 按当前终态分派（与上方
+    // kind 按当前终态分派（与上方
     // 主分支同口径）——error→error（复活轮再失败）恒报"任务完成"是
     // 方向性误导，比不发更糟。
     events.add(
@@ -379,7 +379,7 @@ List<NotifyEvent> diffTask(
       ),
     );
   }
-  // F25：verifying 里程碑（验证回合开始）——进入 verifying 边沿且本轮
+  // verifying 里程碑（验证回合开始）——进入 verifying 边沿且本轮
   // 目标未通知过才发；迭代循环（verifying→active→verifying）由
   // goalVerifyingSeen 记账去重防轰炸，goal 落定重置（新一轮重发）。
   if (now.goalStatus == 'verifying' &&
@@ -429,7 +429,7 @@ DiffResult diffSnapshots(
   final next = <String, PhaseSnapshot>{};
   current.forEach((taskId, now) {
     final old = baselines[taskId];
-    // F25：记账字段落下一轮基线（规则见 carryGoalVerifyingSeen）。
+    // 记账字段落下一轮基线（规则见 carryGoalVerifyingSeen）。
     next[taskId] = carryGoalVerifyingSeen(old, now);
     events.addAll(
       diffTask(
@@ -452,7 +452,7 @@ class DiffResult {
   const DiffResult({required this.events, required this.nextBaselines});
 }
 
-/// 基线合并（ H2-P2-1）：当前快照（=当前工作区 cards）缺席的
+/// 基线合并：当前快照（=当前工作区 cards）缺席的
 /// 条目保留——栈同一时刻只挂当前工作区的 TaskListModel，整体替换会
 /// 清零其他工作区全部任务基线，切回后 si 快照对已清基线的任务是
 /// "首见"，完成/审批事件被首见抑制结构性吞掉。merge 后切工作区不再
@@ -467,7 +467,7 @@ Map<String, PhaseSnapshot> mergeBaselines(
 /// "断连窗口聚合"）；失败/审批/Goal 照常单发。
 /// 跨设备聚合（多电脑同时完成聚合成一条， 决策 6）：
 /// [eventsByDevice] 汇总各栈对账结果。
-/// （ H1-P3-01：deviceLabelOf 参数从未被读、_defaultLabel 仅为
+/// （deviceLabelOf 参数从未被读、_defaultLabel 仅为
 /// 它存在——死参数已删；设备标签在 onPost 闭包自行拼接。）
 ReconcilePlan planReconcile(Map<String, List<NotifyEvent>> eventsByDevice, {
   required int atMs,

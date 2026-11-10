@@ -1,4 +1,4 @@
-// 机会项#1（2026-11-08 拍板）：新建项目——workspace-create L2 直发
+// 机会项#1（2026-11-08 拍板）：新建项目——workspace-create 直发
 // （名字校验→创建→切换进新项目）。红=旧代码无此入口（手机完全不能
 // 新建本地项目）。
 import 'package:flutter/material.dart';

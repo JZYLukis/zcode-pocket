@@ -8,7 +8,7 @@ import 'package:zcode_pocket/ui/task_center_page.dart';
 
 /// 「任务」未归类区在 B 方案任务主页中的行为（2026-10-26 项目栏优化）：
 /// 不再有伪项目 chip；默认最近直接展示，项目视图归入「任务」分组。
-/// 保留原 H13 三态、无目录噪音、任务 intent 开桥与下拉刷新约束。
+/// 保留原 三态、无目录噪音、任务 intent 开桥与下拉刷新约束。
 
 class _UncBridge implements BridgeSession {
   @override

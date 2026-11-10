@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
-    <!-- 麦克风同相机降级（Q1 P3-6）：无麦设备（部分平板/桌面）可装可用，
+    <!-- 麦克风同相机降级：无麦设备（部分平板/桌面）可装可用，
          语音入口经 SystemAsr.probe 三级判定自然隐藏，不被商店/安装过滤。 -->
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
     <!-- 系统语音识别兜底（2026-10-28 语音泛用批）：Android 11+ 包可见性
@@ -28,7 +28,7 @@
          声明的 foregroundServiceType 配套；原 dataSync 型权限随类型退役） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <!-- H02（ADR 0046，2026-10-25 审查）：整体关闭安卓云备份与设备迁移
+    <!-- （2026-10-25 审查）：整体关闭安卓云备份与设备迁移
          ——应用目录的会话缓存/通知台账/电量日志均为明文 JSON，不随系统
          备份外带（凭据本在 Keystore，secure storage 不参与备份）。个人
          自用无换机迁移诉求；厂商自有换机克隆路径未实证，公开库前如需
@@ -39,7 +39,7 @@
         android:name="${applicationName}"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher">
-        <!-- 18090：关闭 Impeller 回退 Skia（扫码黑屏根治，ADR 0080 §9）——
+        <!-- 关闭 Impeller 回退 Skia（扫码黑屏根治）——
              相机预览（mobile_scanner 平台视图）销毁后 Impeller 合成器在
              部分华为机型楔死：引擎持续渲染（帧统计正常）但窗口像素全黑
              （agent 自动复现实证：粘贴路径 6/6 正常、含相机路径 1/1 黑屏，
@@ -71,13 +71,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- 长按图标快捷入口（6.6①，ADR 0061）：新任务/最近会话 -->
+            <!-- 长按图标快捷入口（6.6①）：新任务/最近会话 -->
             <meta-data
               android:name="android.app.shortcuts"
               android:resource="@xml/shortcuts"/>
         </activity>
         <!-- 审批提醒前台服务（默认关，设置页开启）：常驻状态通知+连接保活。
-             类型用 specialUse 而非 dataSync（开源前审查 Q1 P2-1 / Q2 P1-1）：
+类型用 specialUse 而非 dataSync（开源前审查 /）：
              Android 14+ 对 dataSync 型有每 24h 累计 6h 的运行硬限（Android
              15+ 超限后 startForeground 直接失败），本服务的职责恰是过夜
              常连保活收审批通知，在 dataSync 限额下确定性失效；且连接保活

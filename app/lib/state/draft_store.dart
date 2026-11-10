@@ -14,7 +14,7 @@ class DraftIdentity {
   final String scopeId;
 
   // 非 const：构造期 trim 归一（.trim() 非常量表达式，const 构造函数
-  // 不允许方法调用；P3-10 修复保留 trim 语义）。
+  // 不允许方法调用； 修复保留 trim 语义）。
   DraftIdentity({
     required String deviceSid,
     required String accountId,
@@ -25,7 +25,7 @@ class DraftIdentity {
         workspaceKey = workspaceKey.trim(),
         scopeId = scopeId.trim();
 
-  /// P3-10：构造即 trim——与 [fromJson] 的 trim 对称，含
+  /// 构造即 trim——与 [fromJson] 的 trim 对称，含
   /// 首尾空白的 scopeId 不再因存盘往返后 key 漂移而"草稿消失"。
 
   factory DraftIdentity.session({
@@ -219,7 +219,7 @@ class DraftStore {
     return DraftStore(root);
   }
 
-  /// P3-1/E2-P3-1/E3-P3-4：崩溃残留 .tmp（write 与 rename
+  /// 崩溃残留 .tmp（write 与 rename
   /// 之间进程死亡，唯一后缀会逐次累积）启动时顺手清扫；失败不阻塞。
   static Future<void> _sweepTmp(Directory root) async {
     try {
@@ -299,7 +299,7 @@ class DraftStore {
         }
       }
     } on Object catch (error) {
-      // P2-3/E2-P2-1/E3-P1-1（库损坏静默失效三路）：
+      // （库损坏静默失效三路）：
       // 整库级解析失败（版本不识别/JSON 畸形）此前不置 loaded → 每次
       // 操作重读坏文件、save 全部静默丢弃、零日志，草稿功能整体死亡
       // 直到人工清数据。隔离自愈：坏文件改名 .corrupt 保留（人工可
@@ -388,7 +388,7 @@ class DraftStore {
         } on Object catch (error) {
           _dirty = true;
           debugPrint('[draft] write failed; retry scheduled: $error');
-          // P3-7/E2-P3-9：写盘失败不再只挂"下一次 flush 触发"
+          // 写盘失败不再只挂"下一次 flush 触发"
           //（磁盘满恢复后若用户不再动草稿，改动到进程死亡都不落盘）——
           // 低频重试节拍兜底，成功或 close 才停。
           _scheduleWriteRetry();
@@ -411,9 +411,9 @@ class DraftStore {
     });
   }
 
-  /// 草稿条目软上限（P3-2：无容量上限+每次变更全量重写，
+  /// 草稿条目软上限（无容量上限+每次变更全量重写，
   /// "输入过又弃置"的会话草稿（含桌面删项目后的 draft:<projectId> 孤儿
-  /// 桶，E3-P3-2）多年累积无界——按 updatedAt 最旧淘汰收敛）。
+  /// 桶）多年累积无界——按 updatedAt 最旧淘汰收敛）。
   static const maxDraftEntries = 200;
 
   Future<void> _writeSnapshot() async {
@@ -448,7 +448,7 @@ class DraftStore {
   Future<void> close() async {
     if (_closed) return;
     await flush();
-    // P2-4/E3-P2-2：flush 的 await 让出窗口内到达的 save 会
+    // flush 的 await 让出窗口内到达的 save 会
     // 重置 _dirty 并排新定时器——直接关门=取消定时器吞掉最后一次保存。
     // 有限轮复查（磁盘持续失败时 flush 不收敛，不无限自旋）。
     for (var i = 0; i < 3 && _dirty; i++) {

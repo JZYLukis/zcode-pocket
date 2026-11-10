@@ -152,7 +152,7 @@ class NotifyCoordinator {
   // ------------------------------------------------------------ 快照差分
 
   /// 从任务卡提取差分快照（pendingInteraction 摘要含 interactionId，
-  /// 官方 sessions-index.ts:12-18；F26：toolName/preview 与 si 行同透传
+  /// 官方 sessions-index.ts:12-18；：toolName/preview 与 si 行同透传
   /// ——对账路径的审批/完成文案不缺素材）。
   @visibleForTesting
   static Map<String, PhaseSnapshot> snapshotsOf(List<TaskCardData> cards) => {
@@ -186,7 +186,7 @@ class NotifyCoordinator {
 
   /// si 原始 phase 归一化（si 官方只发六值域，但任务索引词汇
   /// completed/failed 一旦漏进来也不至于判不中终态——发现14）。
-  /// H2-P3-10：补 'cancelled'（对齐 task_list.normalizePhase
+  /// 补 'cancelled'（对齐 task_list.normalizePhase
   /// 词表——两词表不一致会让同一条 si 行在 upsert 与 cards 两路径产出
   /// 不同 phase，基线双值翻转产生多余基线写与无谓 diff）。
   static String _normalizePhase(String raw) {
@@ -251,7 +251,7 @@ class NotifyCoordinator {
         _reconcileTimer?.cancel();
         _reconcileTimer = Timer(_reconcileWindow, _flushReconcile);
       }
-      // H2-P2-1：merge 而非整体替换——current 只是当前工作区
+      // merge 而非整体替换——current 只是当前工作区
       // cards 的快照，整体替换会清零其他工作区任务基线。
       store.replaceBaselines(
         deviceSid,
@@ -260,7 +260,7 @@ class NotifyCoordinator {
       return;
     }
     // 非对账：只收敛基线（常规事件由 _onUpsert 逐条产出）。merge 保留
-    // 其他工作区条目（ H2-P2-1，语义见 mergeBaselines 注释）。
+    // 其他工作区条目（语义见 mergeBaselines 注释）。
     store.replaceBaselines(
       deviceSid,
       mergeBaselines(baselines, result.nextBaselines),
@@ -308,11 +308,11 @@ class NotifyCoordinator {
       phase: _normalizePhase(entry.phase),
       interactionId: _normalizeInteractionId(pi),
       pendingKind: pi == null ? null : '${pi['kind'] ?? ''}',
-      // F26：si 摘要可选携带的轻量工具身份（sessions-index.ts:17-18）。
+      // si 摘要可选携带的轻量工具身份（sessions-index.ts:17-18）。
       pendingTool: tool.isEmpty ? null : tool,
       goalStatus: entry.goalStatus,
       title: entry.title,
-      // F26：完成正文兜底（最后回复预览）。
+      // 完成正文兜底（最后回复预览）。
       preview: entry.lastAssistantPreview,
       lastActivityAt: entry.lastActivityAt,
     );
@@ -325,7 +325,7 @@ class NotifyCoordinator {
     if (plan.aggregated != null) {
       _dispatch(plan.aggregated!);
     }
-    // （H1 P1-02/H2 P1-2）：审批豁免收敛——"等审批不能
+    // 审批豁免收敛——"等审批不能
     // 埋没"是 ReconcilePlan.singles 的字段契约（notify_core.dart:63），
     // 且收敛后基线已含该 interactionId、第二道闸不在册，该审批提醒会
     // 永久丢失。审批恒逐条发；收敛策略只作用于其余 singles。
@@ -410,7 +410,7 @@ class NotifyCoordinator {
 
   /// 事件 detail 里没带 interactionId——差分产事件时只有 kind。语义去重
   /// 需要回查当前快照：取该任务当前 pending 的 interactionId。
-  /// H1-P3-03：回查同样过 [_normalizeInteractionId]（trim/空串归 null），
+  /// 回查同样过 [_normalizeInteractionId]（trim/空串归 null），
   /// 与差分路径的键口径一致。
   String _interactionIdOf(NotifyEvent e) {
     final model = _watched[e.deviceSid];
@@ -447,7 +447,7 @@ class NotifyCoordinator {
     _clearStaleTimer?.cancel();
     _clearStaleTimer = Timer(const Duration(seconds: 3), () {
       final pending = <String>{};
-      // H1-P2-01：pending 判据此前只看触发时刻的 watched cards
+      // pending 判据此前只看触发时刻的 watched cards
       // ——后台 >90s 回前台时 TaskCatalog 重建空 cards 的新模型，si 快照
       // 未到的 3s 空窗里 pending 为空集 → 在栏审批通知被全量误清；且基线
       // 已含该 interactionId、第二道闸也不在册 → 该审批提醒永久丢失。
@@ -474,6 +474,6 @@ class NotifyCoordinator {
   Future<void> Function(Set<String> stillPendingTaskIds, Set<int> staleIds)?
       onClearStale;
 
-  // （ H2-P3-2：onOpenTask 死代码已删——点击路由实际走
+  // （onOpenTask 死代码已删——点击路由实际走
   // NotificationService.onTap → AppState.openTaskFromNotification。）
 }

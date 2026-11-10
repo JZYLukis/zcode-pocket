@@ -1,7 +1,7 @@
-/// 用量页图表 painter 独立库（批次 1 A6 抽取，2026-10-19 外部审查）：
+/// 用量页图表 painter 独立库（批次 1 抽取，2026-10-19 外部审查）：
 /// 从 usage_page 抽出以便单测直接构造 painter 断言 shouldRepaint。
 ///
-/// A6 修复说明：三种图表的 shouldRepaint 原为长度比较（柱状）与引用
+/// 修复说明：三种图表的 shouldRepaint 原为长度比较（柱状）与引用
 /// 比较（折线/环形）。长度比较在"数据刷新但天数不变"时漏重绘（图表
 /// 停留旧数据，真 bug）；引用比较配合调用方每次新建 list 成了恒重绘
 /// （浪费但正确）。统一改为值比较：数据等值不重绘，数据变化必重绘。
@@ -86,7 +86,7 @@ String barRangeTotalText(num total, String Function(num) formatter) =>
 
 // ── 2026-10-23 用户反馈批①：图表可点选（折线/饼图/热力图）─────────
 
-/// 折线图点选命中换算（对抗审查 C2）：与 LineChartPainter 布点同式
+/// 折线图点选命中换算（对抗审查）：与 LineChartPainter 布点同式
 /// （x = width * i / (n-1)，首末点贴边）——此前复用柱状 slot=width/n
 /// 公式，中间点系统性半槽偏移。n<=1 时直接命中首点。
 int? linePointHitIndex(double dx, double width, int n) {
@@ -98,7 +98,7 @@ int? linePointHitIndex(double dx, double width, int n) {
 
 /// x 标签人话化："2026-10-18"→"10月18日"；小时粒度串（无日期前缀
 /// 匹配）退 shortChartDate 截短。
-/// N1 P3-10/N3 P3-4：日期+小时形态（today 档 'YYYY-MM-DD HH'）
+/// 日期+小时形态（today 档 'YYYY-MM-DD HH'）
 /// 保留小时位——此前被 chartDayLabel 截成纯日期，24 个点全显同一天而
 /// x 轴标签却有小时；官方 buildHourlyAxis 纯 'HH:00:00' 形态不匹配本
 /// 分支、照走 shortChartDate。
@@ -143,10 +143,10 @@ double lineRangeTotal(List<ChartSeries> series) => series.fold<double>(
   (sum, s) => sum + s.values.fold<double>(0, (a, v) => a + v),
 );
 
-/// 环形图描边宽（painter 与命中判定共用—— N3 P3-3）。
+/// 环形图描边宽（painter 与命中判定共用——）。
 const double kDonutStroke = 18.0;
 
-/// 环形图半径（ N3 P3-3：原 height/2-6 的外缘=height/2+3 超出
+/// 环形图半径（原 height/2-6 的外缘=height/2+3 超出
 /// 画布半高 ~3px（选中片 +5.5px），Stack 默认裁掉外缘环带；改扣
 /// stroke/2+3 让非选中外缘收进 3px、选中外缘恰好贴边）。
 double donutRadius(Size size) => size.height / 2 - kDonutStroke / 2 - 3;
@@ -155,7 +155,7 @@ double donutRadius(Size size) => size.height / 2 - kDonutStroke / 2 - 3;
 /// 且半径在环带（radius±stroke/2 外扩 8px 容差）内；中心空洞/环外→null。
 /// 弧段铺排与 DonutPainter.paint 完全同款（-90° 起顺时针、按值比例）。
 int? donutHitIndex(Offset p, Size size, List<ChartSeries> series) {
-  // 尺寸守卫（18074 验收根因配套）：无界尺寸（滚动列 constraints.biggest
+  // 尺寸守卫（验收根因配套）：无界尺寸（滚动列 constraints.biggest
   // 高度 ∞）会让中心/半径无穷化、角度退化恒 0——所有点按都命中第一片。
   if (!size.isFinite || size.width <= 0 || size.height <= 0) return null;
   final total = series.fold<double>(
@@ -182,10 +182,10 @@ int? donutHitIndex(Offset p, Size size, List<ChartSeries> series) {
   return null;
 }
 
-/// 热力图格子点选明细行：已退役（ N1 P3-2/N2-9：18074 结构化
+/// 热力图格子点选明细行：已退役（结构化
 /// 明细卡替代后全仓零调用，删除；此处不留桩——需要时查 git 历史）。
 
-/// 模型饼图切片数据（官方范式 refs/ZCode/packages/ui/src/settings/
+/// 模型饼图切片数据（官方范式 ZCode 官方开源实现/packages/ui/src/settings/
 /// usage-stats/appUsageModelPieChartViewModel.ts:28-48：totalTokens>0
 /// 过滤 → 降序 → 超过 6 片时前 5 + 合并"其他"；切片值=totalTokens 实际量，
 /// 弧占比由 DonutPainter 按值比例计算——等价于官方"用过滤后总量重算占比"）。
@@ -247,7 +247,7 @@ class LineChartPainter extends CustomPainter {
   final String Function(num) valueFormatter;
   final TextStyle labelStyle;
 
-  /// E22（2026-10-24 修复批搭车）：canvas 文字随系统字体缩放（华为大字
+  /// （2026-10-24 修复批搭车）：canvas 文字随系统字体缩放（华为大字
   /// 用户）；由 build 传 MediaQuery.textScalerOf。
   final TextScaler textScaler;
 
@@ -456,7 +456,7 @@ class LineChartPainter extends CustomPainter {
       !listEquals(old.series, series) ||
       !listEquals(old.xLabels, xLabels) ||
       old.gridColor != gridColor ||
-      // 波2 路A2 A-1：labelStyle 颜色随主题（foregroundSubtlest），
+      // 波2 路 ：labelStyle 颜色随主题（foregroundSubtlest），
       // 漏比则深浅切换 x 轴标签/峰值标注残留旧色。与 Bar 完全同口径。
       old.labelStyle != labelStyle ||
       old.textScaler != textScaler ||
@@ -476,7 +476,7 @@ class BarChartPainter extends CustomPainter {
   final int? selectedIndex;
   final Color selectedColor;
 
-  /// E22（2026-10-24 修复批搭车）：canvas 文字随系统字体缩放（与 Line 同）。
+  /// （2026-10-24 修复批搭车）：canvas 文字随系统字体缩放（与 Line 同）。
   final TextScaler textScaler;
 
   /// 深色模式批1：画布颜色全部由 build 传参（painter 无 context）。
@@ -572,7 +572,7 @@ class BarChartPainter extends CustomPainter {
       !listEquals(old.values, values) ||
       !listEquals(old.xLabels, xLabels) ||
       old.selectedIndex != selectedIndex ||
-      // 对抗审查路A A-1（2026-10-23）：漏比较颜色参数——主题深浅切换时
+      // 对抗审查路A （2026-10-23）：漏比较颜色参数——主题深浅切换时
       // values/选中态不变则不重绘，浅色侧残留深色柱/网格。与 Line 同口径。
       old.barColor != barColor ||
       old.selectedColor != selectedColor ||

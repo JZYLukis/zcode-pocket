@@ -86,9 +86,9 @@ class _StartPlanCatalogApp extends _CatalogApp {
   ];
 }
 
-/// D2-01（套餐变体键插值）：同 providerId+同 modelId 的多变体
+/// （套餐变体键插值）：同 providerId+同 modelId 的多变体
 /// 目录——_dedupModels 归并一行，行内 ⇄ 是触达其余变体的唯一入口
-///（18077 拍板「⇄ 仅保留同 provider 内多变体场景」）。
+///（拍板「⇄ 仅保留同 provider 内多变体场景」）。
 class _VariantCatalogApp extends AppState {
   @override
   Future<List<dynamic>> modelSelectionOptions() async => [
@@ -320,7 +320,7 @@ void main() {
   testWidgets('长目录：选中行滚入可视区（免翻找）——真选中态几何断言', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
-    // H14（2026-10-25 批①）：原用例夹具无选中行，断言只覆盖"列表能出
+    // （2026-10-25 批①）：原用例夹具无选中行，断言只覆盖"列表能出
     // 全"——滚入从未被验证。现注入挂起选中模型（第 13 项，视口外），
     // 断言首帧后选中行真实滚入弹层可视区。
     await tester.pumpWidget(
@@ -379,7 +379,7 @@ void main() {
       reason: '选中行底部在屏内',
     );
     // 2026-10-26 验收二轮：再收紧 40（用户拍板；低于 44 触控下限，
-    // design_guard 豁免留痕 →0051）。
+    // design_guard 豁免留痕）。
     expect(
       box.size.height,
       greaterThanOrEqualTo(40),
@@ -494,7 +494,7 @@ void main() {
     );
   });
 
-  testWidgets('18077 验收#1：同名模型分块各一行，点组头展开直选 Start Plan', (tester) async {
+  testWidgets('验收#1：同名模型分块各一行，点组头展开直选 Start Plan', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
     String? pickedProvider;
@@ -646,7 +646,7 @@ void main() {
   // 仍合并一行，弹层不再出现 swap_horiz。
   // 候选 13 验收反馈：两个 BigModel API 渠道（不同 providerId）组头
   // 完全同名不可辨——碰撞组追加消歧后缀（providerId 尾段/序号）。
-  // 候选 15 验收 A1 终修：后缀=人话短标签（非内部 ID 原串）。
+  // 候选 15 验收 终修：后缀=人话短标签（非内部 ID 原串）。
   test('碰撞消歧后缀：套餐 token 人话映射+未知退短词/序号', () {
     expect(groupDisambigSuffix('account:bigmodel-offpeak-idle-plan', 1), '闲时包',
         reason: 'offpeak+idle 去重为闲时，plan=包');

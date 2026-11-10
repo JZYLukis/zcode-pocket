@@ -34,7 +34,7 @@ String? assembleNewFileText(List<Map<String, dynamic>> patches) {
       // 官方 jsdiff 默认 4 行上下文——纯插入编辑
       // 无删除行但含上下文行，旧判据会当全文渲染成拼盘；收紧为逐行
       // 必须 `+` 前缀（上下文/删除一律 null）。
-      // C2：jsdiff 无尾换行标记行（`\ No newline at end of file`，
+      // jsdiff 无尾换行标记行（`\ No newline at end of file`，
       // 官方夹具 file-tool-port.test.ts:688 实证随 lines 真实到达）不是
       // 内容——跳过而非整体放弃（无尾换行的新建 html 也要能预览）。
       if (line.startsWith(r'\')) continue;
@@ -48,7 +48,7 @@ String? assembleNewFileText(List<Map<String, dynamic>> patches) {
 
 // ------------------------------------------------------------ ::visualize 指令
 
-/// 18074 验收③：agent 用可视化工具时回复正文携带 `::visualize{"path":…}`
+/// 验收③：agent 用可视化工具时回复正文携带 `::visualize{"path":…}`
 /// 指令（官方 gen-ui 引用语法，references.test.ts 实证；桌面端投影成
 /// 沙箱页面，手机端此前显示为原始指令串=用户实锤「一大串代码串」）。
 /// 手机消费=指令位渲染成可点卡片，点按经本轮 fileChanges 解析路径取
@@ -86,7 +86,7 @@ String _normFsPath(String p) =>
 
 /// 指令路径（常为绝对路径）与 fileChanges 条目路径（工作区相对/绝对
 /// 形态不定）按尾部段匹配（双向 tail），两侧形态差异不敏感。
-/// C1/C2：只允许带 `/` 段边界的尾部匹配——裸 endsWith 会让
+/// 只允许带 `/` 段边界的尾部匹配——裸 endsWith 会让
 /// `preindex.html` 命中 `index.html` 打开错误文件。
 bool visualizePathMatches(String directivePath, String itemPath) {
   final a = _normFsPath(directivePath);
@@ -254,7 +254,7 @@ class _VisualizeCardState extends State<VisualizeCard> {
 /// connect-src 'none' 关死外发回传；脚本/样式/图片只放行官方 visualize
 /// 页同一份 CDN 白名单（非任意 https 域）。
 String injectPreviewCsp(String html) {
-  // 资源域=官方 visualize 页 CSP 白名单（refs/snapshot-3171 .../visualize/
+  // 资源域=官方 visualize 页 CSP 白名单（官方 3.17.1 源码快照 .../visualize/
   // SKILL.md:61：cdnjs.cloudflare.com / esm.sh / cdn.jsdelivr.net /
   // unpkg.com / fonts.googleapis.com / fonts.gstatic.com / fonts.bunny.net /
   // zcode.z.ai）。不再放行任意 `https:`——那等于给 img/script 留任意域
@@ -274,7 +274,7 @@ String injectPreviewCsp(String html) {
       "connect-src 'none'; base-uri 'none'; form-action 'none'; "
       "object-src 'none'";
   final meta = '<meta http-equiv="Content-Security-Policy" content="$csp">';
-  // C1/C2：旧 indexOf('<head') 会被 `<header>` 标签或含 `<head>` 的
+  // 旧 indexOf('<head') 会被 `<header>` 标签或含 `<head>` 的
   // 注释劫持——meta 落进 body/注释时 Chromium 直接忽略，connect-src
   // 'none' 防线整页静默失效。改为正则精确定位真 `<head>`/`<head …>`
   // 开标签（`<header` 的下一个字符是 e，不匹配 \s|>；大小写不敏感），
@@ -330,7 +330,7 @@ class _HtmlPreviewPageState extends State<HtmlPreviewPage> {
     if (_controller != null || HtmlPreviewPage.debugDisableWebView) return;
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      // 18076 反馈#9：文档查看器约定白底（documentPaper 双主题同值白）
+      // 反馈#9：文档查看器约定白底（documentPaper 双主题同值白）
       // ——深色主题下此前用主题背景色，透明生成页面整体蒙黑。
       ..setBackgroundColor(context.colors.documentPaper)
       ..setNavigationDelegate(

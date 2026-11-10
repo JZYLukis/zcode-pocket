@@ -230,7 +230,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  // B3-P1-2：搜索开启但关键词为空时页面传 ''（非 null）——
+  // 搜索开启但关键词为空时页面传 ''（非 null）——
   // AssistantText 缺非空守卫会让全部助手正文从 markdown 降级纯文本
   //（注释契约「关键词为空即恢复 markdown 渲染」与 UserBubble 守卫对齐）。
   testWidgets('搜索开启且关键词为空：助手正文保持 markdown（不降级纯文本）', (tester) async {
@@ -283,7 +283,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  // B2-1（lane 语义）：mid-turn auto-compact（lane=assistantWork）
+  // （lane 语义）：mid-turn auto-compact（lane=assistantWork）
   // 的标记行在回合内部渲染（TimelineMarkerDivider），不再顶层分隔线。
   testWidgets('mid-turn compact 标记行段内渲染（lane=assistantWork）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
@@ -432,7 +432,7 @@ void main() {
       expect((empty[0] as TextSpan).text, 'abc');
     });
 
-    // B1-P1-1/B2-P2-4/B3-P1-1（三路）：Dart toLowerCase 对
+    // （三路）：Dart toLowerCase 对
     // U+0130（İ）扩长（1 码元→'i'+U+0307 两码元），折叠串下标切原串
     // 错位/RangeError——修复前 source='İab' 查 'b' 直接越界崩溃。
     test('buildSearchHighlightSpans：İ（U+0130）折叠扩长不崩溃且命中下标在原串坐标系', () {

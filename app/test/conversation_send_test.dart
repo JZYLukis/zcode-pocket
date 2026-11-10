@@ -14,7 +14,7 @@ import 'package:zcode_pocket/ui/voice_input_sheet.dart'
     show debugVoiceRecognitionAvailable;
 import 'package:zcode_pocket/transport/conversation.dart';
 
-/// 立即失败的 createSession（A1：草稿态首条消息失败零提示）。
+/// 立即失败的 createSession（草稿态首条消息失败零提示）。
 class _SendTestBridge implements BridgeSession {
   @override
   Map<String, dynamic>? get projectIntent => null;
@@ -62,7 +62,7 @@ class _ImmediateFailAppState extends AppState {
   }
 }
 
-/// 受控失败的 createSession（A2/A3：发送在途窗口可控）。
+/// 受控失败的 createSession（发送在途窗口可控）。
 class _GatedFailAppState extends AppState {
   // 断网排队批（2026-10-29）：无桥发送会改道入队——这些用例的语义是
   // 「已连接但发送失败/在途」，补桥保持原路径。
@@ -82,7 +82,7 @@ class _GatedFailAppState extends AppState {
   }
 }
 
-/// resolveInteraction 按注入错误失败（A5）。
+/// resolveInteraction 按注入错误失败。
 class _ResolveThrowAppState extends AppState {
   // 断网排队批（2026-10-29）：无桥发送会改道入队——这些用例的语义是
   // 「已连接但发送失败/在途」，补桥保持原路径。
@@ -372,7 +372,7 @@ void main() {
         false,
         reason: '发送后应失焦收起输入法（失败横幅路径同样收起）',
       );
-      // 失败回填后草稿文本仍在（A2 语义不回归）。
+      // 失败回填后草稿文本仍在（语义不回归）。
       await tester.pump();
       expect(find.textContaining('第一条消息'), findsWidgets,
           reason: '输入框回填即可（≥1）；宽匹配防"多渲染一份"回归由'
@@ -380,7 +380,7 @@ void main() {
     });
   });
 
-  group('18077 验收#6（Bug B）：计划批准选项中文化', () {
+  group('验收#6（Bug B）：计划批准选项中文化', () {
     testWidgets('Approve/Keep planning 映射中文（原样透传英文为 bug）', (tester) async {
       final app = _ResolveThrowAppState(StateError('unused'));
       await tester.pumpWidget(

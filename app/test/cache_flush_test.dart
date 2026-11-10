@@ -18,7 +18,7 @@ ConversationState _consistentState(List<Map<String, dynamic>> rows) =>
       ..logEpoch = 'e1'
       ..rows = rows;
 
-/// writeSession 带闸门的 store（B2：在途写窗口可控）。
+/// writeSession 带闸门的 store（在途写窗口可控）。
 class _GatedStore extends LocalCacheStore {
   _GatedStore(super.baseDir);
   Completer<void>? gate;

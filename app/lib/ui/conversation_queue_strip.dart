@@ -69,7 +69,7 @@ class QueueStrip extends StatelessWidget {
                 child: IconButton(
                   padding: EdgeInsets.zero,
                   iconSize: 14,
-                  // D2-07：tooltip 非 Text 组件需显式 tr()。
+                  // tooltip 非 Text 组件需显式 tr。
                   tooltip: autoDrain ? tr('关闭自动发送') : tr('回合结束后自动发送'),
                   icon: Icon(
                     autoDrain ? Icons.autorenew : Icons.autorenew_outlined,
@@ -193,7 +193,7 @@ class QueueStrip extends StatelessWidget {
             ),
           if (items.length > 2)
             Text(
-              // D2-07：对齐官方 pattern「^… 还有 N 条$」的空格
+              // 对齐官方 pattern「^… 还有 N 条$」的空格
               // 口径（此前源串无空格恒不命中）。
               '… 还有 ${items.length - 2} 条',
               style: TextStyle(

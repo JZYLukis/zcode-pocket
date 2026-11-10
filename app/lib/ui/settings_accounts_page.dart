@@ -12,7 +12,7 @@ import 'app_widgets.dart';
 import 'login_page.dart';
 import 'pairing_page.dart';
 
-/// 账号管理页（多账号批 2026-10-25，multi-account-plan §4.4）：账号
+/// 账号管理页（多账号批 2026-10-25，multi-account-plan）：账号
 /// 清单（provider+短标签+绑定电脑数）、添加账号（官方 OAuth）、设为
 /// 当前（扫码配对/设备列表跟随当前账号）、删除（其名下电脑档案提示）。
 ///
@@ -26,7 +26,7 @@ class SettingsAccountsPage extends StatefulWidget {
 }
 
 class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
-  /// 重命名对话框 controller 归 State 托管（ P2-6：此前取消路径
+  /// 重命名对话框 controller 归 State 托管（此前取消路径
   /// 在退场动画中立即 dispose、保存路径永不 dispose——同 branch_sheet
   /// 批D 教训，统一列表+dispose 清理）。
   final _dialogControllers = <TextEditingController>[];
@@ -68,7 +68,7 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
     if (!mounted) return;
     final app = AppStateScope.of(context);
     if (result is Map && result['jwt'] is String) {
-      // 18079 反馈②审查根因收尾：删号后重登只写凭据不接回电脑=永久
+      // 反馈②审查根因收尾：删号后重登只写凭据不接回电脑=永久
       // 离线死态（只能大退 app 靠冷启兜底）。登录成功即编排接回
       //（改绑/激活绑定该账号的档案）。
       try {
@@ -130,11 +130,11 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
       ),
     );
     if (ok != true) return;
-    // 18079 反馈②：走 AppState 完整编排（先删凭据、拆该账号全部连接
+    // 反馈②：走 AppState 完整编排（先删凭据、拆该账号全部连接
     // 栈+设备数据、活跃指针收尾）。WebView 的 Cookie 不在这里清——
     // 登录页每次进页都会平台级三清（Cookie/localStorage/Cache），在
     // 这里全局清 Cookie 反而会把同时活着的网页备用入口
-    // 静默踢下线（审查 L2）。
+    // 静默踢下线（审查）。
     // 编排内 accountStore 的 secure storage
     // 多次读写（华为机型 Keystore 损坏并不罕见）抛出时兜底——人话报错
     // 并刷新列表反映真实状态（此前对话框已关、零反馈、“点了没反应”）。

@@ -33,7 +33,7 @@ class NotifyActiveEntry {
   final int id;
   final String? channelId;
 
-  /// 点击路由 payload（F5 接管簿用：冷启动时按它把遗留审批条目还原
+  /// 点击路由 payload（接管簿用：冷启动时按它把遗留审批条目还原
   /// 进本进程 _active/_idsByTask）。
   final String? payload;
   const NotifyActiveEntry({required this.id, this.channelId, this.payload});
@@ -126,14 +126,14 @@ class NotificationService {
     try {
       final active = await backend.activeNotifications();
       for (final n in active) {
-        // F5（复审）②：_nextId 先越过**全部**遗留 id（含将被清除的
+        // （复审）②：_nextId 先越过**全部**遗留 id（含将被清除的
         // tasks/goals）——避免新通知按 id 覆盖任何在栏条目。
         if (n.id >= _nextId) _nextId = n.id + 1;
         if (n.channelId == channelTasks || n.channelId == channelGoals) {
           await backend.cancel(n.id);
           continue;
         }
-        // F5（复审）①：遗留审批条目接管进本进程簿——clearStale 从此
+        // （复审）①：遗留审批条目接管进本进程簿——clearStale 从此
         // 清得掉（审批不过期）。
         if (n.channelId == channelApprovals) {
           final pl = NotifyTapPayload.decode(n.payload);
@@ -168,7 +168,7 @@ class NotificationService {
   int _nextId = 1000;
   final Map<String, int> _idsByTask = {};
 
-  /// H1-P3-04-4：截断点避开 UTF-16 代理对（emoji）中间——
+  /// 截断点避开 UTF-16 代理对（emoji）中间——
   /// 孤立代理项经平台通道 UTF-8 编码成 U+FFFD 显示为乱码。
   static String _cutAtCodePoint(String s, int limit) {
     if (limit < s.length && (s.codeUnitAt(limit) & 0xFC00) == 0xDC00) {
@@ -194,7 +194,7 @@ class NotificationService {
       case NotifyEventKind.approvalPending:
         title = '$label${e.detail == 'userInput' ? tr('等你输入') : tr('等你审批')}';
       case NotifyEventKind.goalSettled:
-        // F26（2026-10-24 修复批）：三值细分（官方 snapshot.ts:427-428
+        // （2026-10-24 修复批）：三值细分（官方 snapshot.ts:427-428
         // ——notSatisfied=有效结论未达成；failed=验证过程失败）。
         title = '$label${switch (e.detail) {
           'verified' => tr('目标达成'),
@@ -204,15 +204,15 @@ class NotificationService {
       case NotifyEventKind.goalVerifying:
         title = '$label${tr('目标验证中')}';
       case NotifyEventKind.awayAggregated:
-        // F26：聚合通知也带设备名（多电脑区分谁完成了任务）。
+        // 聚合通知也带设备名（多电脑区分谁完成了任务）。
         title = '$label${tr('你不在时完成了 ${e.detail} 个任务')}';
     }
-    // F26 正文打磨：完成/失败带最后回复预览（比标题更贴近"完成了
+    // 正文打磨：完成/失败带最后回复预览（比标题更贴近"完成了
     // 什么"，缺省回退标题）；审批带轻量工具名（si 透传，不带问题等
     // 敏感 payload）；聚合保持引导点击。
     final String body;
     if (e.kind == NotifyEventKind.awayAggregated) {
-      // H1-P3-05：聚合点击实际直达 sampleTask 会话页（非任务
+      // 聚合点击实际直达 sampleTask 会话页（非任务
       // 列表）——文案与行为对齐。
       body = tr('点按查看任务');
     } else if (e.kind == NotifyEventKind.approvalPending) {
@@ -272,7 +272,7 @@ class NotificationService {
         await backend.cancel(id);
       } catch (_) {}
       final info = _active.remove(id);
-      // H1-P3-04-1/H2-P3-1：同步回收 id 簿条目——_idsByTask
+      // 同步回收 id 簿条目——_idsByTask
       // 此前只增不减（FGS 常驻数周场景纯泄漏型增长）。
       if (info != null) {
         _idsByTask.remove('${info.$2.name}:${info.$1}');

@@ -16,13 +16,13 @@ import 'fake_relay_v2.dart';
 
 /// 修复批 B 组3（workspace_controller）红绿：
 /// - ①startBootstrapWhenPaired：bootstrap 失败此前 _lastOpenAction 从未
-///   设置 + unawaited 无 catch——redrive 自愈链在该路径不存在（J3 P1-3）；
+/// 设置 + unawaited 无 catch——redrive 自愈链在该路径不存在；
 /// - ②openActiveWorkspace 三处 isGone 早退把 workspaceOpening 永久留
 //true：redrive 闸被短路 + spinner 卡死；
 /// - ③bootstrap 收尾 switchWorkspace(target) 无新近性守卫：await 窗口内
-///   用户手切被反向拆掉（J1-3/J3 P2-1）；
+/// 用户手切被反向拆掉；
 /// - close() 参与 epoch 纪律：外部 close（suspend/disposeStack）的 await
-///   窗口内在飞 open 会把桥复活到已释放 client 上（J1-2 半开栈）。
+/// 窗口内在飞 open 会把桥复活到已释放 client 上（半开栈）。
 
 Future<bool> _until(
   bool Function() cond, {
@@ -348,7 +348,7 @@ void main() {
       );
       expect(bridge.disposed, isTrue);
       expect(h.controller.workspaceError, isNotNull);
-      // 人话档（J1-12/J3 P3-3）：原始异常串只进日志，横幅不带英文协议原文。
+      // 人话档：原始异常串只进日志，横幅不带英文协议原文。
       expect(h.controller.workspaceError, contains('打开工作区失败'));
       expect(h.controller.workspaceError, isNot(contains('si unexpected')));
     });

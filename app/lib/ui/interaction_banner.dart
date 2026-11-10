@@ -10,7 +10,7 @@ import '../state/app_state_scope.dart';
 import '../transport/conversation.dart';
 import 'inline_diff_preview.dart';
 
-/// 审批横幅（2.2，设计稿 §3.3）：pendingInteractions → 横幅贴输入栏上方。
+/// 审批横幅（2.2，设计稿）：pendingInteractions → 横幅贴输入栏上方。
 ///
 /// 变体：
 /// - permission：工具请求权限（toolName + summary + allowOnce/allowAlways/
@@ -53,7 +53,7 @@ class InteractionBanner extends StatelessWidget {
     } catch (e) {
       // alreadyResolved（先到先得）静默；其余（网络失败等）必须让用户知道
       // 应答没发出去（ #8：静默吞失败会让用户误以为已批准）。
-      // A5（2026-10-19 审查）：精确匹配 alreadyResolved——原
+      // （2026-10-19 审查）：精确匹配 alreadyResolved——原
       // `|| msg.contains('already')` 会把任何恰好含 already 的错误
       // （如 "already in progress"）也静默吞掉。alreadyResolved 仍静默
       // （波次 2 的刻意行为，回归防护 7.1 钉死）。
@@ -76,7 +76,7 @@ class InteractionBanner extends StatelessWidget {
     if (interactions.isEmpty || sessionId == null) {
       return const SizedBox.shrink();
     }
-    // F1（对抗审查中③，官方 V4InteractionDialogs :120-131 对位）：
+    // （对抗审查中③，官方 V4InteractionDialogs :120-131 对位）：
     // 通用卡挑「首个 permission/userInput」（跳过 workspaceHookReview
     // ——官方禁通用 Dialog 渲染该类），Hook 审核独立入口卡恒渲染。
     // 修复：此前 first 是 hook 时整列 early-return 吞掉同屏提问/审批。
@@ -176,7 +176,7 @@ Map<String, dynamic> buildQuestionsResponseContent(
   for (var i = 0; i < questions.length; i++) {
     final q = questions[i];
     final picked = selected[i];
-    // B2（官方 ElicitationDialog customAnswer 对位）：
+    // （官方 ElicitationDialog customAnswer 对位）：
     // 自定义答案并入该题作答（selected+custom 同数组，getQuestionAnswers
     // 同款）；单选时自定义顶替选项选择。
     final customText = (custom[i] ?? '').trim();
@@ -216,7 +216,7 @@ class _InteractionCardState extends State<_InteractionCard> {
   /// option value 集合（官方 ElicitationDialog 同款）。
   final Map<int, Set<String>> _qSelected = {};
 
-  /// B2：每题自定义答案（官方 customAnswer）；_qCustomOpen=当前展开
+  /// 每题自定义答案（官方 customAnswer）；_qCustomOpen=当前展开
   /// 自定义输入框的题序（-1=无）。
   final Map<int, String> _qCustom = {};
   int _qCustomOpen = -1;
@@ -233,7 +233,7 @@ class _InteractionCardState extends State<_InteractionCard> {
   late bool _detailsExpanded = widget.interaction['payload'] is Map &&
       '${(widget.interaction['payload'] as Map)['kind']}' != 'permission';
 
-  /// 18077 验收#6（优化意见 A）：整卡暂时收起——想先看上下文再回来
+  /// 验收#6（优化意见 A）：整卡暂时收起——想先看上下文再回来
   /// 审批；收起态=一行摘要条（interaction 未应答，仅视觉收纳）。
   bool _minimized = false;
 
@@ -278,7 +278,7 @@ class _InteractionCardState extends State<_InteractionCard> {
   int get _questionsTotal =>
       listOf(mapOf(widget.interaction['payload'])?['questions'])?.length ?? 0;
 
-  //（O1 P1-1/O2 P1-1/O3 P1-2 三路同根）：某题「已作答」
+  //（三路同根）：某题「已作答」
   /// =选中项**或非空自定义**——官方 getQuestionAnswers（ElicitationDialog
   /// .tsx:263-270）把 customAnswer 与选中项同为合法作答。提交使能/翻页
   /// /计数统一走本判据：多选题仅填自定义不再死锁在「选择后继续」。
@@ -319,7 +319,7 @@ class _InteractionCardState extends State<_InteractionCard> {
     );
   }
 
-  /// 自定义答案行（B2：官方每题末尾自由输入补偿项对位）。
+  /// 自定义答案行（官方每题末尾自由输入补偿项对位）。
   List<Widget> _customAnswerBlock(List questions, int qi, bool multi) {
     final open = _qCustomOpen == qi;
     final saved = (_qCustom[qi] ?? '').trim();
@@ -495,7 +495,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                             cur
                               ..clear()
                               ..add(value);
-                            // （O2 P2-1）：单选选中=重置该题
+                            // 单选选中=重置该题
                             // 自定义草稿（官方 updateElicitationDraftsForOption
                             // 单选分支 customAnswer:""，ElicitationDialog.tsx
                             // :321）——否则已放弃的自定义文本随 answers 发出
@@ -632,7 +632,7 @@ class _InteractionCardState extends State<_InteractionCard> {
         ? context.colors.interactionAskForeground
         : context.colors.success;
 
-    // 18077 验收#6（优化意见 A）：收起态——一行摘要条，点击恢复整卡
+    // 验收#6（优化意见 A）：收起态——一行摘要条，点击恢复整卡
     // （interaction 本身未应答，服务端倒计时照常走，只是视觉收纳）。
     if (_minimized) {
       return Container(
@@ -717,7 +717,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                   Expanded(
                     child: Text(
                       title,
-                      // 18077 审美门必修 1A（用户拍板）：标题行瘦身——倒计
+                      // 审美门必修 1A（用户拍板）：标题行瘦身——倒计
                       // 时降级到下方独立行后，标题有整行宽度；单行省略防
                       // 工具名被挤孤悬第二行。
                       maxLines: 1,
@@ -734,12 +734,12 @@ class _InteractionCardState extends State<_InteractionCard> {
                     // （ripple+tooltip 无障碍标签）。
                     // 批次A（设计审计）：44→48——外层 tight SizedBox 会压掉
                     // IconButton 默认的 48 最小盒，去掉 tight 约束即恢复。
-                    // 18077 审美门建议②：可见图形 20→24（隐性触控面 48
+                    // 审美门建议②：可见图形 20→24（隐性触控面 48
                     // 不变，可见尺寸进 40dp 档）。
                     IconButton(
                       padding: EdgeInsets.zero,
                       iconSize: 24,
-                      // O1 P2-5：tooltip 不是 Text 组件，不经
+                      // tooltip 不是 Text 组件，不经
                       // 自定义 Text 的自动查表——需显式 tr()。
                       tooltip: _detailsExpanded ? tr('收起明细') : tr('展开明细'),
                       onPressed: () =>
@@ -752,7 +752,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                         color: context.colors.foregroundSubtle,
                       ),
                     ),
-                  // 18077 验收#6（优化意见 A）：整卡收起（先看上下文再回
+                  // 验收#6（优化意见 A）：整卡收起（先看上下文再回
                   // 来审批）。建议②：可见图形放大。
                   IconButton(
                     padding: EdgeInsets.zero,
@@ -767,7 +767,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                   ),
                 ],
               ),
-              // 18077 审美门必修 1A（用户拍板）：倒计时从标题行降级到
+              // 审美门必修 1A（用户拍板）：倒计时从标题行降级到
               // 标题行下方独立一行——标题行原本 5 类元素（图标+标题+
               // 胶囊+两按钮）超审美门拥挤判据，且工具名被挤孤悬。
               if (widget.interaction['autoResolution'] is Map)
@@ -786,7 +786,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                 // 代码块、编辑/写入类出内联 diff（官方 PermissionDialog
                 // buildPermissionToolCall 同思路：把权限请求还原成
                 // toolCall 交给聊天区渲染器，命令/编辑各有专用块）。富预
-                // 览已是完整内容，不再与 R5 明细行/展开态全文叠放。
+                // 览已是完整内容，不再与 明细行/展开态全文叠放。
                 if (rich case final richPreview?)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
@@ -797,12 +797,12 @@ class _InteractionCardState extends State<_InteractionCard> {
                         : InlineDiffPreview(
                             display: (richPreview['display'] as Map)
                                 .cast<String, dynamic>(),
-                            // 18077 验收#6（A）：大 diff 折叠（默认 24 行
+                            // 验收#6（A）：大 diff 折叠（默认 24 行
                             // +显示全部）。
                             collapsible: true,
                           ),
                   )
-                // R5：一行明细预览常驻（用户核心诉求"批准的具体是什么"），
+                // 一行明细预览常驻（用户核心诉求"批准的具体是什么"），
                 // 完整内容展开看。优先 detail（真实操作），summary 过滤
                 // 通用策略文案后仅作补充说明。
                 else if (_permissionDetailLine(payload) case final detailLine?)
@@ -980,7 +980,7 @@ class _InteractionCardState extends State<_InteractionCard> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      // 18077 审美门建议③（用户拍板）：未选时禁用态从灰底
+                      // 审美门建议③（用户拍板）：未选时禁用态从灰底
                       // 灰字（易误读为「渲染坏了」）改描边禁用态——明确
                       // 「这是一个按钮，还没到能点的状态」。
                       child: (_busy || !_anyQAnswered)
@@ -1192,7 +1192,7 @@ class _InteractionCardState extends State<_InteractionCard> {
 
 /// 选项按钮三档语言（V2 审美优化，评审 2.2#8）：allowOnce 黑实心
 /// （主操作，与发送键同族）/ allowAlways 淡填充（次）/ deny 红描边（危险）。
-/// R5（2026-10-17 refs 实证）：审批"具体在批准什么"来自 payload.detail
+/// （2026-10-17 refs 实证）：审批"具体在批准什么"来自 payload.detail
 /// （= 工具 input 原样，官方 PermissionDialog 经 getPermissionRequestPreview
 /// 解析 command/filePath/fileChanges）。summary 只是策略 reason，且官方
 /// 明确过滤两句通用英文文案——此前我们只显示 summary，用户看不到内容。
@@ -1242,7 +1242,7 @@ String? _permissionDetailLine(Map payload) {
 /// 区同款 tool 渲染器——命令出命令块、编辑出 diff；手机侧从同一份
 /// payload.detail 合成）。返回 {'kind': 'command', 'text': 全命令} 或
 /// {'kind': 'diff', 'display': InlineDiffPreview 消费形状}；null=无富
-/// 预览（读取/通用类维持 R5 纯文本明细行）。
+/// 预览（读取/通用类维持 纯文本明细行）。
 Map<String, dynamic>? _permissionRichPreview(Map payload) {
   final toolName = '${payload['toolName'] ?? ''}'.toLowerCase();
   Object? detail = payload['detail'];
@@ -1372,7 +1372,7 @@ const _genericReasons = {
   'Tool has side effects and requires approval',
 };
 
-/// R7（2026-10-17 真机反馈）：审批选项文案由服务端下发（英文），
+/// （2026-10-17 真机反馈）：审批选项文案由服务端下发（英文），
 /// 桌面端整体为中文观感——已知文案映射为中文，未知原样透传。
 const _optionLabelZh = <String, String>{
   'Allow': '允许',
@@ -1391,8 +1391,8 @@ const _optionLabelZh = <String, String>{
   'OK': '确定',
   'Edit': '编辑',
   'Answer': '回答',
-  // 18077 验收#6（Bug B）：ExitPlanMode 计划批准选项此前不在词表
-  // （R7 机制原样透传英文，真机实锤「批准选项是英文的」）。
+  // 验收#6（Bug B）：ExitPlanMode 计划批准选项此前不在词表
+  // （机制原样透传英文，真机实锤「批准选项是英文的」）。
   'Approve': '批准',
   'Approve plan': '批准计划',
   'Keep planning': '继续规划',
@@ -1406,7 +1406,7 @@ const _optionLabelZh = <String, String>{
 };
 
 
-/// A2：幂等 snooze 内存账（跨重建防重）的写入判据（#13②，公开给单测）：
+/// 幂等 snooze 内存账（跨重建防重）的写入判据（#13②，公开给单测）：
 /// 每项=sessionId:interactionId——长会话/多交互会无界累积，超限按插入序
 /// 淘汰最旧（有界 FIFO；同键只发一次语义不变）。
 @visibleForTesting
@@ -1453,7 +1453,7 @@ class _AutoResolutionCountdown extends StatefulWidget {
 class _AutoResolutionCountdownState extends State<_AutoResolutionCountdown> {
   Timer? _ticker;
 
-  /// A2：每个交互只发一次幂等 snooze（跨重建防重）。
+  /// 每个交互只发一次幂等 snooze（跨重建防重）。
   static final Set<String> _snoozed = {};
 
   @override
@@ -1494,7 +1494,7 @@ class _AutoResolutionCountdownState extends State<_AutoResolutionCountdown> {
         });
   }
 
-  /// F5：官方 autoResolution.state——'snoozed'=自动解决已停（可见即发
+  /// 官方 autoResolution.state——'snoozed'=自动解决已停（可见即发
   /// 的 snooze 生效后 deadlineAt 被清，倒计时行随之消失）。
   String get _snoozeState =>
       '${mapOf(widget.interaction['autoResolution'])?['state'] ?? ''}';
@@ -1551,7 +1551,7 @@ class _AutoResolutionCountdownState extends State<_AutoResolutionCountdown> {
                   : context.colors.foregroundSubtle,
             ),
           ),
-          // F5（五路审查·协议中③，用户拍板撤）：手动「延时」语义前提
+          // （五路审查·协议中③，用户拍板撤）：手动「延时」语义前提
           // 错误——官方 snooze 是首次有效即永久停止自动解决（重复=
           // noop、无新 deadlineAt 回显），且可见即发的自动 snooze 已
           // 停表，本按钮恒为空操作却报「时限已更新」假反馈。撤。

@@ -1,6 +1,6 @@
 // 生成网页预览 CSP 外发面收紧（2026-11-08 对抗审查 #6）：
 // 资源域从任意 `https:` 收窄到官方 visualize 页同一份 CDN 白名单
-// （refs/snapshot-3171 visualize/SKILL.md），并补 base-uri/form-action/
+// （官方 3.17.1 源码快照 visualize/SKILL.md），并补 base-uri/form-action/
 // object-src 关死；img-src 不再给任意 https 域留 beacon 外带通道。
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/ui/file_preview.dart';

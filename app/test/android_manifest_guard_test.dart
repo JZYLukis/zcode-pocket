@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// 备份策略静态断言（H02）：allowBackup 未显式声明时安卓默认
+/// 备份策略静态断言：allowBackup 未显式声明时安卓默认
 /// 开启自动备份——应用目录的会话缓存/通知台账为明文 JSON，会进系统云
 /// 备份/换机迁移。本断言防模板或依赖清单合并把该声明改回默认。
 ///
@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// 运行硬限（Android 15+ 超限后 startForeground 直接失败），过夜保活
 /// 确定性失效；且超时路径须有 onTimeout 优雅收尾防
 /// ForegroundServiceDidNotStopInTimeException 崩溃。
-/// P3-5（终审批1）：节点归属解析——注释里出现同串不得假绿。
+/// （终审批1）：节点归属解析——注释里出现同串不得假绿。
 /// indexOf 解析（不开正则转义坑）：取 `<tag ...>` 开标签与 `</tag>` 闭标签。
 String? _nodeBlock(String xml, String tag) {
   final open = xml.indexOf('<$tag');

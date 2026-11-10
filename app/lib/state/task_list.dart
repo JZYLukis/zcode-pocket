@@ -78,7 +78,7 @@ bool isRunningPhase(String phase) =>
 /// 排序稳定性参照 zemote stabilizeTaskOrder：可见集合不变时保持当前顺序，
 /// 只刷新字段——避免 running 任务因 lastActivityAt 变化在列表里跳动。
 class TaskListModel extends ChangeNotifier {
-  /// F1 冷工作区（si dormant）：不要求 sessions.ready，通道任务（历史/
+  /// 冷工作区（si dormant）：不要求 sessions.ready，通道任务（历史/
   /// 归档，zcodeTask 三列表冷可用）直接渲染；si 复活后上层重建本模型。
   final bool dormant;
 
@@ -115,7 +115,7 @@ class TaskListModel extends ChangeNotifier {
   List<TaskCardData> _cards = const [];
   List<TaskCardData> get cards => _cards;
 
-  // C2（2026-10-19 审查）：三区缓存（_rebuild 时重算）——原 getter 每次
+  // （2026-10-19 审查）：三区缓存（_rebuild 时重算）——原 getter 每次
   // 过滤+复制，页面/前台服务文本每通知各取一遍，流式期间每帧三份拷贝。
   List<TaskCardData> _pinnedView = const [];
   List<TaskCardData> _runningView = const [];
@@ -221,7 +221,7 @@ class TaskListModel extends ChangeNotifier {
           changed = true;
         }
       }
-      // 内容无差异的已知 id 跳过（ J1-6/J2 P3-4，电量同源半项）：
+      // 内容无差异的已知 id 跳过（电量同源半项）：
       // tasks-index 活跃期约 5s 一推、行内容多数一致——恒 changed=true 会
       // 让每次推送都全量 merge+sort+notify+缓存写防抖重挂（磁盘侧指纹
       // 去重只兜住写盘，UI 重建链路纯浪费）。mapEquals 对标量字段（String/
@@ -259,7 +259,7 @@ class TaskListModel extends ChangeNotifier {
     _rebuild();
   }
 
-  /// 批量本地移除（ J2 P3-3）：remote 重连换代/投影重建时
+  /// 批量本地移除：remote 重连换代/投影重建时
   /// removedIds 成批到达——逐 id 调 markRemovedLocally 会触发 N 次全量
   /// merge+sort+notify（每次又重挂缓存写防抖）。循环只写墓碑，收尾一次
   /// 重建。
@@ -310,7 +310,7 @@ class TaskListModel extends ChangeNotifier {
 
   void _rebuild() {
     if (sessions.ready || dormant) {
-      // 过期清理与 keys 迭代分离（ J1-1/J2 P1-1/J3 P1-1 三路）：
+      // 过期清理与 keys 迭代分离（三路）：
       // 原实现把 remove 放进 .where 谓词——Map.keys 是惰性活视图，迭代
       // 中改 map 必抛 ConcurrentModificationError（单条过期也炸），归档/
       // 删除任务 60s 后的下一次 rebuild 必现；notifyListeners 逐监听器
@@ -371,7 +371,7 @@ List<TaskCardData> mergeTaskSources({
     final title = (s != null && s.title.trim().isNotEmpty)
         ? s.title
         : ('${task?['title'] ?? ''}');
-    // 守卫（ J3-P2-2）：同 task_catalog 排序器同族——畸形行
+    // 守卫：同 task_catalog 排序器同族——畸形行
     // 硬转换会沿 notifyListeners 上抛，改安全读取按 0 兜底。
     final activity = s != null && s.lastActivityAt > 0
         ? s.lastActivityAt
@@ -404,7 +404,7 @@ List<TaskCardData> mergeTaskSources({
           : (prev?.lastActivityAt ?? activity),
       createdAt: created > 0 ? created : (prev?.createdAt ?? 0),
       pinned: pinnedIds.contains(id) || (prev?.pinned ?? false),
-      // hasBackgroundWork 兜底链补 task 行（ J1-8）：行映射特意
+      // hasBackgroundWork 兜底链补 task 行：行映射特意
       // 携带 activity.hasBackgroundWork，但 channel-task-only 的历史卡在
       // merge 层永远读不到（恒 false）——taskHomeCardRow 兜底行丢后台
       // 工作标志。
@@ -510,7 +510,7 @@ List<String> parseDeletedTaskIds(dynamic raw) {
   return out;
 }
 
-/// F18 跨工作区搜索过滤（纯函数）：workspace-list 全量任务里筛非活跃
+/// 跨工作区搜索过滤（纯函数）：workspace-list 全量任务里筛非活跃
 /// 工作区、未归档、不在活跃列表里的标题命中（官方 getAvailableTasks 全量
 /// 载荷——webRemoteControlManager.ts:729；任务条目字段见
 /// web-remote-control.ts:747 WebRemoteControlTaskTarget）。

@@ -1,7 +1,7 @@
 /// Turn 分组模型（2.1 消息渲染器核心，纯数据层）：把 v4 行序列投影为
 /// 渲染条目序列。
 ///
-/// 桌面对齐基准（2026-10-16 末波重做，依据 refs/ZCode 源码规格）：
+/// 桌面对齐基准（2026-10-16 末波重做，依据 ZCode 官方开源实现 源码规格）：
 /// - wire 顺序 [turnHeader][userInput][reasoning/toolCall…][assistantText]
 ///   （product-projection.ts 先 append turnHeader 再 append userInput；
 ///   2026-10-22 真机验收③实锤：此前误记 [userInput][turnHeader]，导致
@@ -10,7 +10,7 @@
 ///   是轮次元数据（权威工时/文件摘要），**不是**显示条目；
 /// - 工作条（「工作中 X」/「已工作 X」）渲染在用户消息之后、首个工作行
 ///   之前——它是 agent 历史折叠区的头部（ConversationTurnGroup.tsx:775），
-///   不再位于用户消息上方（F5 真机反馈根因：旧实现 turnHeader 直接开组
+/// 不再位于用户消息上方（真机反馈根因：旧实现 turnHeader 直接开组
 ///   产生「条/消息/条」三明治）；
 /// - **正文不打断工作段**（官方 splitVisualWorkSegments 实证
 ///   conversationTurnWorkSegments.ts:83-95：切段唯一断点是 guided 用户
@@ -46,7 +46,7 @@ class TurnWork {
   final List<Map<String, dynamic>> work;
   final String prefixText;
 
-  /// B9（2026-10-24 修复批）：guided 段事实定位——本段的切档触发行
+  /// （2026-10-24 修复批）：guided 段事实定位——本段的切档触发行
   /// （guided 输入，首段为 null）与段序（官方 splitVisualWorkSegments
   /// 下标），用于按段解析工时（官方 resolveSegmentDurationMs）。
   final Map<String, dynamic>? triggerRow;
@@ -80,12 +80,12 @@ class TurnWork {
   }
 
   /// 生产渲染的运行态判定统一走 [stateLabel]（含 phaseRunning 承接、
-  /// guided 前段语义）；本 getter 仅测试消费（ B3-P3-5 钉语义，
+  /// guided 前段语义）；本 getter 仅测试消费（钉语义，
   /// 防误用——两者对 guided 前段/空 header 行为不同）。
   bool get running {
     final state = header?['state'];
     if (state is String && state.isNotEmpty) {
-      // B9：非末段（guided 前段）在运行轮中已完成——官方
+      // 非末段（guided 前段）在运行轮中已完成——官方
       // segmentCompleted 语义（segmentIndex < len-1），不显"工作中"。
       return state == 'running' && isLastSegment;
     }
@@ -98,11 +98,11 @@ class TurnWork {
     );
   }
 
-  /// 轮正常完成（对抗审查 B3：官方轮尾操作行只认 row.state==='complete'
+  /// 轮正常完成（对抗审查 ：官方轮尾操作行只认 row.state==='complete'
   /// ——中断/失败轮的反馈/分支大概率被服务端 guard 拒）。
   bool get completedOk => header?['state'] == 'completedSuccess';
 
-  /// 是否轮内最后一个工作段（对抗审查 B2：guided 追问一轮切多个段，
+  /// 是否轮内最后一个工作段（对抗审查 ：guided 追问一轮切多个段，
   /// 若每段都挂轮尾操作行=一轮 N 条四钮行；官方一轮只一条 action bar）。
   /// buildChatItems 在 guided 切段时把前段置 false。
   bool isLastSegment = true;
@@ -110,7 +110,7 @@ class TurnWork {
   /// 本轮发了轮尾文件卡（操作行改挂卡后——见 closeTurn 的顺序对齐）。
   bool hasSummaryCard = false;
 
-  /// 轮级子代理配对（H12 批② 2026-10-25，官方 conversationAssistantWork
+  /// 轮级子代理配对（批② 2026-10-25，官方 conversationAssistantWork
   /// Items.ts:203-269 同构）：Agent 工具行 rowId → 配对 subagent 行；
   /// claimed=已并入合并卡的 subagent 行 rowId（渲染时撤销）。guided 切段
   /// 后各段共享同一份（配对按轮，不按段）。由 buildChatItems 尾段统一
@@ -118,11 +118,11 @@ class TurnWork {
   Map<int, Map<String, dynamic>>? pairedSubagentByToolRowId;
   Set<int>? claimedSubagentRowIds;
 
-  /// 整轮全部非空正文段合并（对抗审查 B1：官方轮尾复制=全部 text 段
+  /// 整轮全部非空正文段合并（对抗审查 ：官方轮尾复制=全部 text 段
   /// join("\n\n")，ConversationTurnGroup.tsx:1336——此前只复制最后一段，
   /// 多段轮丢前段；prefixText=切段继承的前序段正文）。
   String get allTextJoined {
-    // B10（2026-10-29 审查）：官方轮尾复制追加
+    // （2026-10-29 审查）：官方轮尾复制追加
     // ExitPlanMode 的计划 markdown（ConversationTurnRow.tsx:86-110
     // + planToolCall.ts readStringField[plan,text,content]）——计划
     // 正文来自结构化 tool 行，不混入普通工具输出；已在正文段中的
@@ -179,7 +179,7 @@ class TurnWork {
     return intOf(header?['startedAt']);
   }
 
-  /// 段工时（B9：官方 resolveSegmentDurationMs 对齐）：
+  /// 段工时（官方 resolveSegmentDurationMs 对齐）：
   /// ①段事实 activeMs → ②段事实 endedAt-startedAt → ③多段无事实退
   /// trigger 行时间边界（旧 guide 快照兜底：trigger.createdAt →
   /// nextTriggerAt/header.endedAt）→ ④单段保持整轮语义
@@ -242,7 +242,7 @@ class TurnWork {
 
   /// 轮次终态（turnHeader.state）：interrupted 的文案按官方区分
   /// editRerun（被新消息中断）/其余（已停止）。
-  /// B9：运行轮中的 guided 前段按官方 segmentCompleted 语义视作已完成
+  /// 运行轮中的 guided 前段按官方 segmentCompleted 语义视作已完成
   /// （不显"工作中"，工时按段）。
   String get stateLabel {
     final state = '${header?['state'] ?? ''}';
@@ -303,21 +303,21 @@ class TimelineMarkerItem extends ChatItem {
   final String label;
   final Map<String, dynamic> row;
 
-  /// B11：运行中标记（压缩进行中/目标校验中）——呈现层可用细动效，
+  /// 运行中标记（压缩进行中/目标校验中）——呈现层可用细动效，
   /// 终态标记 false。
   final bool running;
   TimelineMarkerItem(this.label, this.row, {this.running = false});
 }
 
 /// timelineMarker 行 → (label, running)；null=不渲染（畸形 marker）。
-/// B2-1：顶层（轮边界 lane，经 TimelineMarkerItem）与段内
+/// 顶层（轮边界 lane，经 TimelineMarkerItem）与段内
 /// （mid-turn assistantWork lane，经 TurnWork.work）两处渲染共用单源
 /// 解析——文案/running 语义不得两份漂移。
 (String, bool)? timelineMarkerLabelOf(Map<String, dynamic> row) {
   final marker = row['marker'];
   if (marker is! Map) return null;
   final type = '${marker['type'] ?? ''}';
-  // B11（2026-10-29 审查）：官方渲染 compact /
+  // （2026-10-29 审查）：官方渲染 compact /
   // forkNotice / goalVerify / modelChange 四类分隔线
   // （ConversationRowView.tsx:1926-2035）——此前只解析 modelChange，
   // 压缩/分支来源/目标校验标记静默丢弃。
@@ -388,7 +388,7 @@ int migrateAnchorIndexAfterPrepend(String key, List<ChatItem> items) {
   return -1;
 }
 
-/// 条目 key（列表锚定+搜索定位共用——/0059）。
+/// 条目 key（列表锚定+搜索定位共用——）。
 ///
 /// 稳定性铁律（2026-10-29 真机"上滑跳转/入页闪动"根因修复初版 +
 /// 2026-11-08 review-fix 修正）：
@@ -400,7 +400,7 @@ int migrateAnchorIndexAfterPrepend(String key, List<ChatItem> items) {
 ///   半截回合按**段内首行** rowId（append 不改首行——流式追加不重挂；
 ///   头部前插时键切换由 anchor 迁移兜住）。index 兜底全部移除（index
 ///   参与 key=前插必变）。
-/// - A1-P3-14/B1-P3-6：协议保证 rowId 在场，但防御路径一旦
+/// - /：协议保证 rowId 在场，但防御路径一旦
 ///   走到（畸形帧缺 rowId），'row-null' 类兜底会产出重复键（debug 抛
 ///   Duplicate keys、release 元素错配）——异常分支掺入 index 保唯一
 ///   （正常行零变化，前插稳定性不受影响）。
@@ -434,13 +434,13 @@ String chatItemKey(ChatItem item, int index) => switch (item) {
 };
 
 String _rowKeyOf(Map<String, dynamic> row, int index) {
-  // P3-3（D-8 批4）：String 数字容忍——退化到 row-null-$index 会在
+  // （批4）：String 数字容忍——退化到 row-null-$index 会在
   // 前插历史时变键（a78941e 修掉的跳转/锚点丢失同类症状）。
   final id = intOf(row['rowId']);
   return id != null ? 'row-$id' : 'row-null-$index';
 }
 
-/// 按码元截断并避开代理对劈开（ B2-14：72/60 字截断下刀在
+/// 按码元截断并避开代理对劈开（72/60 字截断下刀在
 /// emoji/生僻字中间会渲染 replacement 字形——截点落在前导代理上时
 /// 回退一位）。
 String clipTailSafe(String s, int max) {
@@ -467,7 +467,7 @@ bool _isTrailSurrogate(int cu) => cu >= 0xDC00 && cu <= 0xDFFF;
 /// 铺满：zod 保证 number，但服务端形态漂移（String 数字）会打断整页
 /// build（release=灰屏）——畸形形态安全兜底，正常路径零变化）。
 
-/// 长度稳定的大小写折叠（ B1-P1-1/B2-P2-4/B3-P1-1 三路）：
+/// 长度稳定的大小写折叠（三路）：
 /// Dart 的 toLowerCase() 遵循 Unicode 全映射，U+0130（İ）等字符会
 /// 扩长（1 码元 → 'i'+U+0307 共 2 个码元）——折叠串下标无法映射回
 /// 原串，用它切片原串会错位甚至 RangeError（搜索高亮在 build 期崩
@@ -490,18 +490,18 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
   final items = <ChatItem>[];
   TurnWork? open;
 
-  /// 轮级正文累积（guided 切段继承——轮尾复制=整轮合并，对抗审查 B1）。
+  /// 轮级正文累积（guided 切段继承——轮尾复制=整轮合并，对抗审查）。
   String turnTextCarry = '';
 
   /// 当前用户消息所属轮的 header（wire 上 turnHeader 先于 userInput 到达）。
   Map<String, dynamic>? turnHeader;
 
-  /// B9（2026-10-24 修复批）：当前段下一段 guided 触发行与段序——
+  /// （2026-10-24 修复批）：当前段下一段 guided 触发行与段序——
   /// 新段构造时带入（首段 trigger=null/index=0），新轮到达时复位。
   Map<String, dynamic>? guidedTriggerRow;
   int guidedSegmentIndex = 0;
 
-  /// 轮级子代理计数（ B3-P3-6：旧实现只数 closeTurn 时刻
+  /// 轮级子代理计数（旧实现只数 closeTurn 时刻
   /// open 里的末段——guided 多段轮的前段子代理行漏计，「N 个子代理」
   /// 胶囊偏小；配对聚合本就按轮，计数同口径）。
   var turnSubagentCount = 0;
@@ -511,13 +511,13 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
     final subagents = turnSubagentCount;
     open = null;
     // 轮结束：轮尾文件变更卡（桌面=最终正文之后的内联折叠卡）。
-    // 数字守卫（对抗审查 B2 首立，批C 组3 铺满）：fileChanges
+    // 数字守卫（对抗审查 首立，批C 组3 铺满）：fileChanges
     // 自身与 files 计数都过守卫——String/非 Map 形态漂移不再打断 build。
     final files = intOrZero(mapOf(turnHeader?['fileChanges'])?['files']);
     final hasEntity = '${turnHeader?['entityId'] ?? ''}'.trim().isNotEmpty;
-    // H1（审计）：fileChanges/rewind 的 target 必须带 entityId（官方
+    // （审计）：fileChanges/rewind 的 target 必须带 entityId（官方
     // ConversationFileSummaryPanel 在缺失时直接不渲染入口）。
-    // 子代理胶囊挂本卡（对抗审查 B6）：只读不改文件的轮（files==0
+    // 子代理胶囊挂本卡（对抗审查）：只读不改文件的轮（files==0
     // 但 subagents>0）也发卡——胶囊不得随文件数消失。
     if (turnHeader != null && (files > 0 || subagents > 0) && hasEntity) {
       // 操作行随卡（2026-10-24 用户验收：对齐官方 deferAssistantActions
@@ -548,7 +548,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
         final parsed = timelineMarkerLabelOf(row);
         if (parsed == null) break;
         final (label, running) = parsed;
-        // B2-1（lane 语义，官方 product-projection.ts:4943-4945/
+        // （lane 语义，官方 product-projection.ts:4943-4945/
         // 5015）：compact=assistantWork——「归属：marker 落在事件到达时的
         // 行尾，客户端零归属逻辑」。auto-compact 在回合进行中插入时，
         // marker 行按 row.appended 落在 turnHeader 与后续工作行之间——
@@ -574,10 +574,10 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
         // 全部回合拿空 header（真机实锤"已处理"+运行中被判完成默认
         // 收起，2026-10-22 验收③）；上一轮在下一个 turnHeader 到达时关。
         if (row['guided'] == true && open != null) {
-          // guided 切段（对抗审查 B1/B2）：前段不是轮尾段；前段正文
+          // guided 切段（对抗审查 /）：前段不是轮尾段；前段正文
           // 计入轮级累积，新段继承（轮尾复制=整轮合并口径）。
           open!.isLastSegment = false;
-          // B9：前段进入多段口径（工时按段）；结束边界=本触发行
+          // 前段进入多段口径（工时按段）；结束边界=本触发行
           // createdAt（旧快照无 workSegments 事实时的兜底边界）。
           open!.isMultiSegment = true;
           open!.nextTriggerAt = intOf(row['createdAt']);
@@ -599,7 +599,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
       case 'reasoning':
       case 'toolCall':
       case 'subagent':
-      // B4：artifact 行（动态工作流产物，rows.ts:250-261）
+      // artifact 行（动态工作流产物，rows.ts:250-261）
       // 此前落 default 静默丢弃——进工作段按通用行渲染（displayName
       // 由渲染层映射），不再不可见。
       case 'artifact':
@@ -666,7 +666,7 @@ List<ChatItem> buildChatItems(List<Map<String, dynamic>> rows) {
   return items;
 }
 
-/// 轮级子代理配对（H12 批② 2026-10-25，官方 pairSubagentRows 同构）：
+/// 轮级子代理配对（批② 2026-10-25，官方 pairSubagentRows 同构）：
 /// Agent/Task/subagent 工具行 × subagent 行按 parentToolCallId 精确配对
 /// （同一 spawn 的两条 wire 行），合并卡渲染在工具行原位置、后置
 /// subagent 行撤销。与官方逐条对齐：
@@ -826,7 +826,7 @@ String workBarLabel(TurnWork work, {int? nowMs}) {
       if (started == null) return '工作中';
       final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
       final elapsed = now - started;
-      // B2（pattern 占位不递归 tr 同根因）：时长片段拼接前先
+      // （pattern 占位不递归 tr 同根因）：时长片段拼接前先
       // tr（'3 分 20 秒'→'3m 20s'），整串再由官方 pattern 译出
       // 'Working for 3m 20s'。
       return '工作中 ${elapsed > 0 ? tr(formatWorkDuration(elapsed)) : tr('1 秒')}';
@@ -848,8 +848,8 @@ String workBarLabel(TurnWork work, {int? nowMs}) {
 }
 
 /// ③（2026-10-20 真机二轮澄清，对齐桌面三层折叠语义）：
-/// L1 完成后收起为「已工作 X 分 X 秒」；L2 展开显示每个子步骤的
-/// 一行摘要（工具卡/思考条均为收起态）；L3 点具体步骤展开其细节。
+/// 完成后收起为「已工作 X 分 X 秒」； 展开显示每个子步骤的
+/// 一行摘要（工具卡/思考条均为收起态）； 点具体步骤展开其细节。
 /// **展开已工作条不受"工具调用显示"开关限制**（开关只控制运行中的
 /// 实时展示）——用户显式点开=想看步骤列表，展开永远有内容；只有
 /// 真正没有工作行的轮（work 为空）才不可展开。
@@ -874,7 +874,7 @@ String reasoningLabel({
     final elapsed = firstSeen == null
         ? null
         : n.difference(firstSeen).inMilliseconds;
-    // B2-6：时长片段拼接前先 tr（'思考 · ' 前缀无整键无
+    // 时长片段拼接前先 tr（'思考 · ' 前缀无整键无
     // pattern，占位也不递归——预译片段后整串走 custom pattern）。
     return '思考 · 持续了 '
         '${elapsed != null && elapsed > 0 ? tr(formatWorkDuration(elapsed)) : tr('几秒')}';
@@ -936,7 +936,7 @@ String toolDisplayName(String name) => switch (name) {
   'WebSearch' || 'web_search' => '联网搜索',
   'WebFetch' || 'web_fetch' => '抓取网页',
   'Agent' || 'Task' || 'agent' => '子智能体',
-  // B12（2026-10-24 修复批）：子代理任务输出读取工具（官方 schema
+  // （2026-10-24 修复批）：子代理任务输出读取工具（官方 schema
   // name=TaskOutput——此前裸名直显）。
   'TaskOutput' => '子智能体输出',
   'artifact' => '产物',
@@ -971,7 +971,7 @@ Map<String, dynamic>? toolInputArgs(Map<String, dynamic> row) {
 /// 路径做 workspace join，手机渲染只用叶子名，原样透传即可）。
 /// null=三路全空（流式 inputText 未就绪/失败态）——调用方回落通用
 /// 工具行（官方 SwitchModeToolCallBlock 同款兜底语义）。供 _PlanModeCard
-/// 与 TurnWork.allTextJoined（B10 轮尾复制）共用单源。
+/// 与 TurnWork.allTextJoined（轮尾复制）共用单源。
 ({String markdown, String planFilePath})? extractPlanToolCallContent(
   Map<String, dynamic> row,
 ) {
@@ -1025,7 +1025,7 @@ String toolPreview(Map<String, dynamic> row) {
     return args == null ? '' : (_previewFromArgs(args, row) ?? '');
   }
   final firstLine = input.split('\n').first.trim();
-  // B1-P3-8：pretty-printed JSON（含换行的工具入参）首行是
+  // pretty-printed JSON（含换行的工具入参）首行是
   // 孤立 "{"——首行解析失败时对全文再试一次，仍非 JSON 才按纯文本。
   String? previewOf(String candidate) {
     try {
@@ -1050,7 +1050,7 @@ String? _previewFromArgs(
   Map<String, dynamic> row, {
   String Function(String)? clipFn,
 }) {
-  // B2-14：默认截断走代理对安全版（劈开 emoji=replacement 字形）。
+  // 默认截断走代理对安全版（劈开 emoji=replacement 字形）。
   String clip(String s) => clipFn?.call(s) ?? clipTailSafe(s, 72);
   String? pick(List<String> keys) {
     for (final k in keys) {
@@ -1185,7 +1185,7 @@ GroupFamily? _toolGroupFamily(String name) {
 }
 
 /// 渲染单元投影（纯函数供单测）：连续同族工具 ≥2 成组、单条保持原样。
-/// 子代理合并（2026-10-25 批② H12，官方 conversationAssistantWorkItems
+/// 子代理合并（2026-10-25 批②，官方 conversationAssistantWorkItems
 /// .ts:203-269/:316-330 对位）：配对成功的 Agent 工具行在**其原位置**渲染
 /// 合并卡（SubagentPairUnit，含工具状态），后置 subagent 行撤销；未配对
 /// 的工具行/subagent 行照常各渲染一次（fail-open 不丢可见性）。配对结果
@@ -1245,7 +1245,7 @@ List<WorkUnit> buildWorkUnits(
   return units;
 }
 
-/// 配对合并卡（H12 批②）：Agent 工具行+其 subagent 行，渲染在工具行
+/// 配对合并卡（批②）：Agent 工具行+其 subagent 行，渲染在工具行
 /// 原位置（官方 agentToolCall 渲染项对位）。
 class SubagentPairUnit extends WorkUnit {
   final Map<String, dynamic> toolRow;

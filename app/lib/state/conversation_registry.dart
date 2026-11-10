@@ -30,7 +30,7 @@ class ConversationRegistry {
   final bool Function() _siDormantProvider;
   final Future<void> Function() _retrySessionsIndex;
 
-  /// 宿主栈的 dispose 态（对抗审查 L5：disposeStack 只走 close/epoch，
+  /// 宿主栈的 dispose 态（对抗审查 ：disposeStack 只走 close/epoch，
   /// 不置注册表自身 _disposed——栈级守卫须经回调保持 HEAD 语义）。
   final bool Function() _disposedProvider;
   final void Function(String line) _onLog;
@@ -80,7 +80,7 @@ class ConversationRegistry {
   final _outstandingFlushes = <Future<void>>[];
 
   Future<void> _flushCacheWriters({bool awaitWrites = true}) async {
-    // 快照迭代 + 逐条摘除（三轮审查 C1 L1）：flush 的 await 窗口内新
+    // 快照迭代 + 逐条摘除（三轮审查）：flush 的 await 窗口内新
     // 注册会经 _attachCacheWriter 插入新条目——直接迭代 values 会抛
     // "Concurrent modification during iteration"，而末尾整体 clear() 会
     // 把窗口内新挂的 writer 无 flush 无 detach 地丢掉（监听泄漏）。改为
@@ -166,11 +166,11 @@ class ConversationRegistry {
       }
       final sub = await conv.subscribe(sessionId, seed: seed);
       if (isStale() || _closing) {
-        // 对抗审查 M1（双盲甲乙一致）：静默返回已 dispose 的订阅=页面
+        // 对抗审查 （双盲甲乙一致）：静默返回已 dispose 的订阅=页面
         // 拿到哑弹（addListener 挂在已 dispose 的 ChangeNotifier 上，
         // release 下永久空白无重试入口）。与缓存读取阶段的 stale 分支
         // 一致：先释放再抛人话错误，调用方走既有错误态（可重开）。
-        // _closing（C1 M1）覆盖两段失效之间落地又被收尾清理 dispose 的
+        // _closing覆盖两段失效之间落地又被收尾清理 dispose 的
         // 竞态——此类"交付即死"由 ComputerStack 包装层重试兜底。
         await sub.dispose();
         throw SessionSubscriptionResetError();
@@ -281,7 +281,7 @@ class ConversationRegistry {
     _onLog('[battery] conversation subscriptions parked for background');
   }
 
-  /// demote/close 进行中标志（三轮审查 C1 M1：两段失效之间的窗口里，
+  /// demote/close 进行中标志（三轮审查 ：两段失效之间的窗口里，
   /// 落地的注册会"先成功交付、再被收尾清理悄悄 dispose"——页面拿到
   /// 死订阅且无错误提示。_closing 在**任何 await 之前**同步置位，窗口
   /// 内的落地在注册时即抛错，交给 ComputerStack 包装层等清场后重试）。

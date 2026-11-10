@@ -116,7 +116,7 @@ void main() {
     await s.appendLedger(const LedgerEntry(
       ts: 2, kind: 'approvalPending', deviceSid: 'd1', taskId: 't2',
       title: 'B', outcome: 'posted'));
-    // H1-P3-02 修复（只回填 posted 行）：deduped 行不得被标记——
+    // 修复（只回填 posted 行）：deduped 行不得被标记——
     // 同一任务更近的 deduped 行不得抢走 posted 行的回填目标。
     await s.appendLedger(const LedgerEntry(
       ts: 3, kind: 'approvalPending', deviceSid: 'd1', taskId: 't3',

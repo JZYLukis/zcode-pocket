@@ -1,4 +1,4 @@
-/// 设计 token 单源（官方 zai-light/zai-dark design tokens，refs/ZCode
+/// 设计 token 单源（官方 zai-light/zai-dark design tokens，ZCode 官方开源实现
 /// packages/ui/src/styles.css:492-636 / 638-783）。
 /// 深色模式批 1：色板从「单套静态常量」重构为「浅/深双套
 /// 实例 + ThemeExtension 挂载 + 上下文读取」——切换全 app 自动刷新，
@@ -11,7 +11,7 @@ library;
 import 'package:flutter/material.dart';
 
 /// 语义色板（一套=一个亮度形态）。浅色=官方 zai-light 镜像（冻结），
-/// 深色=官方 zai-dark 1:1 搬运（dark-mode-plan §3 底账）。
+/// 深色=官方 zai-dark 1:1 搬运（dark-mode-plan 底账）。
 /// 消费方一律经 `context.colors.xxx` 读取当前套（AppThemeSpec 扩展），
 /// 禁止绕过主题机制缓存色值（CustomPainter 需要颜色时从 build 传参）。
 class AppColors {
@@ -86,7 +86,7 @@ class AppColors {
   final Color brandAccent;
 
   /// 深色下置于品牌蓝淡底上的可读强调字（浅色=brandAccent 本尊；
-  /// B2 2026-11-07：深色 #4099FF 在蓝 10% 底 4.09:1→提亮 #7FB4FF）。
+  /// 2026-11-07：深色 #4099FF 在蓝 10% 底 4.09:1→提亮 #7FB4FF）。
   final Color brandAccentBright;
   final Color onBrandAccent;
   final Color secondary;
@@ -101,7 +101,7 @@ class AppColors {
   /// 运行中状态色（浅=琥珀 #B45309 / 深=官方 warning #FF8A30）。
   /// 官方铁证 run-status-presentation.ts:12-17 running=bg-warning+
   /// animate-pulse；#0B7FFF 在官方仅是终端蓝/图表 1 号色/git renamed
-  /// 标记，从不用作运行态（评审文档 P1-1a 勘误实证）。
+  /// 标记，从不用作运行态（评审文档 -1a 勘误实证）。
   final Color running;
 
   /// 连接中/同步中/上下文进度类指示（连接心智=蓝，官方 terminal blue
@@ -110,7 +110,7 @@ class AppColors {
   final Color idleTask;
   final Color idleTaskSurface;
 
-  /// 文档查看底色（18076 反馈#9）：html 预览等生成文档固定白底——
+  /// 文档查看底色（反馈#9）：html 预览等生成文档固定白底——
   /// 深色主题也不蒙黑（文档查看器约定，同 PDF）。双主题同值白。
   final Color documentPaper;
   final Color interactionAskSurface;
@@ -121,7 +121,7 @@ class AppColors {
   final Color diffRemoved;
 
   /// 阴影色（浅=黑低透明；深=裁量：纯黑更高透明档——深底上阴影弱化，
-  /// 层次靠亮度分层，dark-mode-plan §3 裁量格）。
+  /// 层次靠亮度分层，dark-mode-plan 裁量格）。
   final Color shadowXs;
   final Color shadowMd;
 }
@@ -203,7 +203,7 @@ class AppGitColors {
 }
 
 /// 图表系列配色（批次 B 入单源；深色版=官方 usage-chart 深色 1-5 +
-/// 裁量项，dark-mode-plan §3 图表底账）。
+/// 裁量项，dark-mode-plan 图表底账）。
 /// 消费方经 `context.charts.xxx`——勿在 painter 外缓存（主题切换失效）。
 class AppChartPalette {
   const AppChartPalette({
@@ -253,7 +253,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   final AppGitColors git;
   final AppChartPalette charts;
 
-  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（对抗审查路C B-3：
+  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（对抗审查路C ：
   /// 原先 BoxShadow 字面量与 AppColors 双源同值独立维护，改一处漏一处
   /// 不会被测试抓——派生后只维护 colors 侧，两套测试各自锁值即闭环）。
   AppShadows get shadows => AppShadows(
@@ -379,7 +379,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   );
 
   /// 深色套（官方 zai-dark 1:1 搬运，styles.css:638-783；裁量项留痕
-  /// dark-mode-plan §3 + 批 1 补记）。
+  /// dark-mode-plan + 批 1 补记）。
   static final AppThemeSpec dark = AppThemeSpec(
     colors: const AppColors(
       background: Color(0xFF161616),
@@ -396,7 +396,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       brand: Color(0xFFFFFFFF), // 黑白反转（拍板④）
       onBrand: Color(0xFF000000),
       // 智谱蓝深色基准 #4099FF（官方深蓝/terminal-blue，拍板⑤；批 1
-      // 横向校准后如偏离须回填此处+ADR 留痕）。
+      // 横向校准后如偏离须回填此处+决策记录 留痕）。
       brandAccent: Color(0xFF4099FF),
       brandAccentBright: Color(0xFF7FB4FF), // 深色提亮档（淡底上≈5.8:1）
       // 批1-5 横向校准定稿（ 补记）：#4099FF 实底配白图标仅
@@ -406,7 +406,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
       secondary: Color(0xFF363636),
       accent: Color(0xFF001D3D),
       foreground: Color(0xFFD4D4D4), // neutral-300
-      // ⚠ 官方值起步（白60%/白30%）。路B 视觉审查 A2（2026-10-23）：30%
+      // ⚠ 官方值起步（白60%/白30%）。路B 视觉审查 （2026-10-23）：30%
       // 档像素实测 3.3:1，低于浅色同位——按底账"浅色同逻辑等效果"曾提亮
       // 至 47%。2026-11-05 反馈④随浅色 subtlest 55%→45%（2.68:1）等效果
       // 对齐回撤至 36%（2.67:1）；subtle 60% 维持（bg 上 4.85:1 过线；
@@ -591,7 +591,7 @@ const LinearGradient kBottomFadeMask = LinearGradient(
   stops: [0, 0.7, 1.0],
 );
 
-/// 基座 ThemeData 模块级单例（ P1 P3-7/P2 P3-10）：基座构造是
+/// 基座 ThemeData 模块级单例：基座构造是
 /// 全量组件默认计算（M3 出厂全套），原先深色分支单次 buildAppTheme 要
 /// 构造 3 个完整 ThemeData（base + textTheme.apply 底 + primaryTextTheme
 /// .apply 底），MaterialApp 每次重建 theme/darkTheme 各调一次=最多 6 个。
@@ -625,7 +625,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       surface: c.card,
       error: c.destructive,
       brightness: brightness,
-      // 对抗审查路B A-1（2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
+      // 对抗审查路B （2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
       // 等槽位带紫调（#2B2930/#4A4458 系），深色下大面积漏出（弹层/chip/
       // snackbar/未覆盖文字）——深色分支收口到官方灰阶；浅色侧 2026-11-07
       // 用户拍板同批收口到**智谱蓝图系**（「纯黑白过于冷淡」——原紫调
@@ -635,11 +635,11 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       // 比自己的标签还黑（层级倒挂）——回中性 subtle 档。
       onSurfaceVariant: c.foregroundSubtle,
       outline: isDark ? c.borderHover : null,
-      // 批3（S06 像素复检）：ActionChip 默认边框走 outlineVariant（M3 出厂
+      // 批3（像素复检）：ActionChip 默认边框走 outlineVariant（M3 出厂
       // #48454F 紫灰，深色下 1.9:1 过暗）——深色收口到 borderFaint；
-      // 浅色出厂 #CAC4D0 紫灰同步收口（B1'）。
+      // 浅色出厂 #CAC4D0 紫灰同步收口（'）。
       outlineVariant: c.borderFaint,
-      // 容器族（路B A1 残余补齐）：M3 surfaceContainer* 各档紫调全数
+      // 容器族（路B 残余补齐）：M3 surfaceContainer* 各档紫调全数
       // 收口——深色=三档背景语义（lowest=bg/low=header/中高=card）；
       // 浅色=智谱蓝梯度（白 → 4% → 6% → 8% → 10%，蓝调随层级加深）。
       surfaceDim: isDark ? c.background : null,
@@ -663,16 +663,16 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       // SnackBar（inverse 族）：浅色出厂 #322F35 紫黑——藏青蓝黑。
       inverseSurface: isDark ? c.card : const Color(0xFF2B313C),
       onInverseSurface: isDark ? c.foreground : const Color(0xFFFFFFFF),
-      // 波2 路B2 A-2：inversePrimary 恒作 SnackBarAction 文字色（五态皆然），
+      // 波2 路 ：inversePrimary 恒作 SnackBarAction 文字色（五态皆然），
       // 纯黑在 #2B2B2B 上≈2:1 撤销键隐形——深色 brandAccent（≈4:1）；
       // 浅色藏青底上用亮蓝（#9DB9FF ≈6:1）。
       inversePrimary: isDark ? c.brandAccent : const Color(0xFF9DB9FF),
     ),
-    // 波2 路B2 A-1：ThemeData.dark() 把出厂 surface #141218 固化进 canvasColor
+    // 波2 路 ：ThemeData.dark 把出厂 surface #141218 固化进 canvasColor
     // （copyWith colorScheme 不会重算该槽），DropdownButton 菜单底走它——
     // 深色收口到 card（官方 popover 基准）。
     canvasColor: isDark ? c.card : null,
-    // B3 A1 闭环（2026-10-23 像素实证）：ThemeData.dark() 同样把出厂
+    // 闭环（2026-10-23 像素实证）：ThemeData.dark 同样把出厂
     // onSurface #E6E0E9 烤进 textTheme 全系（bodyMedium/bodySmall/...）与
     // indicatorColor——所有未显式设色的文字（设置页行标题/任务卡副标题/
     // 会话正文默认继承链）在深色下漏薰衣草白且比正文更亮（层级颠倒）。
@@ -685,8 +685,8 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
         ? base.primaryTextTheme
             .apply(bodyColor: c.onBrand, displayColor: c.onBrand)
         : null,
-    // 弹层族收口（路B A-1 主体）：官方 popover/menu/toast 深色=#2B2B2B；
-    // 浅色 sheet 面=智谱蓝 4%（B1' 2026-11-07 用户拍板蓝系取代出厂紫调）。
+    // 弹层族收口（路B 主体）：官方 popover/menu/toast 深色=#2B2B2B；
+    // 浅色 sheet 面=智谱蓝 4%（' 2026-11-07 用户拍板蓝系取代出厂紫调）。
     dialogTheme: isDark ? DialogThemeData(backgroundColor: c.card) : null,
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: isDark
@@ -695,7 +695,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       dragHandleColor: c.foregroundSubtle,
     ),
     popupMenuTheme: isDark ? PopupMenuThemeData(color: c.card) : null,
-    // 文本选区（路B B-7 顺带收口）：深色下默认=primary 纯白块压浅字不可读，
+    // 文本选区（路B 顺带收口）：深色下默认=primary 纯白块压浅字不可读，
     // 用官方终端选区蓝（rgba(64,153,255,0.28)）。
     textSelectionTheme: isDark
         ? TextSelectionThemeData(

@@ -108,7 +108,7 @@ class _HookApp extends AppState {
   List<Map<String, dynamic>> respondCalls = [];
   List<Map<String, dynamic>> toggleCalls = [];
 
-  /// F1：可注入 ACK 形态（默认 accepted）。
+  /// 可注入 ACK 形态（默认 accepted）。
   Map<String, dynamic> respondResult = {'status': 'accepted'};
 
   _HookApp({Map<String, dynamic>? interaction}) {
@@ -194,10 +194,10 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // VR-4a（视觉审查 tools/logs/visual-retro-1109，触控维）：逐项开关旧
+  // （视觉审查，触控维）：逐项开关旧
   // 命中区=SizedBox(32,24)+FittedBox 缩放后的开关本体，实际仅 32×24；
   // 修=40×40 热区外壳（开关视觉尺寸不变）。红=修复前 getSize ≈32×24。
-  testWidgets('VR-4a：逐项开关热区 ≥38×38 且槽内空白点按可切换',
+  testWidgets('逐项开关热区 ≥38×38 且槽内空白点按可切换',
       (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
@@ -384,7 +384,7 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    // F1 补：默认勾选=三态（pending_trust/revoked/stale_digest）。
+    // 补：默认勾选=三态（pending_trust/revoked/stale_digest）。
     // 红点③：决策命令（trust_selected + 默认选择集）。
     expect(app.respondCalls, hasLength(1));
     expect(app.respondCalls.single['sessionId'], 's1');
@@ -461,7 +461,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // §5b H2 体量态（human-eye-retro-1109）：大型 hook 审核（35 项/5 源文件）
+  // b 体量态：大型 hook 审核（35 项/5 源文件）
   // 必须有界滚动+默认选择计数正确——防「2 项夹具全绿、35 项真机占满
   // 全窗」类（bgworks 51 条同型）。
   testWidgets('体量：35 项审核清单有界滚动+默认勾选计数', (tester) async {

@@ -21,7 +21,7 @@ class ConversationViewStore {
 
   Map<int, bool> toolOpenFor(String? sessionId) {
     final sid = sessionId ?? '_anonymous';
-    // A2-P3-4/A3-P3-5：旧 >100 一律 wipe-all（第 101 个会话
+    // 旧 >100 一律 wipe-all（第 101 个会话
     // 抹掉其余全部会话的折叠记忆）——改按插入序逐条驱逐至 99（与会话
     // 页生命周期量级匹配，保留其余记忆）。
     while (_toolOpenBySession.length > 100) {
@@ -36,7 +36,7 @@ class ConversationViewStore {
   }
 
   /// 行数回退（row.removed：编辑重发/回滚）时按当前行裁剪页面级 Map
-  /// （ A1-P3-4：六 Map 只增不减，长会话单调增长；行数增长
+  /// （六 Map 只增不减，长会话单调增长；行数增长
   /// 不裁——流式常态，裁了会丢思考计时）。[liveKeys]=当前投影条目键
   /// 集（seenRowKeys 用；null=不裁 seenRowKeys）。
   void pruneAfterRowShrink(
@@ -45,7 +45,7 @@ class ConversationViewStore {
   }) {
     final liveRowIds = <int>{};
     for (final row in rows) {
-      // P3-3（D-8 批4）：统一数字守卫——服务端把 rowId 发成 String 时
+      // （批4）：统一数字守卫——服务端把 rowId 发成 String 时
       // 不得让稳定键退化为 index（前插历史会跳）。
       final id = intOf(row['rowId']);
       if (id != null && id >= 0) liveRowIds.add(id);
@@ -59,7 +59,7 @@ class ConversationViewStore {
     pruneInt(reasoningElapsedMs);
     pruneInt(fileCardOpen);
     pruneInt(fileCardItems);
-    // P3-1（D-8 批4）：liveCollapsedByRow 键是 base*1000+seg，不能按裸
+    // （批4）：liveCollapsedByRow 键是 base*1000+seg，不能按裸
     // rowId 裁——基行仍活着即保留其全部段键（键 ~/ 1000 == base）。
     if (liveCollapsedByRow.length > liveRowIds.length) {
       liveCollapsedByRow.removeWhere(

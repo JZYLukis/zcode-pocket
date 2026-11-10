@@ -25,7 +25,7 @@ class HmsAsr {
     } on MissingPluginException {
       _availableCache = false;
     } on PlatformException {
-      // 瞬时异常不落缓存（ P1 P3-4，与 SystemAsr.probe 同款）：
+      // 瞬时异常不落缓存（与 SystemAsr.probe 同款）：
       // 一次性错误只影响本次结果，下次再探。
       return false;
     }
@@ -56,7 +56,7 @@ class HmsAsr {
     return session;
   }
 
-  /// 单槽 handler 会话守卫（ P1 P3-3，与 SystemAsr._active 同款）：
+  /// 单槽 handler 会话守卫（与 SystemAsr._active 同款）：
   /// cancel 只在槽位仍属于自己时才摘除，迟到 cancel 不误杀后继会话。
   static HmsAsrSession? _active;
 }

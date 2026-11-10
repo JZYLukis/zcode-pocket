@@ -21,7 +21,7 @@ Future<void> showSubagentListSheet(
     showDragHandle: true,
     isScrollControlled: true,
     // 独立视觉复核必修2（2026-11-07）：不再吃 M3 出厂紫调 sheet 面——
-    // 随全局 bottomSheetTheme（B1' 后=智谱蓝 4% 面），此处不覆写。
+    // 随全局 bottomSheetTheme（' 后=智谱蓝 4% 面），此处不覆写。
     builder: (_) => SafeArea(
       child: _SubagentListSheet(sessionId: sessionId, openSession: openSession),
     ),
@@ -150,7 +150,7 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.65,
       ),
-      // F5（对抗审查·渲染低）：Flexible 只放松了列表，外层 Column 仍
+      // （对抗审查·渲染低）：Flexible 只放松了列表，外层 Column 仍
       // max 尺寸撑满 0.65 屏——mainAxisSize.min 让短内容自然收高。
       child: Column(
         mainAxisSize: MainAxisSize.min,

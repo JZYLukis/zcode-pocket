@@ -33,7 +33,7 @@ void main() {
   // false（只认 'true'）——统一 String 语义后 '1'/'true' 均开。
   test('voiceHmsDefineEnabled：1/true/True 开，其余关（构建=1 回归锁）', () {
     expect(voiceHmsDefineEnabled('1'), isTrue,
-        reason: '构建脚本传 --dart-define=VOICE_HMS=1（18078 起）');
+        reason: '构建脚本传 --dart-define=VOICE_HMS=1（起）');
     expect(voiceHmsDefineEnabled('true'), isTrue);
     expect(voiceHmsDefineEnabled(' True '), isTrue);
     expect(voiceHmsDefineEnabled('false'), isFalse);
@@ -357,7 +357,7 @@ void main() {
       });
     }
 
-    testWidgets('零回调看门狗：10s 无任何引擎事件 → 明确失败（18075 验收 G，华为 Fake 服务实锤）', (
+    testWidgets('零回调看门狗：10s 无任何引擎事件 → 明确失败（验收 G，华为 Fake 服务实锤）', (
         tester,
     ) async {
       grantMic();

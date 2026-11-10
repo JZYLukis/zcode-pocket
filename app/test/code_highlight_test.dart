@@ -134,7 +134,7 @@ void main() {
     final span = codeText.textSpan as TextSpan?;
     expect(span?.style?.fontSize, 13, reason: '块码字号=13（uiCaption）');
     expect(span?.style?.backgroundColor, isNull, reason: '文字不得带实心底色');
-    // A1 回填：尾换行剥除——渲染文本不以换行结尾（带尾换行会多一行）。
+    // 回填：尾换行剥除——渲染文本不以换行结尾（带尾换行会多一行）。
     final rendered = tester.widgetList<Text>(find.byType(Text)).first;
     expect(rendered.data, isNot(endsWith('\n')), reason: '尾换行必须剥除');
   });

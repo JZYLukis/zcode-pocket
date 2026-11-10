@@ -98,7 +98,7 @@ void main() {
       expect(parseCompanionV2Params('http://zcode.z.ai/remote/v4'), isNull);
     });
 
-    // P2-4/F3-P2-2/M3-P1-1（三路同报）：Uri.parse 宽容接受
+    // （三路同报）：Uri.parse 宽容接受
     // 非法/截断 UTF-8 百分号转义，异常延迟到 queryParameters 惰性解码才
     // 抛（本机 SDK 实测：裸 `%`/`%zz` 原样保留不抛；`%E4`/`%C3%28` 抛
     // FormatException）——此前 try 只包 Uri.parse，异常冒到配对页每键击
@@ -189,7 +189,7 @@ void main() {
       );
     });
 
-    // P2-2/F2-P2-3/F3-P2-3（三路同报）：此前"非 5xx 即终态"
+    // （三路同报）：此前"非 5xx 即终态"
     // ——429 限流（重连风暴恰是最易触发路径）、408 超时、captive portal
     // 302 重定向（followRedirects=false 不跟随）全被钉死在不可重试的
     // relay-unavailable 终态。仅 401/403/404 保持终态。
@@ -231,7 +231,7 @@ void main() {
       expect(await retryableOf(404), isFalse, reason: '路径不存在不自愈');
     });
 
-    // P3-3：响应体 join 无字节数上限——恶意/异常中间盒灌
+    // 响应体 join 无字节数上限——恶意/异常中间盒灌
     // 巨 body 会整页进内存耗尽可用内存；超限须按失败处理（且不可重试，
     // 重试只会再拖一遍巨 body）。
     test('响应体超上限按终态失败（修复前=整页 join 进内存）', () async {
@@ -377,7 +377,7 @@ void main() {
       expect(failures.map((f) => f.reason), contains('auth-required'));
     });
 
-    // P1-1：dispose 与在飞 fetchToken 的 401/凭据缺失交错时，
+    // dispose 与在飞 fetchToken 的 401/凭据缺失交错时，
     // RelayV2AuthRequired catch 无 _disposed 守卫——对已 dispose 的
     // ValueNotifier 赋值+向已 close 的 _failureController add，从
     // unawaited(_connect()) 逃逸为未捕获异步错误（release 抛 StateError）。
@@ -481,7 +481,7 @@ void main() {
       expect(client.state, RelayState.waiting);
     });
 
-    // P1-2/F3-P2-1：_armOfflineGrace() 武装的 15s 宽限定时器
+    // _armOfflineGrace 武装的 15s 宽限定时器
     // 被紧随其后的 _reconnect() 内 _cancelTimers() 同步撤销——宽限永不可
     // 达（死代码），信号退化到 30s waiting 超时。既有用例 grace/waiting
     // 同为 200ms 且只断言 reason，完全掩盖此路径。本用例用可区分 timing
@@ -499,7 +499,7 @@ void main() {
           heartbeatBase: Duration(milliseconds: 40),
           heartbeatJitter: Duration.zero,
           ackTimeout: Duration(milliseconds: 300),
-          // P3-8（终审批1）：waitingTimeout 与 grace 拉开 33 倍余量——
+          // （终审批1）：waitingTimeout 与 grace 拉开 33 倍余量——
           // 原 1000ms vs 150ms 在负载下宽限回调被推迟 >1s 即误红。
           waitingTimeout: Duration(milliseconds: 5000),
           deviceOfflineGrace: Duration(milliseconds: 150),
@@ -825,7 +825,7 @@ void main() {
       expect(client.state, RelayState.paired);
     });
 
-    // P1-3/F2-P1-1/F3-P1（三路同报）：WS 连接悬挂黑洞（TCP
+    // （三路同报）：WS 连接悬挂黑洞（TCP
     // 通、Upgrade 永不回——VPN 断隧道/DROP 型防火墙）时：
     // - connect 无 connectTimeout → socket.ready 永不落定；
     // - 握手 deadline 触发的 _reconnect() 无界 await sink.close()——适配
@@ -856,7 +856,7 @@ void main() {
   });
 
   group('RelayClient（V1 LAN 备通道）悬挂防护', () {
-    // P1-1 的 V1 变体（同病同修）：await socket.ready 无超时
+    // 的 V1 变体（同病同修）：await socket.ready 无超时
     // + _connectInFlight 无 finally——悬挂时互斥永真，poke/重连定时器
     // 全被闸死，永久卡在 connecting。V1 是 pass_hash 旧档案的现行生产
     // 路径（双栈 ），非死代码。

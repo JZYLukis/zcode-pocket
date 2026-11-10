@@ -9,12 +9,12 @@ import '../transport/z_transport.dart';
 import 'app_widgets.dart';
 import 'pairing_page.dart';
 
-/// 电脑档案管理面板（D4 裁决：档案切换为一级入口）。
+/// 电脑档案管理面板（裁决：档案切换为一级入口）。
 /// 列表 + 添加 + 状态点 + 重命名/删除；两形态同款（折叠态顶栏、展开态图标轨顶部进入）。
 Future<void> showProfilesSheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
-    // 官方侧栏宽度 min(88vw, 448px)（ui-references §2.2）
+    // 官方侧栏宽度 min(88vw, 448px)（ui-references）
     constraints: const BoxConstraints(maxWidth: 448),
     isScrollControlled: true,
     builder: (_) => const _ProfilesSheet(),
@@ -54,7 +54,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
         if (!mounted) return;
         final accounts = await app.accountStore.listAccounts();
         if (!mounted) return;
-        // P2-4：已删账号的档案（match==null）此前不写入映射 →
+        // 已删账号的档案（match==null）此前不写入映射 →
         // needs 条件（!containsKey）每帧重新触发 listAccounts+setState
         // 循环。为全部已知 accountId 写入哨兵（已删 → '账号已删除'）。
         final knownIds = <String>{
@@ -208,7 +208,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
                 ),
               ),
             ),
-          // B1（2026-10-19 审查）：坏档案条目已跳过（不再全清空），提示
+          // （2026-10-19 审查）：坏档案条目已跳过（不再全清空），提示
           // 用户有损坏数据——重扫该电脑可覆盖恢复。
           if (app.corruptedProfiles > 0)
             Padding(

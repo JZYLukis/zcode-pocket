@@ -65,7 +65,7 @@ class LoginSessionHygiene {
   }
 }
 
-/// 清场 wipe 命令（18079 反馈①，2026-11-03 对抗审查 M1 修正机制叙述）：
+/// 清场 wipe 命令（反馈①，2026-11-03 对抗审查 修正机制叙述）：
 /// 官方 web 端会话**全部存在 localStorage**（zcodejwttoken/
 /// oauth:active_provider/oauth:&lt;provider&gt;:*/zcode-web-remote-last-device-sid/
 /// mid/known-devices——官方源码全树零 indexedDB/sessionStorage 会话用途）。
@@ -93,7 +93,7 @@ const String kLoginWipeJs =
 /// 到）。占位而非真实活跃 sid：避免页面短暂连上真实设备把本体连接踢成
 /// session-conflict。
 //登录-only 入口合成的 app_version（/ 常量化）：
-/// 必须是官方已发布版本号（18084 实证：'app'=失败卡、'0.0.0'/'1.0.0'=
+/// 必须是官方已发布版本号（实证：'app'=失败卡、'0.0.0'/'1.0.0'=
 /// Not Found——部署版按已发布版本白名单校验）。官方清理旧版本白名单时
 /// 此处会静默退化为失败卡——升级桌面端时须同步更新（登记
 /// 台账联动项）。
@@ -150,7 +150,7 @@ String localStorageGetJs(String key) =>
 /// 剥壳必须走 jsonDecode 整体解码：手工剥首尾引号会给含引号的值（如官方
 /// `oauth:<provider>:user_info` 的 JSON 文本）留下非法 `\"` 转义，下游
 /// jsonDecode 必败 → identity 恒 null → bigmodel 每次重登生成新账号
-///（P1-1）。'null'（JS null/键不存在）返回 null；非 JSON
+///。'null'（JS null/键不存在）返回 null；非 JSON
 /// 编码形态回落旧剥壳逻辑（个别通道原样返回的兜底）。
 String? decodeWebViewJsStringResult(Object raw) {
   final s = raw.toString();
@@ -169,11 +169,11 @@ String? decodeWebViewJsStringResult(Object raw) {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  /// 诊断日志（18082 真机仍失败，2026-11-03 仪器化）：登录页全程打点
+  /// 诊断日志（真机仍失败，2026-11-03 仪器化）：登录页全程打点
   /// 到 logcat（[login] 前缀，与 [app] 同通道）——清场三步、每次 finish
   /// 的真实 URL、闸门转换、导航、提取结果。排查 ①添加账号失败的
   /// 决定性证据（此前 WebView 内部对 logcat 完全静默，只能盲猜）。
-  // 诊断打点（18083-18096 排查期）：排查已收口，置为
+  // 诊断打点（- 排查期）：排查已收口，置为
   // 静默保留调用点——未来排查一键恢复函数体即可。
   void _diag(String line) {}
   WebViewController? _controller;
@@ -249,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     _controller = controller;
-    // 卫生第一步（对抗审查 M1/B 采纳，2026-11-03）：平台级三清后再加载
+    // 卫生第一步（对抗审查 /B 采纳，2026-11-03）：平台级三清后再加载
     // ——clearLocalStorage 直接走 Android WebStorage.deleteAllData()，比
     // in-page JS 清得更早（页面 bootstrap 前凭据已不存在，官方页无从
     // "自动恢复旧登录"）；clearCache 防哈希化 JS 资产陈旧（用户失败卡
@@ -325,8 +325,8 @@ class _LoginPageState extends State<LoginPage> {
         _diag('hygiene: wipe#1 FAILED $e');
       }
       if (!mounted) return;
-      // 立即回规范地址：丢弃官方页注入的过期 sid/mid URL（H2），
-      // 并以导航终止残留页（H3：不留写回窗口）。
+      // 立即回规范地址：丢弃官方页注入的过期 sid/mid URL，
+      // 并以导航终止残留页（不留写回窗口）。
       _diag('hygiene: navigate canonical $_target');
       // 起航失败兜底——下轮 finish/轮询不可达时用户
       // 仍有错误视图重试出口，异常不裸奔。
@@ -386,7 +386,7 @@ class _LoginPageState extends State<LoginPage> {
       final provider = sanitizeOauthProvider(
         await _readLocalStorage(controller, 'oauth:active_provider') ?? '',
       );
-      // 官方身份收割（18086 事故根因修复）：bigmodel 的 zcode JWT 零标准
+      // 官方身份收割（事故根因修复）：bigmodel 的 zcode JWT 零标准
       // claim，账号区分全靠官方页与 token 同步写入的
       // `oauth:<provider>:user_info`（UserInfo{id,username,displayName}，
       // refs shared/oauth.ts:140）——没有它，保存第二账号会落入内容哈希
@@ -400,14 +400,14 @@ class _LoginPageState extends State<LoginPage> {
       _diag('extract: identity=${identity == null ? "absent" : "ok"}');
       if (!mounted || _done) return;
       final app = AppStateScope.of(context);
-      // 先落库再置 _done（对抗审查 L7）：save 抛出时 _done 保持 false，
+      // 先落库再置 _done（对抗审查）：save 抛出时 _done 保持 false，
       // 轮询下一拍重试（token 仍在 localStorage）——否则会停在"已取消
       // 轮询+不 pop"的哑死态。连续失败 5 次放弃（保留页面让用户手动退）。
       String? savedAccountId;
       try {
         // multi-account-ux-1 批2（2026-11-04 拍板）：登录只入库不改当前
         // 账号。用 store 默认智能语义（setActive=null：仅当 lastUsed 尚
-        // 空=首账号时自动设当前）—— P1-1 修正：显式 false 会把
+        // 空=首账号时自动设当前）—— 修正：显式 false 会把
         // 「首账号自动设当前」一并短路，全新安装后 lastUsed 永不存在，
         // 添加第二账号时"当前账号"静默翻转且 toast 撒谎。
         savedAccountId = await app.accountStore.save(
@@ -433,12 +433,12 @@ class _LoginPageState extends State<LoginPage> {
       _poll?.cancel();
       _diag('extract: done, halting webview then pop');
       if (!mounted) return;
-      // ⑤黑屏根因链（18083/18084 两轮真机日志收口）：pop 时 WebView
+      // ⑤黑屏根因链（两轮真机日志收口）：pop 时 WebView
       // PlatformView 的销毁若发生在"空白页尚未合成上屏"的渲染过渡态，
       // 部分设备整屏发黑（app 后端日志一切正常——纯渲染层）。修=双保障：
       // ①about:blank 停页（WebView 静止）+250ms（导航提交）；②
       // **endOfFrame 主动调度并等待下一帧完成**（不同于 addPostFrameCallback
-      // 依赖外部帧活动——静止页面永无下一帧，18083 的"无反应"即此），
+      // 依赖外部帧活动——静止页面永无下一帧， 的"无反应"即此），
       // 确保空白页已真实合成上屏后才 pop，销毁发生在稳定渲染态。
       unawaited(
         controller.loadRequest(Uri.parse('about:blank')).catchError((_) {}),
@@ -475,7 +475,7 @@ class _LoginPageState extends State<LoginPage> {
       localStorageGetJs(key),
     );
     // 返回形如 '"eyJ..."' 或 'null'——Android JSON 编码形态，含引号值的
-    // 正确解码见 [decodeWebViewJsStringResult]（P1-1 修复）。
+    // 正确解码见 [decodeWebViewJsStringResult]（修复）。
     return decodeWebViewJsStringResult(raw);
   }
 

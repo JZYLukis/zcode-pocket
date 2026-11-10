@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 /// Parses a ZCode web-remote connection URL, e.g.
 /// https://zcode.z.ai/remote/v4?sid=...&hash=...&t=...&mid=...&name=...&app_version=...
 ///
@@ -29,7 +33,7 @@ class CompanionConnectionParams {
   }
 
   static CompanionConnectionParams? parse(String raw) {
-    // 全程 try（P2-4/F3-P2-2/M3-P1-1 三路同报）：Uri.parse
+    // 全程 try（三路同报）：Uri.parse
     // 宽容接受畸形百分号转义，异常延迟到 queryParameters 惰性解码才抛
     // ——此前 try 只包 Uri.parse，粘贴框每键击的 _syncName/连接按钮会
     // 收到未捕获异常。契约=无效一律返回 null。
@@ -71,7 +75,7 @@ class CompanionConnectionParams {
   /// Relay websocket URL. Mirrors `Jc()` / `pen.connect()`:
   /// `wss://<host>/ws` plus `?mid=` when present.
   ///
-  /// P3-10：旧实现为非安全 scheme 准备了 `ws://` 分支——
+  /// 旧实现为非安全 scheme 准备了 `ws://` 分支——
   /// 但 [parse] 硬性要求 https/wss（生产唯一构造路径），该分支永不可达，
   /// 属自相矛盾的死代码，已删（早期实现，已移除）。
   Uri get relayWsUri {

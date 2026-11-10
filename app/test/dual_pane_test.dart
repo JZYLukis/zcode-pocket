@@ -213,7 +213,7 @@ void main() {
         reason: '会话在右栏（不是空态，也不是整页推入）');
   });
 
-  testWidgets('宽屏无 FAB 防遮输入栏；新建入口=左栏「新建任务」行（18074 验收②）', (
+  testWidgets('宽屏无 FAB 防遮输入栏；新建入口=左栏「新建任务」行（验收②）', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));
@@ -222,10 +222,10 @@ void main() {
     await _pump(tester, app);
 
     // 宽屏：FAB 不在场（此前悬在右栏输入栏正上方=遮挡）；左栏有
-    // 「新建任务」导航行——18075 验收反馈①：位于最新/项目分组**之下**
+    // 「新建任务」导航行—— 验收反馈①：位于最新/项目分组**之下**
     // （列表尾部，官方桌面侧栏新建在底部），不再在列首。
     expect(find.byKey(const ValueKey('new-session')), findsNothing,
-        reason: '宽屏 FAB 遮挡右栏输入栏（用户 18074 实锤）');
+        reason: '宽屏 FAB 遮挡右栏输入栏（用户 实锤）');
     expect(find.byKey(const ValueKey('home-new-task-nav')), findsOneWidget);
     expect(find.text('新建任务'), findsOneWidget);
     final navDy = tester.getTopLeft(
@@ -235,7 +235,7 @@ void main() {
       find.byKey(const ValueKey('compact-task-row-t-1')),
     ).dy;
     expect(navDy, greaterThan(taskRowDy),
-        reason: '新建任务行在任务分组之下（18075 验收反馈①）');
+        reason: '新建任务行在任务分组之下（验收反馈①）');
 
     // 窄屏：FAB 保留原行为。
     await tester.binding.setSurfaceSize(const Size(375, 806));
@@ -246,7 +246,7 @@ void main() {
     expect(find.byKey(const ValueKey('home-new-task-nav')), findsNothing);
   });
 
-  testWidgets('未读指示点=智谱蓝 brandAccent（brand 黑白单色曾致"白点"，18075 验收②）', (
+  testWidgets('未读指示点=智谱蓝 brandAccent（brand 黑白单色曾致"白点"， 验收②）', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));

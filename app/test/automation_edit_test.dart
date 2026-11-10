@@ -25,7 +25,7 @@ class _EditChannel extends ChannelClient {
   /// 可选列表覆写（weekly 等特定档位用例）。
   List<Map<String, dynamic>>? listOverride;
 
-  /// 可选模型目录覆写（VR-7b：5 行短目录弹层收缩用例）。
+  /// 可选模型目录覆写（5 行短目录弹层收缩用例）。
   Map<String, dynamic>? viewOverride;
 
   @override
@@ -253,7 +253,7 @@ void main() {
     expect(args['scheduleEditedByUser'], true);
   });
 
-  // B4（2026-11-07 用户批）：weekly 档周几选择器——此前只回填旧值无 UI
+  // （2026-11-07 用户批）：weekly 档周几选择器——此前只回填旧值无 UI
   // 可改（对抗审查「周几选择器」遗留实际未修完）。红=旧代码无 chip 可点。
   testWidgets('每周档：周几选择器可改 → weekdays 随 scheduleRule 下发', (
     tester,
@@ -295,7 +295,7 @@ void main() {
     expect(find.byKey(const ValueKey('automation-sched-weekly')), findsOneWidget);
     expect(find.byKey(const ValueKey('automation-sched-weekday-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('automation-sched-weekday-5')), findsOneWidget);
-    // VR-7a（视觉审查 1109）：Wrap 在 375dp 下折成 5+2 两行——
+    // （视觉审查 1109）：Wrap 在 375dp 下折成 5+2 两行——
     // 修=Row+7×Expanded 等分单行。红=第 6/7 只 y 中心下移一行。
     final weekdayCenters = <Offset>[];
     final weekdaySizes = <Size>[];
@@ -418,10 +418,10 @@ void main() {
     }, reason: '模型换过下发完整选型');
   });
 
-  // VR-7b（视觉审查 1109）：模型弹层 ListView 吃满 0.65×屏高约束——
+  // （视觉审查 1109）：模型弹层 ListView 吃满 0.65×屏高约束——
   // 5 行短目录底部空 202dp。修=shrinkWrap:true（maxHeight 上限保留）。
   // 红=修复前弹层高 0.65×806≈524dp（真机 880 高≈572dp）。
-  testWidgets('VR-7b：模型弹层按内容收缩（5 行目录 < 半屏）', (tester) async {
+  testWidgets('模型弹层按内容收缩（5 行目录 < 半屏）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -476,9 +476,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // VR-7c（视觉审查 1109）：模型值行（模型名+思考档+来源三层拼接）
+  // （视觉审查 1109）：模型值行（模型名+思考档+来源三层拼接）
   // 无 maxLines——长名换行顶破行高并挤压右侧按钮。修=单行省略。
-  testWidgets('VR-7c：模型值 Text 单行省略（maxLines=1）', (tester) async {
+  testWidgets('模型值 Text 单行省略（maxLines=1）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -496,7 +496,7 @@ void main() {
     final value = tester.widget<lt.Text>(
       find.byKey(const ValueKey('automation-edit-model-value')),
     );
-    expect(value.maxLines, 1, reason: 'VR-7c：模型值单行（修复前无 maxLines）');
+    expect(value.maxLines, 1, reason: '模型值单行（修复前无 maxLines）');
     expect(value.overflow, TextOverflow.ellipsis);
     expect(tester.takeException(), isNull);
   });
@@ -619,7 +619,7 @@ void main() {
     expect(rule['monthDays'], [20], reason: '只改几号必须下发（红=旧实现静默不生效）');
   });
 
-  // F4（复审）：monthly date 档表单没有「每 N 个月」输入——保存必须
+  // （复审）：monthly date 档表单没有「每 N 个月」输入——保存必须
   // 保留原 interval（修复前恒写 1，把「每 3 个月」静默降级成每月）。
   testWidgets('F4：每月档保留原 interval（每 3 个月不降级成每月）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);

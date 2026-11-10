@@ -114,7 +114,7 @@ List<ConversationSearchMatch> buildConversationSearchMatches(
   List<ChatItem> items,
   String query,
 ) {
-  // B2-P2-4/D2-08：长度稳定折叠——İ 等扩长字符会使折叠串
+  // 长度稳定折叠——İ 等扩长字符会使折叠串
   // 下标漂移（snippet 切原串错位/极端越界），命中下标必须落在原串
   // 坐标系（与 buildSearchHighlightSpans 同源 foldCaseStable）。
   final needle = foldCaseStable(query.trim());
@@ -493,7 +493,7 @@ class ConversationSearchBar extends StatelessWidget {
                       color: context.colors.foregroundSubtle,
                     ),
                   ),
-                // 18077 审美门建议②：可见图形放大（arrow 图形稀疏视觉
+                // 审美门建议②：可见图形放大（arrow 图形稀疏视觉
                 // 偏小——28/24 进 40dp 可见档；隐性触控面 48 不变）。
                 IconButton(
                   key: const ValueKey('conversation-search-previous'),
@@ -526,7 +526,7 @@ class ConversationSearchBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppType.uiXs,
                         fontWeight: FontWeight.w600,
-                        // 18077 验收#11（I）：accent 深色档=近黑深藏青
+                        // 验收#11（I）：accent 深色档=近黑深藏青
                         // （0xFF001D3D）叠深色 header 上几乎不可见——
                         // 改品牌蓝（浅 #134CFF/深 #4099FF，两档可读）。
                         color: context.colors.brandAccent,

@@ -13,9 +13,9 @@ import 'protocol_drift.dart';
 import 'relay_client.dart'
     show BatteryNetCounters, RelayConnection, RelayFailure, RelayState;
 
-/// Relay V2 连接层（3.16 适配 P0-1）。
+/// Relay V2 连接层（3.16 适配）。
 ///
-/// 契约出处（refs/new-snapshot，全部已核实到行）：
+/// 契约出处（官方最新源码快照，全部已核实到行）：
 /// - wire schema：packages/shared/src/web-remote-relay/contract.ts:19-94
 ///   （上行 auth_init/pair_status_query/data；下行 auth_ack/pair_status_ack/
 ///   data/error；strictObject——上行多一个字段即被服务端整条拒绝）。
@@ -43,7 +43,7 @@ const String relayV2DevicePath = '/api/v1/remote/device';
 const String relayV2DeviceDeletePath = '/api/v1/remote/device/delete';
 const String relayV2WsPath = '/api/v1/remote/ws2';
 
-/// HTTP 响应体字节上限（P3-3）：token/设备列表的正常响应
+/// HTTP 响应体字节上限：token/设备列表的正常响应
 /// 远小于此；恶意/异常中间盒灌巨 body 时无界 join 会整页进内存。与
 /// rpc-frame 消息级 64MiB 单一真源（ipc_codec ValueReader.maxValueBytes）
 /// 不同——HTTP 信封是轻量控制通道，取独立更紧值 4MiB；超限按不可重试
@@ -62,7 +62,7 @@ class RelayV2Timing {
   final Duration heartbeatBase;
 
   /// 后台心跳档（电量专项，2026-10-28）：审批提醒保活退后台时放宽到此
-  /// 值。安全依据=--heartbeat 探针对生产中继实测（tools/logs/）：
+  /// 值。安全依据=--heartbeat 探针对生产中继实测：
   /// 30s/60s 间隔照常 ACK、120s 完全静默连接不断、补发 0ms 应答——
   /// 服务端对安静客户端无超时，5s 心跳与 15s 看门狗均为客户端自愿行为。
   /// 看门狗随档放宽为 heartbeatBackground+ackTimeout（30+15=45s）。
@@ -90,7 +90,7 @@ class RelayV2Timing {
   final Duration kickWindow;
 
   /// poke() 探针后的快速看门狗（官方 recoverConnection 语义的快速档，
-  /// 3s 内无应答即重建）。P3-5：原为 _armAckWatchdog 内的
+  /// 3s 内无应答即重建）。：原为 _armAckWatchdog 内的
   /// 硬编码，不入 timing——数值不变，仅随 timing 注入可测。
   final Duration probeTimeout;
 
@@ -145,7 +145,7 @@ RelayFailure classifyRelayNetworkFailure(Object e) {
     );
   }
   // 「超时」中文匹配：生产端 res.close().timeout 的响应超时抛的是
-  // 'HTTP /api/... 超时'（本文件内中文串），审查 A1 实锤——漏判会使
+  // 'HTTP /api/... 超时'（本文件内中文串），审查 实锤——漏判会使
   // 超时专属文案在最典型的 VPN 黑洞路径上不可达，落 network-unknown。
   if (low.contains('timed out') ||
       low.contains('timeout') ||
@@ -182,7 +182,7 @@ class RelayV2Api {
   final Duration timeout;
   final void Function(String line)? onLog;
 
-  /// 复用连接池（P3-4/F2-P3-2）：token 端点每次重连必调
+  /// 复用连接池：token 端点每次重连必调
   /// （契约禁止缓存 token，但 HTTP client 可复用）——此前每请求新建并
   /// 强杀 HttpClient，退避风暴（500ms 起步）下每拍一遍完整 TCP+TLS 握手。
   io.HttpClient? _httpClient;
@@ -210,7 +210,7 @@ class RelayV2Api {
     final data = await _request('POST', relayV2TokenPath, body: {'role': role});
     final token = data is Map ? data['token'] : null;
     if (token is! String || token.isEmpty) {
-      // P3-8：传输层是协议漂移第一现场——token 信封骨架字段
+      // 传输层是协议漂移第一现场——token 信封骨架字段
       // 缺席先打哨兵（：只观察不拦截，失败路径照旧）。
       noteProtocolDrift(
         'relayV2.fetchToken',
@@ -252,13 +252,13 @@ class RelayV2Api {
       req.followRedirects = false;
       if (body != null) req.write(jsonEncode(body));
       final res = await req.close().timeout(timeout);
-      // P3-7（D-8 批2）：401 判定提到读 body 之前——超限的 401 响应
+      // （批2）：401 判定提到读 body 之前——超限的 401 响应
       // 会先撞 4MiB 上限抛 Unavailable 丢掉重登引导；先 drain 释放连接。
       if (res.statusCode == 401) {
         unawaited(res.drain().catchError((_) {}));
         throw const RelayV2AuthRequired();
       }
-      // 响应体限字节读取（F2-P3-3）：超限即断——不整页 join 进内存。
+      // 响应体限字节读取：超限即断——不整页 join 进内存。
       final bodyBytes = BytesBuilder(copy: false);
       await for (final chunk in res) {
         bodyBytes.add(chunk);
@@ -271,13 +271,13 @@ class RelayV2Api {
         }
       }
       final text = utf8.decode(bodyBytes.takeBytes());
-      // P2-2/F2-P2-3/F3-P2-3（三路同报）：仅 401/403/404 保持
+      // （三路同报）：仅 401/403/404 保持
       // 终态（401 已前置抛 RelayV2AuthRequired；403/404 是不会自愈的拒绝/
       // 路径错误）；429 限流/408 超时/3xx portal 重定向（followRedirects=
       // false 不跟随，凭据不跨域重放）等其余档位一律按瞬态退避重试——
       // 重连风暴本身恰是最易触发 429 的路径，终态化会把可自愈场景钉死
       // 在 error。
-      // P3-7（D-8 批2）：400/405/422 是永久性客户端错误（代码缺陷/中间盒
+      // （批2）：400/405/422 是永久性客户端错误（代码缺陷/中间盒
       // 改写），无限退避重连会把错误藏起来；保持 403/404 同类终态。
       bool terminalStatus(int s) =>
           s == 400 || s == 403 || s == 404 || s == 405 || s == 422;
@@ -341,7 +341,7 @@ class RelayV2Config {
     return Uri(
       scheme: wsScheme,
       host: endpointOrigin.host,
-      // 无端口时用 null 而非 0（P3-3）：0 依赖 dart:io 两层
+      // 无端口时用 null 而非 0：0 依赖 dart:io 两层
       // 归一（wss→https、port0→443）才不产出 `wss://host:0` 的坏 URL——
       // V1 connection_params 同位置即 null，对齐消除脆弱巧合链。
       port: endpointOrigin.hasPort ? endpointOrigin.port : null,
@@ -460,11 +460,11 @@ class RelayV2Client implements RelayConnection {
     _cancelTimers();
     _offlineGraceTimer?.cancel();
     _offlineGraceTimer = null;
-    // 复用连接池随连接生命周期释放（P3-4/F2-P3-2）。
+    // 复用连接池随连接生命周期释放。
     _api.close();
     await _socketSub?.cancel();
     // 同 _reconnect：悬挂连接的 close 永不完成，dispose 不得随之挂死
-    // （上层 disposeStack/切账号拆除序列会连带卡死——P1-1）。
+    // （上层 disposeStack/切账号拆除序列会连带卡死——）。
     unawaited(_socket?.sink.close().catchError((_) {}));
     _socket = null;
     await _payloadController.close();
@@ -489,7 +489,7 @@ class RelayV2Client implements RelayConnection {
   void poke() {
     if (_disposed) return;
     if (_state.value != RelayState.paired) return;
-    // P2-1/F1-P3-10：_reconnect 的关闭窗口内 state 尚未迁移
+    // _reconnect 的关闭窗口内 state 尚未迁移
     // （仍 paired）但 _authenticated 已同步置 false——旧实现 poke 会在该
     // 窗口把探针打进垂死 socket（适配层已 close 的 sink 上 add 抛
     // StateError）并误挂 3s 探针看门狗（引发多余重连）。与
@@ -514,11 +514,11 @@ class RelayV2Client implements RelayConnection {
     try {
       final token = await _api.fetchToken(role: 'terminal');
       if (_disposed || gen != _generation) return;
-      // connectTimeout=ackTimeout（P1-3/F2-P1-1/F3-P1 三路同
+      // connectTimeout=ackTimeout（三路同
       // 报）：黑洞网络（VPN 断隧道/DROP 型防火墙）下 Upgrade 永不落定，
       // 包内默认永不超时——悬挂会在 fetchToken 之后卡死整条连接机；到点
       // 转失败走既有退避。ready 的错误若无人消费会成为 zone 未捕获异步
-      // 错误（适配层 _readyCompleter.completeError 无监听者，F1-P2-1）
+      // 错误（适配层 _readyCompleter.completeError 无监听者）
       // ——连接失败已由下方 stream.listen(onError) 统一走重连，这里只
       // 接住 future 本身。
       final socket = IOWebSocketChannel.connect(
@@ -559,7 +559,7 @@ class RelayV2Client implements RelayConnection {
         'device_sid': config.deviceSid,
         'meta': {
           'platform': companionPlatformName(),
-          // QR 无 app_version 时兜底 'unknown'（P3-2/F3-P3-11）
+          // QR 无 app_version 时兜底 'unknown'
           // ——旧兜底是应用名/字面量，桌面端"已连接客户端"会把名字当
           // 版本号显示，排障误导。
           'version': config.appVersion ?? 'unknown',
@@ -570,7 +570,7 @@ class RelayV2Client implements RelayConnection {
     } on RelayV2AuthRequired {
       // dispose 与在飞 fetchToken 的 401 交错时不得触碰已释放资源
       //（_failTerminal 会写已 dispose 的 ValueNotifier、向已 close 的
-      // _failureController add 抛 StateError——P1-1，与相邻
+      // _failureController add 抛 StateError——，与相邻
       // 两个 catch 同款守卫）。
       if (_disposed) return;
       _failTerminal(RelayState.error, 'auth-required', '账号凭据缺失或已失效');
@@ -602,7 +602,7 @@ class RelayV2Client implements RelayConnection {
     _authenticated = false;
     await _socketSub?.cancel();
     // 悬挂/半开升级的 socket：close 的 done future 可能永不完成（适配层
-    // 失败路径不给 outbound controller 挂监听者，P1-1/F3-P1）
+    // 失败路径不给 outbound controller 挂监听者，/）
     // ——close 的完成性不得承担状态机推进，fire-and-forget（_failTerminal
     // 同款范式），先置空再继续退避排程。
     unawaited(_socket?.sink.close().catchError((_) {}));
@@ -635,14 +635,14 @@ class RelayV2Client implements RelayConnection {
     final s = _socket;
     if (s == null || _state.value == RelayState.closed) return false;
     final encoded = jsonEncode(frame);
-    // 电量日志网络轴（P3-5/F2-P3-1/F3-P3-4）：与 V1 同口径
+    // 电量日志网络轴：与 V1 同口径
     // 用 UTF-16 码元数近似——旧实现对完整字符串二次 utf8 编码纯为计长，
     // 流式大帧每帧多一次全量编码+分配。
     BatteryNetCounters.txBytes += encoded.length;
     try {
       s.sink.add(encoded);
     } catch (_) {
-      // P3-10：适配层在连接失败路径同步 close 本地 sink，
+      // 适配层在连接失败路径同步 close 本地 sink，
       // 迟到的 add 会抛 StateError——看门狗会兜住重建，异常不得从定时器
       // 回调/业务调用方同步逃逸。
       return false;
@@ -658,7 +658,7 @@ class RelayV2Client implements RelayConnection {
       if (_outboundQueue.length < _outboundQueueLimit) {
         _outboundQueue.add(payload);
       } else {
-        // A6①（2026-10-24 修复批）：溢出静默丢弃→留痕（断连期发送丢失
+        // （2026-10-24 修复批）：溢出静默丢弃→留痕（断连期发送丢失
         // 此前无任何信号，排障只能靠猜）。
         _log(
           '[v2] outbound queue overflow ($_outboundQueueLimit), drop: '
@@ -680,13 +680,13 @@ class RelayV2Client implements RelayConnection {
   }
 
   void _handleRaw(dynamic data, int gen) {
-    // 电量日志网络轴（P3-8）：与 V1 同口径——全部入站帧计长
+    // 电量日志网络轴：与 V1 同口径——全部入站帧计长
     // （含坏帧/二进制帧），不再仅计合法 JSON 帧（V2 期实测流量不再偏小）。
     if (data is String) {
       BatteryNetCounters.rxBytes += data.length;
     } else {
       if (data is List<int>) BatteryNetCounters.rxBytes += data.length;
-      // P3-8：二进制帧=协议漂移信号（契约只有 JSON 文本帧），
+      // 二进制帧=协议漂移信号（契约只有 JSON 文本帧），
       // 打一行日志暴露而非静默吞掉。
       _log('[v2] 非 JSON 文本帧被忽略（${data.runtimeType}）');
       return;
@@ -727,7 +727,7 @@ class RelayV2Client implements RelayConnection {
   }
 
   void _applyPairStatus(String status) {
-    // P3-8：未知 pair_status 枚举=协议漂移信号（
+    // 未知 pair_status 枚举=协议漂移信号（
     // 哨兵：只观察不拦截——按 waiting 容错路径继续）。
     if (status != 'matched' && status != 'waiting') {
       _log('[v2] 未知 pair_status 枚举: $status（按 waiting 容错）');
@@ -808,7 +808,7 @@ class RelayV2Client implements RelayConnection {
       case 'INTERNAL':
         if (_wasPaired) {
           // 已有过配对会话：保持现连接降级 waiting 继续查询（官方 :590-602）。
-          // P3-1/F2-P2-2/F3-P3-2（三路同报）：从 paired 降级进
+          // （三路同报）：从 paired 降级进
           // waiting 是新 episode——_waitingFailureEmitted 必须随迁移重置，
           // 否则第二次 INTERNAL 降级起「桌面端不在线」永不再发
           // （_applyPairStatus 的 enteringWaiting 同款语义；waiting 内重复
@@ -828,7 +828,7 @@ class RelayV2Client implements RelayConnection {
   Duration _kickFirstDelay() {
     final min = timing.kickFirstMin.inMilliseconds;
     final max = timing.kickFirstMax.inMilliseconds;
-    // P3-6：自定义 timing 传反（max<min）时 nextInt 负区间抛
+    // 自定义 timing 传反（max<min）时 nextInt 负区间抛
     // RangeError——按 min 兜底（与 _scheduleHeartbeat 的 clamp 同款防御；
     // const 默认值安全，此为测试/未来配置的防御）。
     final span = max - min;
@@ -852,7 +852,7 @@ class RelayV2Client implements RelayConnection {
     if (_disposed || _backgroundHeartbeatMode == enabled) return;
     _backgroundHeartbeatMode = enabled;
     _log('[v2] heartbeat: ${enabled ? "background ${timing.heartbeatBackground.inSeconds}s" : "foreground ${timing.heartbeatBase.inSeconds}s"}');
-    // 切档必须立即重排在途看门狗（P3-9：旧实现只重排"开"
+    // 切档必须立即重排在途看门狗（旧实现只重排"开"
     // 方向）：
     // - 开→后台档：旧 15s 档会在第一拍慢心跳应答前先到期，把放宽误杀
     //   成重连风暴（红绿用例实锤的时序坑）；
@@ -892,7 +892,7 @@ class RelayV2Client implements RelayConnection {
     // 优化批 #17：静默档 ACK 到达不重挂看门狗/不排心跳（守卫统一在
     // _armAckWatchdog/_scheduleHeartbeat 内，覆盖服务端主动推送与静默期
     // 自愈重连两条再武装路径）。
-    // 看门狗装配与 _armAckWatchdog 合一（P3-5：此前两份近乎
+    // 看门狗装配与 _armAckWatchdog 合一（此前两份近乎
     // 相同的 Timer 装配靠人工同步维护）。
     _armAckWatchdog();
     _scheduleHeartbeat();
@@ -976,7 +976,7 @@ class RelayV2Client implements RelayConnection {
   }
 
   void _cancelTimers() {
-    // offlineGrace 不在此列（P1-2/F3-P2-1）：DEVICE_OFFLINE
+    // offlineGrace 不在此列：DEVICE_OFFLINE
     // 分支先武装宽限再立即 _reconnect，若随重连取消则 15s 宽限永不可能
     // 触发（原实现即此死代码，信号退化到 30s waiting 超时）。它的生命
     // 周期=重新 paired（_applyPairStatus 取消）/终态与 dispose（显式

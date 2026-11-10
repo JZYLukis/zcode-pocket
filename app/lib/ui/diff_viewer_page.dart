@@ -11,7 +11,7 @@ import '../state/app_state_scope.dart';
 /// 按目录分组 + 逐文件 hunk 着色 + git-checkpoint 单文件回滚
 /// （fileRewindPreview 预检 → applyFileRewind）。
 ///
-/// 语法高亮（2026-10-23 清偿 P1 欠账）：官方 diff 全表面带
+/// 语法高亮（2026-10-23 清偿 欠账）：官方 diff 全表面带
 /// shiki 高亮（diff-viewer.tsx:99/previewPanePatchFallbackContent.tsx:
 /// 50-58/EditInlineDiffContent.tsx:68-80），文字色=语法 token 色、增删
 /// 由行底 tint+行首竖条表达——我们用 code_highlight（github 双主题同源）
@@ -474,7 +474,7 @@ class _FileCard extends StatelessWidget {
   ) {
     final lines =
         (listOf(patch['lines']) ?? []).whereType<String>().toList();
-    // 总开关关闭时降 null 回落纯色呈现（对抗审查 B3：与内联 diff/
+    // 总开关关闭时降 null 回落纯色呈现（对抗审查 ：与内联 diff/
     // 预览/消息代码块同受一个开关，不自相矛盾）。裸树容错默认开。
     final scope = context.getInheritedWidgetOfExactType<AppStateScope>();
     final highlightOn =
@@ -532,7 +532,7 @@ class _DiffLine extends StatelessWidget {
             : Border(left: BorderSide(width: 3, color: diffColor)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      // 长行软换行（对抗审查 A-1：此前 maxLines:1 截断使长代码行尾部
+      // 长行软换行（对抗审查 ：此前 maxLines:1 截断使长代码行尾部
       // 永久不可见；与内联 diff 同步改软换行）。
       child: view.spans != null
           ? Text.rich(TextSpan(children: view.spans, style: base))

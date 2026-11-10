@@ -143,7 +143,7 @@ class ComposerPanels extends StatelessWidget {
 
 /// 从输入文本解析当前激活的补全 token。
 /// 返回 (type, query)：slash=起始 / 未带空格；file=光标前的 @token。
-/// [cursor]=光标偏移（null/越界=按文尾）； D2-17/D3-P3-13：
+/// [cursor]=光标偏移（null/越界=按文尾）； /：
 /// 只认光标前的末 token——中段编辑不弹文尾 token 的面板；分隔符同时
 /// 认空格与换行（多行输入里 "@文件" 前是 \n 时也出补全）。
 ({String type, String token})? activeCompletionToken(String text,
@@ -188,12 +188,12 @@ List<Map<String, dynamic>> filterSlashCommands(
   ].take(12).toList();
 }
 
-/// 模型/模式/思考切换面板（bottom sheet，2.6；2026-10-16 F9 重做）。
+/// 模型/模式/思考切换面板（bottom sheet，2.6；2026-10-16 重做）。
 /// configOptions 动态消费：id 含 model→switchModelConfig（值带
 /// modelProviderName）；含 thought→switchModelConfig 三元组；含
 /// mode/collaboration→switchCollaborationMode。当前值取 snapshot.config。
 ///
-/// F9 根因对齐：官方目录是活性数据（loading/ready/error 状态机 + 空目录
+/// 根因对齐：官方目录是活性数据（loading/ready/error 状态机 + 空目录
 /// 重新水合 + 静态模式兜底），我们旧实现"一次性拉取+失败吞掉+同一句死文案"
 /// 在真机上必然卡死。现改为：打开面板即弹（loading 态），现场 refresh 拉取，
 /// 失败给重试；configOptions 缺 mode 项时用官方静态四模式兜底
@@ -407,7 +407,7 @@ class _ModelSheetLoaderState extends State<_ModelSheetLoader> {
       _loading = true;
       _error = null;
     });
-    // F12（WR 对齐）：目录真源 = zcode-task.getTaskConfigOptions（官方
+    // （WR 对齐）：目录真源 = zcode-task.getTaskConfigOptions（官方
     // web remote 工具栏目录的手机端等价物，含模型/思考/模式三项）。
     // prepareWorkspace 降为兜底（readWorkspacePresentation 只带 mode+斜杠）。
     // 草稿（sessionId null）无 task 可查——走官方 model-selection.getView
@@ -524,7 +524,7 @@ class _ModelSheetLoaderState extends State<_ModelSheetLoader> {
         ),
       );
     }
-    // task 目录（F12）优先：包成 WorkspacePrep 形状供 _ModelSheet 消费。
+    // task 目录优先：包成 WorkspacePrep 形状供 _ModelSheet 消费。
     if (_taskOptions.isNotEmpty) {
       return _ModelSheet(
         prep: WorkspacePrep.fromOptions([
@@ -610,7 +610,7 @@ String planBadgeOf(ConfigOptionValue v) {
   };
 }
 
-/// 碰撞组消歧后缀（候选 15 验收 A1 终修）：内部 ID 不可直出——
+/// 碰撞组消歧后缀（候选 15 验收 终修）：内部 ID 不可直出——
 /// account:bigmodel-offpeak-idle-plan 整串进组头既不可读又挤爆行宽
 /// （真机实锤徽标被裁成「A」）。规则：providerId 里的套餐 token 映射
 /// 人话词（闲时/高速/加油/包月…），多 token 取可辨组合；无已知 token
@@ -733,7 +733,7 @@ String providerShortLabel(ConfigOptionValue v) {
 /// 当前值行实时刷新（选中不关页的配套反馈）。
 /// 早期反馈①：挂起语义——本地 draft 态即时高亮，随下次发送提交。
 /// 2026-10-19 合并药丸配套：底部新增思考档横向 chips（单行不换行），
-/// 选模型联动其 modelThoughtLevels（官方字段，子代理编辑器 F13 同源）。
+/// 选模型联动其 modelThoughtLevels（官方字段，子代理编辑器 同源）。
 class _ModelSheet extends StatefulWidget {
   final WorkspacePrep? prep;
   final ConversationState state;
@@ -863,7 +863,7 @@ class _ModelSheetState extends State<_ModelSheet> {
   }
 
   /// 思考档 chips 取值：选中模型自带的 modelThoughtLevels 优先（官方
-  /// 联动字段），否则用会话级思考目录（F13 子代理编辑器同源语义）。
+  /// 联动字段），否则用会话级思考目录（子代理编辑器同源语义）。
   List<(String, String)> _thoughtChoices(String currentModel) {
     final entry = _selectedModelEntry(currentModel);
     if (entry != null && entry.modelThoughtLevels.isNotEmpty) {
@@ -1049,7 +1049,7 @@ class _ModelList extends StatefulWidget {
   final Map<String, List<ConfigOptionValue>> alternates;
   final String current;
 
-  /// 18077 验收#1：当前 provider（挂起优先）——分块后同名模型在两个
+  /// 验收#1：当前 provider（挂起优先）——分块后同名模型在两个
   /// 块各一行，选中判定必须含 provider（否则点亮错误套餐的行）。
   final String? provider;
   final void Function(ConfigOptionValue v) onPick;
@@ -1070,7 +1070,7 @@ class _ModelListState extends State<_ModelList> {
   /// 选中行的 GlobalKey（首帧滚入可视区用）。
   final GlobalKey _selectedKey = GlobalKey();
 
-  /// 18077 验收#1：分组折叠态。默认=选中组展开、其余收起（活跃套餐
+  /// 验收#1：分组折叠态。默认=选中组展开、其余收起（活跃套餐
   /// 直达模型，非活跃点组头展开——用户拍板的两级结构）。
   final Map<String, bool> _collapsedByGroup = {};
 
@@ -1096,7 +1096,7 @@ class _ModelListState extends State<_ModelList> {
       selected: selected,
       onPick: widget.onPick,
       // 2026-11-05 反馈④：alternates 键=套餐组+modelId（与 _dedupModels
-      // 同款 modelDedupKey——D2-01 教训：必须 ${...} 取值防 miss）。
+      // 同款 modelDedupKey—— 教训：必须 ${...} 取值防 miss）。
       alternates: widget.alternates[modelDedupKey(v)] ?? const [],
     );
     // 选中判定=短名+provider 双匹配（2026-11-05 反馈④：合并行代表
@@ -1313,7 +1313,7 @@ class _ModelListRow extends StatelessWidget {
     // 不占位导致名字左缘不齐（真机实锤"乱"）：18 位恒留（无标时中性小
     // 圆点占位），名字全部对齐同一 x。行高 44→40/内距 v6→4 h12→10/
     // logo 20→18/字 uiBase→uiCaption/图标距 8→6。40 低于 44 触控下限
-    // ——design_guard 豁免留痕（→0051 更新）。
+    // ——design_guard 豁免留痕（更新）。
     // 2026-10-26 选中行对齐桌面风格（用户拍板：风格/排版对齐，尺寸按
     // 手机优化）——桌面源码 ModelConfigSelect.tsx:394-415 + Radix
     // RadioItem：选中=右侧细勾（foreground-subtle 灰，非彩色），无

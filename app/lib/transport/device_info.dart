@@ -1,10 +1,14 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'package:flutter/foundation.dart';
 
 /// Device identity sent during relay auth and mobile-view-state updates.
 ///
 /// The web client reports itself as a browser; this app identifies itself
 /// honestly so the desktop can show the real connected client.
-/// F2-P3-7：项目已更名 ZCode Pocket，旧标识失真——官方桌面
+/// 项目已更名 ZCode Pocket，旧标识失真——官方桌面
 /// 端对该串只做展示（refs webRemoteControlDeviceGroups.ts，无白名单
 /// 匹配），随开源批一并更名。
 const companionAppName = 'zcode-pocket';

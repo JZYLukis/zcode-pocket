@@ -1,4 +1,4 @@
-// 欠账盘点 B5 接线修复红绿（2026-11-08）：通知深链「定位到相关消息？」
+// 欠账盘点 接线修复红绿（2026-11-08）：通知深链「定位到相关消息？」
 // 浮层在真实时序下永不弹——task_center 消费时已把 pendingOpenTask 清空，
 // 会话页的全局 getter pendingDeepLinkTarget 依赖它 → 恒 null。修复=atMs
 // 随导航参数 deepLinkAtMs 透传（waitForWorkspace 同款模式）。

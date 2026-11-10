@@ -25,7 +25,7 @@ const String _kVoiceHmsDefineValue = String.fromEnvironment('VOICE_HMS');
 
 /// 1.0.1 验收⑧根因：`bool.fromEnvironment('VOICE_HMS')` 只认字面
 /// 'true'——构建传 `=1` 时探针串（String 语义）'zp-voice-hms:1' 断言
-/// 通过而运行时 bool 恒 false（HMS 静默走系统通道=零回调；18078
+/// 通过而运行时 bool 恒 false（HMS 静默走系统通道=零回调；
 /// 「正则改 (true|1)」恰好盖住此错配）。统一走 String 语义+宽容解析。
 bool voiceHmsDefineEnabled(String value) {
     final v = value.trim().toLowerCase();
@@ -92,7 +92,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
   final _draft = TextEditingController();
   bool _closed = false;
 
-  /// listening 零回调看门狗（18075 验收 G）：识别服务启动后 10s 内
+  /// listening 零回调看门狗（验收 G）：识别服务启动后 10s 内
   /// 无任何 partial/final/error 事件（华为系统识别服务=FakeRecognition
   /// Service 零回调实锤）→ 明确失败，不再无限停在拾音态。任何引擎
   /// 事件到达即解除（partial/final/error 都算"服务活着"）。
@@ -150,9 +150,9 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
     // 通道分派：默认系统 SpeechRecognizer（通用适配）；私有包打开
     // VOICE_HMS 时走 HMS（仅维护者自用构建）。
     // 错配自愈——Dart 开关开了但原生插件缺席
-    // （构建参数错配，如 18075 形态）时 probe=false，回退系统通道。
+    // （构建参数错配，如 形态）时 probe=false，回退系统通道。
     final hmsReady = hmsVoiceConfigured && await HmsAsr.probe();
-    // await 恢复点守卫（ P3 P2-3）：面板在探测/权限悬挂期间被
+    // await 恢复点守卫：面板在探测/权限悬挂期间被
     // 关闭时不得继续拉起识别（release 下 assert 被剥掉，原生侧会开拾音
     // 且无人 cancel=麦克风常驻）。
     if (!mounted || _closed) return;
@@ -313,7 +313,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
   /// 用户点"说完了"：等终稿（HMS 无 stopRecognizing，停顿后自动吐），
   /// 8s 兜底用当前部分结果 → 进预览（含整理）。系统通道有显式 stop
   /// （停拾音促原生吐 final，仍受同一 8s 兜底保护）。空部分结果也
-  /// 必然收尾——_enterPreview 空文本走「没听到内容」失败态（18075
+  /// 必然收尾——_enterPreview 空文本走「没听到内容」失败态（
   /// 验收 G：此前空 partial 时 completer 永不完成=面板卡在识别中）。
   Future<void> _finish() async {
     _engineAlive();

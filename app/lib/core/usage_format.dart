@@ -1,6 +1,6 @@
 /// 用量页纯函数层（③重构，2026-10-17）。
 ///
-/// 全部对照 refs/ZCode 官方实现落地：
+/// 全部对照 ZCode 官方开源实现 官方实现落地：
 /// - 限额查找/百分比反转：packages/ui/src/lib/codingPlanQuotaPresentation.ts
 ///   （服务端 percentage 为**已使用占比**，展示端须反转为剩余）。
 /// - zai team 用 CREDIT_LIMIT、bigmodel 用 TOKENS_LIMIT，二者等价（同文件注释）。
@@ -91,10 +91,10 @@ String formatResetTime(Object? millis) {
 
 // ── 订阅行（个人套餐 tab）─────────────────────────────────────────
 
-/// 官方套餐名规则（refs/ZCode/packages/services/src/usage-stats/providers/
+/// 官方套餐名规则（ZCode 官方开源实现/packages/services/src/usage-stats/providers/
 /// bigmodelUsageQuotaMapper.ts:81-84 formatPlanName）：
 /// "GLM Coding " + 首字母大写、其余小写。level 空时回退 productName 原样
-/// （命名优先级同官方徽标 refs/ZCode/packages/ui/src/
+/// （命名优先级同官方徽标 ZCode 官方开源实现/packages/ui/src/
 /// WorkspaceSidebarFooterPlanBadgeHelpers.ts:51-53：quota.level 优先、
 /// details[0].productName 回退）；两者皆空 → null。
 String? formatPlanName({String? level, String? productName}) {
@@ -143,7 +143,7 @@ String _epochToYmd(int ms) {
 }
 
 /// 订阅行逐条文案：details 数组是 productName/billingCycle/renewTime/
-/// expireTime 的官方载体（refs/ZCode/packages/shared/src/usage-stats.ts:132-152
+/// expireTime 的官方载体（ZCode 官方开源实现/packages/shared/src/usage-stats.ts:132-152
 /// UsageEntitlementSubscription/UsageEntitlementSubscriptionDetail），逐条
 /// 列出、最多 [maxLines] 条；totalCount=details 总数（供"等 N 项"提示）。
 /// 首条套餐名按官方徽标规则取 quota.level 优先、productName 回退，其余条

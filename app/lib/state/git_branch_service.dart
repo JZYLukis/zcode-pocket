@@ -2,7 +2,7 @@ import '../transport/channel_client.dart';
 
 /// git 通道分支服务（阶段 6.2 选分支，2026-10-24）。
 ///
-/// 官方契约：refs/snapshot-3162 packages/services/src/git/git.ts:32-55
+/// 官方契约：官方 3.16.2 源码快照 packages/services/src/git/git.ts:32-55
 /// （ServiceChannels.Git = "git"，channels.ts:97；按 workspacePath 寻址，
 /// 分支是工作区级状态——任何切换对该工作区全部并发会话全局生效）。
 /// 通道放行已由 tools/git-channel-probe.mjs 对真桌面实证（2026-10-24：
@@ -132,7 +132,7 @@ String branchIssuesMessage(List<dynamic> issues) {
     'invalid-branch-name' => '分支名不合法（含空格/特殊字符/中文斜杠等）',
     _ => null,
   };
-  // K1-P3-13：兜底不再渲染空括号（「切换失败」——本项目
+  // 兜底不再渲染空括号（「切换失败」——本项目
   // 曾有专案根除史）。优先级：官方 message（服务端人话，信息量最大）→
   // 未知 code（稳定枚举式码，可回溯）→ 通用文案。
   if (mapped != null) return mapped;

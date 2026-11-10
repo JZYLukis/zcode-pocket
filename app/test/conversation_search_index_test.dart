@@ -52,7 +52,7 @@ void main() {
     expect(buildConversationSearchMatches(items, 'a.a'), isEmpty);
   });
 
-  // B2-P2-4/D2-08：toLowerCase 对 İ（U+0130）扩长（1 码元→
+  // toLowerCase 对 İ（U+0130）扩长（1 码元→
   // 'i'+U+0307 两码元），折叠串下标漂移——命中 start/end 必须落在原串
   // 坐标系（snippet 切 sourceText 不越界不错位）。
   test('İ（U+0130）折叠扩长：命中区间与 snippet 落在原串坐标系', () {

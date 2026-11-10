@@ -11,7 +11,7 @@ import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/usage_charts.dart';
 import 'package:zcode_pocket/ui/usage_page.dart';
 
-/// 18074 验收·用量页：环形图命中根因回归（constraints.biggest 在滚动列
+/// 验收·用量页：环形图命中根因回归（constraints.biggest 在滚动列
 /// 里高度无界=∞，中心/半径无穷化后角度退化恒 0——所有点按都命中第一
 /// 片，用户实锤"只能点 glm5.3"）。锁：任意扇区点按、清单行点选（薄切片
 /// 触控兜底）、环心总量、无界尺寸守卫。

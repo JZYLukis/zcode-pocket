@@ -13,7 +13,7 @@ import 'package:zcode_pocket/ui/subagents_page.dart';
 /// 内置/插件子智能体的「模型/思考档覆盖」：官方语义=只读档案不开放全
 /// 字段编辑，开放行内模型/effort 覆盖（SubagentsSection
 /// supportsModelOverride 对位；写用户级 agents-state，null=清除）。
-/// 18074 验收④重排：弹层+保存钮→两只行内下拉 chip 即改即存（官方
+/// 验收④重排：弹层+保存钮→两只行内下拉 chip 即改即存（官方
 /// SubagentModelOverrideControl 对位）。断言：内置/插件行选模型/思考档
 /// /继承默认的通道载荷正确；官方门（仅 general-purpose/Explore+插件）；
 /// 自定义行照旧全量编辑。
@@ -207,7 +207,7 @@ Future<void> _pump(WidgetTester tester, _OverrideApp app) async {
   }
 }
 
-/// 18077 验收#17（P 重排）：覆盖下拉在点行展开区内——调用方先显式
+/// 验收#17（P 重排）：覆盖下拉在点行展开区内——调用方先显式
 /// 展开所属行（tap rowKey），本助手只负责点下拉+选菜单项。
 Future<void> _expandRow(WidgetTester tester, Key rowKey) async {
   await tester.tap(find.byKey(rowKey));
@@ -244,7 +244,7 @@ void main() {
     await _pump(tester, app);
     final channel = (app.bridge as _OverrideBridge).channel;
 
-    // 18077 验收#17（P 重排）：覆盖下拉默认收起（点行展开）；非目标行
+    // 验收#17（P 重排）：覆盖下拉默认收起（点行展开）；非目标行
     // 展开后也没有。
     expect(
       find.byKey(const ValueKey('override-model-builtin-general-purpose')),

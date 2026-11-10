@@ -37,13 +37,13 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
     });
     // 阶段 3 第二段：退后台默认 90s 断连、回前台秒连（≤5s 验收线）；
     // "审批提醒"开（前台服务）则后台常连。生产根与进程同生命周期，
-    // 但持有引用并在 dispose 释放（ P1 P3-5/P2 P3-4）——测试
+    // 但持有引用并在 dispose 释放——测试
     // 反复 pumpWidget 不再累积 observer/滞留已 dispose 的 AppState。
     _lifecycleListener = AppLifecycleListener(
       onPause: _app.onAppPaused,
       onResume: _app.onAppResumed,
     );
-    // 「跟随系统」档语言即时生效（ P3 P2-1/P1 P3-10）：Manifest
+    // 「跟随系统」档语言即时生效：Manifest
     // configChanges 含 locale（Activity 不重建，Flutter 引擎只更新
     // PlatformDispatcher.locale 并通知 WidgetsBindingObserver）——根层
     // 订阅 didChangeLocales 触发 L10n.refresh，配合下方根 builder 合并
@@ -53,7 +53,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
       listenable: _app.uiPrefs,
       preference: () => _app.uiPrefs.localePreference,
       // 经 WidgetsBinding 取 dispatcher（生产=同一个 PlatformDispatcher；
-      // 测试=TestPlatformDispatcher，localeTestValue 可覆写——P3 P2-1
+      // 测试=TestPlatformDispatcher，localeTestValue 可覆写——
       // 跟随系统语言路径因此可被测试真实验证）。
       systemLocale: () => widget._injectedApp == null
           ? WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag()
@@ -107,7 +107,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
     WidgetsBinding.instance.removeObserver(this);
     _lifecycleListener?.dispose();
     _lifecycleListener = null;
-    // 测试通道 handler 同步摘除（ P1 P3-5）：pumpWidget 多实例
+    // 测试通道 handler 同步摘除：pumpWidget 多实例
     // 场景不再滞留旧 State 的闭包。
     if (widget._injectedApp == null) {
       _testChannel.setMethodCallHandler(null);
@@ -128,7 +128,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
       // AppBar 自带注解管理（优先），此处兜无 AppBar 表面（HomeShell 加载
       // 态/全屏底板等）。
       child: ListenableBuilder(
-        // L10n.changes 入列（ P3 P2-1）：系统语言翻转经
+        // L10n.changes 入列：系统语言翻转经
         // didChangeLocales → refresh → _changes 通知，根层随之重建——
         // MaterialApp.locale 参数与 tr() 不再停在旧语言半套滞后。
         listenable: Listenable.merge([_app.uiPrefs, L10n.changes]),
@@ -139,7 +139,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
             'dark' => ThemeMode.dark,
             _ => ThemeMode.system,
           };
-          // 批2 审查 A-1（2026-10-23）：原直读 View.of(...).platformDispatcher
+          // 批2 审查 （2026-10-23）：原直读 View.of(...).platformDispatcher
           // 不注册依赖——system 档下系统亮度翻转根层不重建，状态栏注解
           // 陈旧。改 MediaQuery.platformBrightnessOf（与 MaterialApp 同源，
           // 注册 aspect 依赖，翻转即重建）。
@@ -149,7 +149,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
               mode == ThemeMode.dark ||
               (mode == ThemeMode.system && platformDark);
           return AnnotatedRegion<SystemUiOverlayStyle>(
-            // 批2 审查 B-1：不用 .light/.dark 常量（两者把安卓导航栏钉成
+            // 批2 审查 ：不用 .light/.dark 常量（两者把安卓导航栏钉成
             // 主题无关纯黑）——只设状态栏字段（AppBar backward-compat 同款
             // 形态），导航栏交还系统。
             value: effectiveDark
@@ -162,7 +162,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
                     statusBarIconBrightness: Brightness.dark,
                   ),
             child: MaterialApp(
-              title: 'ZCode Pocket', // 批次5：旧名清理（ADR 0015 改名遗漏，显示名统一）
+              title: 'ZCode Pocket', // 批次5：旧名清理（改名遗漏，显示名统一）
               debugShowCheckedModeBanner: false,
               locale: L10n.flutterLocale,
               localizationsDelegates: const [

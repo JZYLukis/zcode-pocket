@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 /// IEEE CRC-32 (same polynomial/table semantics as the web client's CRC-32).
 class Crc32 {
   static final List<int> _table = _buildTable();

@@ -10,7 +10,7 @@
 //   假阳性基线后，本文件从"只报告"转为"发现即失败"。
 // - 合法小目标的豁免走 _touchExemptions（场景 → 理由），新增豁免须在
 //   audit 文档留痕，禁止通过注释断言来临时放行。
-// - 发现明细仍写 tools/logs/design-guard-findings.txt 供排障。
+// - 发现明细仍写 供排障。
 //
 // 范围说明：会话页依赖连接栈（ConversationState）无法在测试环境独立
 // 搭建——本轮守卫范围=设置页族/用量页/任务中心/归档页/台账页/自动化页/
@@ -51,9 +51,8 @@ const _compact = Size(375, 806); // 折叠屏折叠态外屏
 /// 留痕仍落该文件），禁止注释断言临时放行。
 /// - ModelSheet 行 40dp：用户 2026-10-26 真机验收两轮拍板紧凑布局
 ///   （参考同类 AI 应用→二轮再收紧）；40 低于 44 触控下限，豁免留痕
-/// →0051。
 const Map<String, String> _touchExemptions = {
-  '[触控<48.0] ModelSheet': '模型行 40dp 紧凑二档（用户 2026-10-26 两轮拍板，ADR 0049/0051）',
+  '[触控<48.0] ModelSheet': '模型行 40dp 紧凑二档（用户 2026-10-26 两轮拍板）',
 };
 
 final _findings = <String>[];
@@ -345,7 +344,7 @@ Future<void> _guardSheetLike(
       reason: '设计守卫发现：\n${added.join('\n')}');
 }
 
-/// 模型弹层目录夹具（H14 扩面）：真 AppState 无栈时目录为空，守卫会
+/// 模型弹层目录夹具（扩面）：真 AppState 无栈时目录为空，守卫会
 /// 空转——覆写目录源保证行真实构建。
 class _GuardCatalogApp extends AppState {
   @override
@@ -372,7 +371,7 @@ class _GuardCatalogApp extends AppState {
       const <String, dynamic>{};
 }
 
-/// 「任务」内联分支夹具（H13/H14 扩面）：伪项目选中+两卡数据。
+/// 「任务」内联分支夹具（扩面）：伪项目选中+两卡数据。
 class _GuardTasksApp extends AppState {
   @override
   LinkPhase get phase => LinkPhase.online;

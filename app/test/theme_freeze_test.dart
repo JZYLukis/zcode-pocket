@@ -1,8 +1,8 @@
-// 浅色色值冻结单测（深色模式批 1 第一件事，dark-mode-plan §2 批1-1）。
+// 浅色色值冻结单测（深色模式批 1 第一件事，dark-mode-plan 批1-1）。
 //
 // 目的：theme.dart 全部浅色 token 落快照断言——此后任何浅色值改动即挂，
-// 改动须显式解锁（给理由+留痕 ADR）。这是「浅色零回归五道闸」的第 2 道
-// （dark-mode-plan §5）。
+// 改动须显式解锁（给理由+留痕 决策记录）。这是「浅色零回归五道闸」的第 2 道
+// （dark-mode-plan）。
 //
 // 维护规则：
 // - 预期值=2026-10-23 基线快照（zai-light 镜像 + 4 个可用性主动偏离项，
@@ -21,7 +21,7 @@ void expectHex(Color actual, int expected, String name) {
   expect(hex(actual), hex(Color(expected)),
       reason: '浅色冻结 token「$name」被改动：'
           '实际 ${hex(actual)} ≠ 基线 ${hex(Color(expected))}。'
-          '浅色值一律不动（dark-mode-plan §1-9）；确需改动须用户解锁并留痕。');
+          '浅色值一律不动（dark-mode-plan）；确需改动须用户解锁并留痕。');
 }
 
 void main() {
@@ -88,7 +88,7 @@ void main() {
       hex(const Color(0xFF4CAF50)),
       hex(const Color(0xFF217A2B)),
     ], reason: '热力图绿阶 5 级冻结（浅色=绿阶语义；官方浅色实为蓝阶的已知'
-        '偏差见 dark-mode-plan §3）');
+        '偏差见 dark-mode-plan）');
 
     final sources = AppThemeSpec.light.charts.sourceColors.map(hex).toList();
     expect(sources, [

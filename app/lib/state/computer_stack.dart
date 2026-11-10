@@ -30,7 +30,7 @@ String? createSessionProjectId(Map<String, dynamic>? projectIntent) {
   return id is String && id.trim().isNotEmpty ? id : null;
 }
 
-/// 归属回落（对抗审查 B1）：suspend/重启恢复路径按 workspace-list 恢复
+/// 归属回落（对抗审查）：suspend/重启恢复路径按 workspace-list 恢复
 /// 开的是**tab 桥**（无 project intent）——若恢复键恰为某项目根，用户
 /// 在该项目下新建的归属会静默丢失（症状与本批修复的原始 bug 相同）。
 /// 仅"工作区键=rootPath 直配"时回落；任务归属/projectForWorkspaceKey
@@ -46,7 +46,7 @@ String? rootMatchedProjectId(String? key, List<Map<String, dynamic>> projects) {
   return null;
 }
 
-/// 一台电脑的完整连接栈（波次 3a，D4 多电脑并行）：
+/// 一台电脑的完整连接栈（波次 3a， 多电脑并行）：
 /// relay client + 工作区 bridge + v4 会话传输 + 订阅集合。
 ///
 /// - AppState 持有栈注册表（deviceSid → ComputerStack），切换电脑 = 换
@@ -105,7 +105,7 @@ class ComputerStack extends ChangeNotifier {
           _flushDeviceCache(awaitWrites: awaitWrites),
       onBootstrapStarted: () => _bootstrapStarted = true,
       ensureWorkspaceListSubscription: (client) {
-        // 三轮审查 C2 L2：HEAD 的 start() 用直赋值 `=`（残留旧订阅会被
+        // 三轮审查 ：HEAD 的 start 用直赋值 `=`（残留旧订阅会被
         // 覆盖泄漏但绝不误绑）；`??=` 则在假想的"清 client 漏 cancel"
         // 路径下静默绑死旧流。先 cancel 再赋值，两头都安全。
         unawaited(_workspaceListSub?.cancel() ?? Future<void>.value());
@@ -144,7 +144,7 @@ class ComputerStack extends ChangeNotifier {
   String? _lastFailureMessage;
 
   /// 悬挂中的栈恢复统一入口判定用：suspend 落地中 resume 不得抢跑
-  /// （2026-10-26 断线批 D4：回前台落在 suspend 的 await 窗口内时，
+  /// （2026-10-26 断线批 ：回前台落在 suspend 的 await 窗口内时，
   /// resume 见 _client 未清而空转，栈被留在悬挂态无人恢复）。
   Future<void>? _suspendInFlight;
 
@@ -182,7 +182,7 @@ class ComputerStack extends ChangeNotifier {
   set workspaceOpening(bool value) =>
       _workspaceController.workspaceOpening = value;
 
-  /// F1 冷工作区降级：si 订阅 dormant（runtime 未运行）——任务索引照常，
+  /// 冷工作区降级：si 订阅 dormant（runtime 未运行）——任务索引照常，
   /// 点开会话冷启动后自动复活（官方 sessionsIndexStore dormant 语义）。
   bool get siDormant => _workspaceController.siDormant;
   set siDormant(bool value) => _workspaceController.siDormant = value;
@@ -234,7 +234,7 @@ class ComputerStack extends ChangeNotifier {
       case LinkPhase.waitingDesktop:
         return '等待桌面端配对';
       case LinkPhase.connecting:
-        // 真话区分（2026-10-26 断线批 D2）：relay 已配上但桥未建≠连接
+        // 真话区分（2026-10-26 断线批）：relay 已配上但桥未建≠连接
         // 恢复中——此前空串让横幅渲染成"连接恢复中…（）"空括号。
         if (client.relay.state == RelayState.paired && _bridge == null) {
           return '中继已连，正在恢复工作区';
@@ -262,7 +262,7 @@ class ComputerStack extends ChangeNotifier {
   bool _cacheSeeded = false;
 
   /// bootstrap 已启动（同步置位）：迟到的缓存读结果不得覆盖进行中的
-  /// 工作区恢复（R2/R3 类迟到写入防复发）。
+  /// 工作区恢复（类迟到写入防复发）。
   bool _bootstrapStarted = false;
   Timer? _deviceCacheWriteTimer;
 
@@ -334,7 +334,7 @@ class ComputerStack extends ChangeNotifier {
 
   void _onTaskListChangedForCache() => _scheduleDeviceCacheWrite();
 
-  /// 预渲 si 条目 running 清洗（ J3 P3-6）：si 原始条目 phase 可
+  /// 预渲 si 条目 running 清洗：si 原始条目 phase 可
   /// 能是 running（缓存落盘于回合进行中）——两路任务行（workspaceTasks/
   /// channelActive）已有 sanitize，sessions 这一路此前原样进预渲，dormant
   /// 模型把已结束回合渲染成"运行中"。落盘保留原值（真实数据到达自然
@@ -368,12 +368,12 @@ class ComputerStack extends ChangeNotifier {
   }
 
   /// 上次成功落盘的内容指纹（不含 savedAt——它每次都变，去重必须排除）。
-  /// 电量（18075 验收实证）：后台保活期订阅持续推帧，任务列表模型每
+  /// 电量（验收实证）：后台保活期订阅持续推帧，任务列表模型每
   /// ~5s notify 一次但内容大多无差异——真机日志 [cache] device saved
   /// 连续多次写同内容。内容未变不落盘。
   String? _lastDeviceCacheContentJson;
 
-  /// 设备写串行链（ A8/B-2）：防抖定时器写与 flush 直呼
+  /// 设备写串行链：防抖定时器写与 flush 直呼
   /// 并发时 tmp+rename 落序无保证——链式排队后终态恒为最后发起的内容。
   Future<void> _deviceWriteChain = Future<void>.value();
 
@@ -396,7 +396,7 @@ class ComputerStack extends ChangeNotifier {
       deletedIds: model.deletedIdsForCache,
       savedAt: DateTime.now().millisecondsSinceEpoch,
     );
-    // encode 包裹（ B-1）：jsonEncode 已从 store 的吞错圈移
+    // encode 包裹：jsonEncode 已从 store 的吞错圈移
     // 出——未来塞入不可编码值不得把 flush/suspend 炸成半关态。
     String contentJson;
     try {
@@ -409,7 +409,7 @@ class ComputerStack extends ChangeNotifier {
     final write = _deviceWriteChain.then((_) async {
       try {
         if (_disposed) return;
-        // 写失败不更新指纹（A8 主修）：瞬时 IO 失败后同内容下轮 notify
+        // 写失败不更新指纹（主修）：瞬时 IO 失败后同内容下轮 notify
         // 仍会重试，去重不再把"丢一次写"放大成"丢到内容再变"。
         final ok = await store.writeDevice(entry);
         if (!ok) return;
@@ -480,7 +480,7 @@ class ComputerStack extends ChangeNotifier {
     };
     _client = client;
     _failureSub = client.relay.failures.listen((f) {
-      // D2：error 档人话（此前 computeStatusDetail 对 error 返回空串，
+      // error 档人话（此前 computeStatusDetail 对 error 返回空串，
       // 横幅渲染成"连接恢复中…（）"）。
       _lastFailureMessage = f.message;
       onFailure(this, f);
@@ -559,11 +559,11 @@ class ComputerStack extends ChangeNotifier {
   /// 「任务」伪项目就地选中（2026-10-25 用户拍板：与其他工作区一致——
   /// chip 点按不再推独立聚合页，主列表就地切到未归类任务全集）。
   /// 不关桥不切 intent：聚合数据来自 tasks-index/projectTasks，与活跃桥
-  /// 解耦；保留当前桥（新建草稿/快切回项目不重连）。PF-3③ 显式选中
+  /// 解耦；保留当前桥（新建草稿/快切回项目不重连）。③ 显式选中
   /// 机制复用——readTree 重拉不覆盖。
   void switchToConversations() => _workspaceController.switchToConversations();
 
-  /// A5：查看态上报（官方 mobileTaskView 逐次变化上报、
+  /// 查看态上报（官方 mobileTaskView 逐次变化上报、
   /// Home/后台立即取消，task-realtime-sync.ts:225 对位）——桌面据此抑
   /// 未读。开桥时已发一次；此处补"打开任务=带 activeTaskId、退后台/
   /// 回主页=不带"两态。失败静默（best-effort）。
@@ -599,12 +599,12 @@ class ComputerStack extends ChangeNotifier {
   /// 2026-11-05 反馈②A：跨工作区打开失败时清保住的旧首页行。
   void clearStaleHomePreview() => _taskCatalog.clearStaleHomePreview();
 
-  /// PF-3③（2026-10-24 修复批）：选中项目派生重算——显式选中优先；
+  /// ③（2026-10-24 修复批）：选中项目派生重算——显式选中优先；
   /// 否则按当前工作区键反查项目归属（无归属=清除，不滞留旧值）。
   /// readTree 重拉与归属变化后都走这里，防侧栏高亮滞留。
   void _refreshActiveProject() => _taskCatalog.refreshActiveProject();
 
-  /// 测试缝（H10 红绿，2026-10-25 批①）：种子"桥已就绪+项目全集已载"
+  /// 测试缝（红绿，2026-10-25 批①）：种子"桥已就绪+项目全集已载"
   /// 的稳态——switchToProject/switchToConversations 的门逻辑（幂等门
   /// 病根）跑的是本尊状态机，桥/索引/客户端由测试注入离线替身。
   /// 不动 _explicitProjectId（重复调用=模拟 readTree 重拉后重算派生）。
@@ -668,7 +668,7 @@ class ComputerStack extends ChangeNotifier {
   /// 拉取 zcodeTask 任务索引三列表（listTasks/listPinnedTasks/listArchivedTasks，
   /// 官方 windowHostControllerService.readSourceTaskIndex 同款成员关系语义）。
   /// 任一列表失败不阻塞其余（12s 超时， zemote 同款容错）。
-  /// 任务索引重载入口（F17 操作后由 AppState 调用刷新列表）。
+  /// 任务索引重载入口（操作后由 AppState 调用刷新列表）。
   void reloadTaskIndex() => _taskCatalog.reloadTaskIndex();
 
   /// 任务全文搜索（官方 listTaskList：title + searchable_text 对话正文
@@ -688,7 +688,7 @@ class ComputerStack extends ChangeNotifier {
   Future<dynamic> setTaskPinned(String taskId, bool pinned) =>
       _taskCatalog.setTaskPinned(taskId, pinned);
 
-  /// F17（WR 对齐）：重命名任务（官方 renameTask{title}）。
+  /// （WR 对齐）：重命名任务（官方 renameTask{title}）。
   Future<dynamic> renameTask(String taskId, String title) =>
       _taskCatalog.renameTask(taskId, title);
 
@@ -714,7 +714,7 @@ class ComputerStack extends ChangeNotifier {
   Future<dynamic> markTaskRead(String taskId, {int? expectedUnreadAt}) =>
       _taskCatalog.markTaskRead(taskId, expectedUnreadAt: expectedUnreadAt);
 
-  /// F17：主动标为未读（桌面 TaskActionMenu 同款）。
+  /// 主动标为未读（桌面 TaskActionMenu 同款）。
   Future<dynamic> markTaskUnread(String taskId, {required bool unread}) =>
       _taskCatalog.markTaskUnread(taskId, unread: unread);
 
@@ -729,7 +729,7 @@ class ComputerStack extends ChangeNotifier {
   SessionsIndexState? get sessionsIndex => _sessionsIndex?.state;
   TaskListModel? get taskList => _taskList;
 
-  /// B1 兜底：按 sessionId 取缓存中的活订阅（页面 ensure 超时后直捞）。
+  /// 兜底：按 sessionId 取缓存中的活订阅（页面 ensure 超时后直捞）。
   ConversationSubscription? subscriptionOf(String sessionId) =>
       _conversationRegistry.subscriptionOf(sessionId);
 
@@ -746,7 +746,7 @@ class ComputerStack extends ChangeNotifier {
     _conv = value;
   }
 
-  /// 包装层（三轮审查 C1 M1/D1 M1）：demote/close 的清场竞态让在飞
+  /// 包装层（三轮审查 /）：demote/close 的清场竞态让在飞
   /// 注册以「会话订阅已重置」收场——这里等清场完成后**重试一次**：
   /// 切电脑场景桥仍活，重试即恢复（比 HEAD 的静默泄漏订阅更自愈）；
   /// 关栈场景 transport 已空，重试抛「no active workspace」给页面
@@ -793,7 +793,7 @@ class ComputerStack extends ChangeNotifier {
     // host 端 reserveCreatedTask 按 params.projectId 写 tasks.project_id，
     // 缺省即落桌面「任务」默认区。取值规则见 createSessionProjectId；
     // 桥 intent 缺席时按项目根直配回落（rootMatchedProjectId——恢复路径
-    // 的 tab 桥场景，对抗审查 B1）。
+    // 的 tab 桥场景，对抗审查）。
     // 任务桥不回落（2026-10-24 真机实锤"选任务工作区新建却建到项目里"）：
     // 任务桥的 workspaceKey 可能恰为项目根（未归类任务跑在项目根目录，
     // 如临时性验证任务场景）——任务入口的语义是"跟随该任务目录"，
@@ -884,7 +884,7 @@ class ComputerStack extends ChangeNotifier {
   /// 与 demote 的区别：demote 只释放会话订阅（前台切电脑的降级保活），
   /// suspend 释放整条连接（app 退后台的省电断开）。
   ///
-  /// D4（2026-10-26 断线批）：幂等 + 落地中追踪——回前台（resume/
+  /// （2026-10-26 断线批）：幂等 + 落地中追踪——回前台（resume/
   /// pokeOrResume）可能落在 _closeWorkspaceStack 的 await 窗口内，若不
   /// 等待落地就判定，会因 _client 尚未清空而误判"未悬挂"，栈被留在
   /// 悬挂态且无人再恢复（真机体感：回 app 后一直转圈连不上）。
@@ -932,7 +932,7 @@ class ComputerStack extends ChangeNotifier {
   /// 完全静默档（电量优化批 #17）：90s 断连倒计时窗口内不发心跳不看门狗。
   void setRelaySilent(bool silent) => _client?.setRelaySilent(silent);
 
-  /// 机会项#1（2026-11-08）：workspace-create L2 直发（详见
+  /// 机会项#1（2026-11-08）：workspace-create 直发（详见
   /// CompanionClient.createWorkspace）。
   Future<Map<String, dynamic>> createWorkspace(String name) async {
     final client = _client;
@@ -940,7 +940,7 @@ class ComputerStack extends ChangeNotifier {
     return client.createWorkspace(name);
   }
 
-  /// 回前台统一入口（D4）：悬挂中或悬挂落地中→恢复；已连接→poke。
+  /// 回前台统一入口：悬挂中或悬挂落地中→恢复；已连接→poke。
   Future<void> pokeOrResume() async {
     final suspending = _suspendInFlight;
     if (suspending != null) await suspending;

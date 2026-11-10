@@ -7,7 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../core/localized_text.dart';
 import '../core/theme.dart';
 
-/// 官方网页版远控备用入口（阶段 4.2 最小版 / H08-8B，2026-10-29 批次）：
+/// 官方网页版远控备用入口（阶段 4.2 最小版 / -8B，2026-10-29 批次）：
 /// 零协议依赖的逃生舱——原生协议漂移/握手失败时仍可用官方 Web 远控。
 ///
 /// - 目标=`https://zcode.z.ai/remote/v4/`（官方唯一正式手机远控入口，
@@ -75,7 +75,7 @@ class _WebFallbackPageState extends State<WebFallbackPage> {
                 : NavigationDecision.prevent;
           },
           onPageStarted: (_) {
-            // F6（复审）：新导航开始才清旧错误——Android 在主框架加载
+            // （复审）：新导航开始才清旧错误——Android 在主框架加载
             // 失败时同样会回调 onPageFinished（错误页），旧实现无条件清
             // 会把刚 set 的错误在几毫秒内抹掉（新提示几乎不可见）。
             if (_loadError != null && mounted) {

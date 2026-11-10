@@ -75,7 +75,7 @@ class SystemAsrPlugin(private val context: Context) : MethodChannel.MethodCallHa
     }
 
     private fun start(call: MethodCall, result: MethodChannel.Result) {
-        // 全体包 try（开源审查 Q2 P2-1）：isRecognitionAvailable /
+        // 全体包 try（开源审查）：isRecognitionAvailable /
         // createSpeechRecognizer 在部分 ROM 上可抛（服务绑定异常立即失败
         // 型实现），裸抛会从平台主线程崩整个进程——对齐 companion 通道既有实现
         // 的全包形态（isAvailable 通道早已自包 try，此处补齐同款）。
@@ -98,7 +98,7 @@ class SystemAsrPlugin(private val context: Context) : MethodChannel.MethodCallHa
                     // 7=no match、6=speech timeout 属"没听到内容"，其余按服务
                     // 异常报；文案人话化由 Dart 侧统一。
                     emit(mapOf("type" to "error", "code" to error))
-                    // final/error 即销毁（开源审查 Q2 P2-3）：兑现类头注释
+                    // final/error 即销毁（开源审查）：兑现类头注释
                     // "不赌 ROM 复用语义"——识别服务连接/隐私指示器不滞留
                     // 到预览/整理阶段；emit 先行，本次事件不受影响。
                     teardown()
@@ -121,7 +121,7 @@ class SystemAsrPlugin(private val context: Context) : MethodChannel.MethodCallHa
 
                 override fun onEvent(eventType: Int, params: Bundle?) {}
             })
-            // 识别语言跟随 app 语言（开源审查 Q1 P3-8）：Dart 侧按当前
+            // 识别语言跟随 app 语言（开源审查）：Dart 侧按当前
             // 界面语言传入（zh-CN/en-US），缺省中文兜底——英文界面用户
             // 不再被塞进中文识别引擎。
             val language = call.argument<String>("language") ?: "zh-CN"

@@ -64,7 +64,7 @@ void main() {
     expect(find.byIcon(Icons.mic_rounded), findsAtLeastNWidgets(1));
   });
 
-  // D1-P1/D2-P2-02/D3-P1-1（三路，语音直发静默丢弃）：发送
+  // （三路，语音直发静默丢弃）：发送
   // 在途（_sending=RPC/附件上传等待/held 弹窗，可达分钟级）时长按发送
   // 键曾不受门控——听写后 onSend 撞 _sendText 的 _sending 早退=口述
   // 文本无痕丢失（不入草稿/队列/暂存，面板照常关闭）。长按与点按同闸。

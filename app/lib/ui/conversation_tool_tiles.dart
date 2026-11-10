@@ -209,7 +209,7 @@ class ToolCallTile extends StatefulWidget {
 class ToolCallTileState extends State<ToolCallTile> {
   bool _localOpen = false;
 
-  /// A2（2026-10-24 修复批）：toolPreview/_inputDiffCounts 记忆化——
+  /// （2026-10-24 修复批）：toolPreview/_inputDiffCounts 记忆化——
   /// 流式期整页每帧重建，行未变化（identical：变更行走 row.upserted
   /// 新 map，未变行引用稳定）时重复解析是每帧 O(行数) 的纯浪费。
   Map<String, dynamic>? _memoRow;
@@ -251,7 +251,7 @@ class ToolCallTileState extends State<ToolCallTile> {
     if (name != 'read' && name != 'readfile' && name != 'read_file') {
       return null;
     }
-    // 取值链统一走 toolInputArgs（对抗审查 B9：优先结构化 input——
+    // 取值链统一走 toolInputArgs（对抗审查 ：优先结构化 input——
     // inputText 缺席而 input 已随 running upsert 到场时也能推断）。
     final decoded = toolInputArgs(row);
     if (decoded != null) {
@@ -423,7 +423,7 @@ class ToolCallTileState extends State<ToolCallTile> {
       }
     }
     final (color, statusLabel) = _statusStyle();
-    // A2 记忆化：行引用未变直接复用上次解析结果（见字段声明注）。
+    // 记忆化：行引用未变直接复用上次解析结果（见字段声明注）。
     if (!identical(row, _memoRow)) {
       _memoRow = row;
       _memoDiff = _inputDiffCounts(row);
@@ -993,7 +993,7 @@ class OutputViewportState extends State<OutputViewport> {
     final baseStyle = TextStyle(
       fontSize: AppType.uiXs,
       fontFamily: 'monospace',
-      // C16（2026-10-24 修复批，用户拍板 a 案）：深底 mono 输出提亮一档
+      // （2026-10-24 修复批，用户拍板 a 案）：深底 mono 输出提亮一档
       // ——官方 ExecuteOutput.tsx:44 同档（foreground-subtle），深色对比
       // 3.6:1→4.85:1 过 WCAG AA；浅色为设计基准不动（仍 subtlest）。
       color: Theme.of(context).brightness == Brightness.dark

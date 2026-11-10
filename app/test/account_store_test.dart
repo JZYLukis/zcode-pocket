@@ -1,6 +1,6 @@
-// 多账号凭据核心回归（multi-account-plan.md §4.1/4.2，2026-10-25）：
+// 多账号凭据核心回归（multi-account-plan.md /4.2，2026-10-25）：
 // 迁移（旧单账号键→账号记录）、id 派生三层（claim > user_info.id > 哈希
-// 兜底；同 provider 覆盖启发式已废除——18086 事故）、多账号并存读写
+// 兜底；同 provider 覆盖启发式已废除—— 事故）、多账号并存读写
 // 的存储面）、档案 accountId 序列化往返。
 import 'dart:async';
 import 'dart:convert';
@@ -63,7 +63,7 @@ class _GatedMemStorage extends _MemStorage {
   /// 下一次 account.list 写入挂起（制造读-改-写交错窗口）。
   Completer<void>? holdNextListWrite;
 
-  /// 已推进到 list 写入点（save 写序为列表先行、凭据后写——K1-P2-2
+  /// 已推进到 list 写入点（save 写序为列表先行、凭据后写——
   /// 防孤儿凭据键——故前置判定看此标记而非凭据键存在）。
   bool listWriteEntered = false;
 
@@ -179,7 +179,7 @@ void main() {
     expect(await store.readJwtFor('acc-a'), jwtA2);
   });
 
-  test('identity 修复（18086 事故红绿）：无 claim 的两个不同账号并存不被覆盖', () async {
+  test('identity 修复（事故红绿）：无 claim 的两个不同账号并存不被覆盖', () async {
     final mem = _MemStorage();
     final store = AccountStore(storage: mem);
     // bigmodel 实测形态：JWT 零标准 claim，身份来自官方 user_info.id。
@@ -189,7 +189,7 @@ void main() {
     await store.save(
         jwt: _jwt(payload: {'i': 2}), provider: 'bigmodel', identity: 'bm-user-b');
     // 红：旧版"同 provider 唯一兜底账号覆盖"启发式这里只剩 1 条（A 被删
-    // 换 B=凭据键被清→活跃连接 auth-required→黑屏/转圈全链条，18086 真机）。
+    // 换 B=凭据键被清→活跃连接 auth-required→黑屏/转圈全链条， 真机）。
     expect(await store.listAccounts(), hasLength(2),
         reason: '不同 identity 的同 provider 账号必须并存');
     expect(await store.readJwtFor('bm-user-a'), isNotNull,
@@ -219,7 +219,7 @@ void main() {
     final store = AccountStore(storage: mem);
     await store.save(jwt: _jwt(payload: {'i': 1}), provider: 'bigmodel');
     await store.save(jwt: _jwt(payload: {'i': 2}), provider: 'bigmodel');
-    // 宁可并存重复（旧账号凭据完好可继续用），绝不删号换号（18086 事故）。
+    // 宁可并存重复（旧账号凭据完好可继续用），绝不删号换号（事故）。
     expect(await store.listAccounts(), hasLength(2));
     expect(await store.hasAccount, isTrue);
   });

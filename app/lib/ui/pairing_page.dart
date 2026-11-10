@@ -33,7 +33,7 @@ class PairingPage extends StatefulWidget {
 }
 
 class _PairingPageState extends State<PairingPage> {
-  /// 本会话是否用过相机扫码（18093 扫码黑屏终局：相机会话开合会在
+  /// 本会话是否用过相机扫码（扫码黑屏终局：相机会话开合会在
   /// 部分华为机型楔死渲染管线——无预览纹理也复现；用过扫码则在配对
   /// 成功后主动重建 Activity 换新表面，确定性消除黑屏）。
   static const _surface = MethodChannel('companion/surface');
@@ -218,7 +218,7 @@ class _PairingPageState extends State<PairingPage> {
       if (!added) return; // 用户取消改绑：仅收起连接态（finally 复位）
       debugPrint('[pairing-perf] addV2Profile done');
       if (!mounted) return;
-      // 18093 扫码黑屏终局：相机会话开合（cameraX，与
+      // 扫码黑屏终局：相机会话开合（cameraX，与
       // 预览纹理无关）在部分华为机型把渲染管线楔死（agent 实证 2/4，
       // 三层防御+去纹理均不治）。用过扫码→配对成功后重建 Activity
       // 换新表面，确定性消除；纯粘贴路径零打扰。
@@ -431,7 +431,7 @@ class _PairingPageState extends State<PairingPage> {
     return ok == true;
   }
 
-  /// P2-2：配对路径同设备列表——同一台电脑改绑账号（当前
+  /// 配对路径同设备列表——同一台电脑改绑账号（当前
   /// lastUsed 与既有绑定不同）属破坏性操作，弹确认后 forceRebind。
   ///
   /// 返回 true=档案已添加/已改绑，false=用户取消改绑（调用方不得把

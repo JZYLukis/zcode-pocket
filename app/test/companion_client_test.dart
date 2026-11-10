@@ -4,7 +4,7 @@ import 'package:zcode_pocket/transport/relay_v2.dart';
 
 import 'fake_relay_v2.dart';
 
-/// 协议传输层修复批（2026-11-08）：CompanionClient 的 L2 语义——
+/// 协议传输层修复批（2026-11-08）：CompanionClient 的 语义——
 /// ①app-error 通用立即失败（官方 payloadRequester.ts:115-124）
 /// ②bridge-degraded 的 terminal-owner 原因走慢档恢复 + 人话文案
 /// （官方 desktop 在另一终端接管该桥；官方 reason 表 validation.ts:480-489）。

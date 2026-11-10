@@ -158,7 +158,7 @@ class NotifyStore {
 
   Future<void> _writeBaselines() async {
     final now = nowMs();
-    // H1-P3-08：任意写入口统一刷新基准——10s 强写判定此前
+    // 任意写入口统一刷新基准——10s 强写判定此前
     // 只认 _writeBaselinesNow/flush，防抖写刚落盘又立刻强写一次同内容。
     _lastBaselineWriteAt = now;
     _pruneInteractions(now);
@@ -241,7 +241,7 @@ class NotifyStore {
   /// 同事件重复两行，发现9）。
   Future<void> markClicked(String taskId, int atMs) async {
     for (final e in _recentLedger.reversed) {
-      // H1-P3-02：只回填 posted 行——同任务先 muted/deduped
+      // 只回填 posted 行——同任务先 muted/deduped
       // 后又 posted 时（noChannel→posted 重试成对出现），不按 outcome
       // 过滤会标在最近一条非 posted 行上，真实 posted 行 clicked 恒 false。
       if (e.taskId == taskId && !e.clicked && e.outcome == 'posted') {

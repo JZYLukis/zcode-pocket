@@ -402,7 +402,7 @@ void main() {
         reason: '事件区必须「最新在前」（降序夹具此前掩盖了 reversed 语义）');
     expect(find.textContaining('简报正文'), findsOneWidget);
     expect(find.textContaining('简报摘要'), findsOneWidget);
-    // VR-6（视觉审查 1109）：产物卡此前零间距叠放+行高 39.7——两张卡
+    // （视觉审查 1109）：产物卡此前零间距叠放+行高 39.7——两张卡
     // 像一整块且低于 44 触控/可读下限。修=相邻 6dp 间距+行高 ≥44。
     final cardA = tester.getRect(
       find.byKey(const ValueKey('workflow-artifact-art-1')),
@@ -424,7 +424,7 @@ void main() {
     expect(find.textContaining('今日完成 3 项工作'), findsOneWidget);
   });
 
-  // 视觉补跑必修（human-eye-retro-1109，Visual B 审查实测 87dp 死区）：
+  // 视觉补跑必修（Visual B 审查实测 87dp 死区）：
   // run 行状态/时间必须贴卡片右缘——旧实现 Expanded+Flexible 双分，
   // 状态只画半行宽的一小段、剩余空间全落行尾（时间不靠右+长标题提前
   // 省略）。红=修复前 card.right - time.right ≈ 99dp（87 死区+12 内边距）。

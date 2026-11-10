@@ -246,7 +246,7 @@ void main() {
     });
   });
 
-  group('配额横幅状态机（官方 sessionQuotaBannerState 对齐；PF-1 修复批总门）', () {
+  group('配额横幅状态机（官方 sessionQuotaBannerState 对齐； 修复批总门）', () {
     const sp = 'account:bigmodel-start-plan';
     Map<String, dynamic> snap({
       List<Map<String, dynamic>>? limits,
@@ -276,7 +276,7 @@ void main() {
     });
 
     test('Coding Pro 快照不出桶式横幅（官方 provider 总门）', () {
-      // PF-1 用户实见路径：TOKENS_LIMIT 新周期 0 已用时 percentage=0，
+      // 用户实见路径：TOKENS_LIMIT 新周期 0 已用时 percentage=0，
       // 旧逻辑误报"剩余 0%"；官方 isStartPlanModelProviderId 早退整路拦。
       const codingPro = 'account:bigmodel-individual-coding-plan';
       final st = buildQuotaBannerState(

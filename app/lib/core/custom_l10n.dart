@@ -13,7 +13,7 @@ const _customEn = <String, String>{
       'Chart data failed to load; quota cards are unaffected. Pull down to retry.',
   '当前未连接电脑，稍后再试': 'Not connected to a computer. Try again later.',
   '未连接，已排队待发送（': 'Offline — queued for sending (',
-  // P1/P2/P3（三路同报）：英文侧补右括号与中文 `）` 对称，否则断网
+  // （三路同报）：英文侧补右括号与中文 `）` 对称，否则断网
   // 排队条括号永不闭合。
   ' 条），恢复连接后自动发出':
       ' message(s). They will be sent automatically when the connection recovers)',
@@ -161,7 +161,7 @@ const _customEn = <String, String>{
   '昨天': 'Yesterday',
   '在电脑上打开 ZCode → 设置 → 远程控制，点击「手机连接」显示二维码；用本机扫码，或复制链接粘贴到下方。链接即凭据，请勿转发他人。': 'On your computer, open ZCode → Settings → Remote Control and tap “Phone connection” to show the QR code. Scan it with this device, or copy the link below. The link is a credential—do not share it.',
   '对准桌面端 ZCode → 远程控制 显示的二维码': 'Point the camera at the QR code shown in ZCode → Remote Control on your desktop',
-  // 18092 扫码无预览模式新文案（qr_scan_page）。
+  // 扫码无预览模式新文案（qr_scan_page）。
   '对准桌面端 ZCode → 远程控制 显示的二维码（无取景预览：对准框内即可识别）':
       'Point the QR code shown in ZCode Remote Control at the frame (no live preview: codes inside the frame are detected)',
   '相机不可用，请返回改用「粘贴链接」添加':
@@ -383,7 +383,7 @@ const _customEn = <String, String>{
   '调度': 'Schedule',
   '提示词': 'Prompt',
   '编辑定时任务': 'Edit scheduled task',
-  // 18074 验收②③④批：宽屏新建任务行 / visualize 卡片 / 子代理行内覆盖 chips
+  // 验收②③④批：宽屏新建任务行 / visualize 卡片、子代理行内覆盖 chips
   '新建任务': 'New task',
   '可视化': 'Visualization',
   '思考·继承': 'Thinking · inherit',
@@ -574,7 +574,7 @@ const _customEn = <String, String>{
   '查看完整计划': 'View full plan',
   '复制计划': 'Copy plan',
   '计划已复制': 'Plan copied',
-  // ── 18077 验收修复+优化批 ──
+  // ── 验收修复+优化批 ──
   // Bug B：ExitPlanMode 批准选项词表（interaction_banner _optionLabelZh
   // 之外的 UI 侧词条同步）。
   '批准': 'Approve',
@@ -599,7 +599,7 @@ const _customEn = <String, String>{
 
   // ── （51 路审查 l10n 大扫除，2026-11-04）──
   // 各路报告双表 0 命中的漏网串补齐；分组注释标报告来源。
-  // L1：任务主页/任务中心/归档。
+  // 任务主页/任务中心/归档。
   '凭据已失效（桌面可能刷新了二维码）':
       'Credentials expired (the desktop may have refreshed the QR code)',
   '重新扫码': 'Rescan QR code',
@@ -707,7 +707,7 @@ const _customEn = <String, String>{
   'platform.deepseek.com 的 API key': 'API key from platform.deepseek.com',
   'platform.moonshot.cn 的 API key（国内站）':
       'API key from platform.moonshot.cn (China site)',
-  // B2：消息渲染链（工具状态词/反馈/分支/代码复制）。
+  // 消息渲染链（工具状态词/反馈/分支/代码复制）。
   '等待中': 'Waiting',
   '已拒绝': 'Rejected',
   '已执行': 'Executed',
@@ -720,7 +720,7 @@ const _customEn = <String, String>{
   '已从此处创建分支': 'Branched from here',
   '分支会话': 'Branched session',
   '代码已复制': 'Code copied',
-  // D2：输入与发送链。
+  // 输入与发送链。
   '子智能体工作记录 · 只读': 'Subagent activity · read-only',
   '上传失败，点此重试': 'Upload failed — tap to retry',
   '待发': 'Pending',
@@ -736,7 +736,7 @@ const _customEn = <String, String>{
   '将把当前对话历史压缩为摘要以释放上下文空间。压缩后早期消息的原文不再可用。':
       'The current conversation history will be compressed into a summary to free up context. After compaction, the original text of earlier messages is no longer available.',
   '已发起上下文压缩': 'Context compaction started',
-  // O1/O2：弹层与杂项（审批卡/Goal/自动化/台账/子代理）。
+  // 弹层与杂项（审批卡/Goal/自动化/台账/子代理）。
   '执行计划？': 'Approve this plan?',
   '等待你的输入': 'Waiting for your input',
   '处理中…': 'Processing…',
@@ -752,7 +752,7 @@ const _customEn = <String, String>{
   '该任务已在运行': 'This automation is already running',
   '已复制 200 条内台账文本': 'Copied the latest 200 ledger entries',
   '子智能体加载失败': 'Failed to load subagents',
-  // C1：文件卡与回滚。
+  // 文件卡与回滚。
   '回滚': 'Roll back',
   '已回滚': 'Rolled back',
   '回滚到本轮前': 'Roll back to before this turn',
@@ -764,7 +764,7 @@ const _customEn = <String, String>{
   '回滚本轮文件修改？': 'Roll back this turn’s file changes?',
   '已回滚本轮安全文件': 'Rolled back this turn’s safe files',
   '（无明细）': '(no details)',
-  // P1-1：设置页版本行三段前缀（pattern 要求捕获非空，裸前缀不命中）。
+  // 设置页版本行三段前缀（pattern 要求捕获非空，裸前缀不命中）。
   '本机 ': 'Local ',
   '桌面端 ': 'Desktop ',
   ' · 桌面端 ': ' · Desktop ',
@@ -784,7 +784,7 @@ const _customEn = <String, String>{
   '中继服务暂不可用': 'Relay service temporarily unavailable',
   '等待桌面端上线': 'Waiting for the desktop to come online',
   '连接失败，正在重试': 'Connection failed — retrying',
-  // N1 P2-2：重置礼包弹层行副标题的零机会兜底。
+  // 重置礼包弹层行副标题的零机会兜底。
   '0 次': '0 credits',
   // 批 E（2026-11-04 拍板项）新增文案。
   '总用量': 'Total',
@@ -811,7 +811,7 @@ const _customEn = <String, String>{
   '缓存于 ': 'Cached ',
   '加载失败，请稍后重试': 'Failed to load. Try again later',
   '相关消息不在当前已加载范围': 'The message is outside the loaded range',
-  // P2-2：usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
+  // usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
   '网络连接不可用，请检查网络': 'Network unavailable. Check your connection',
   '数据为空，请稍后重试': 'No data yet. Try again later',
   // multi-account-ux-1 批2（2026-11-04 拍板）：添加账号语义收敛。
@@ -875,7 +875,7 @@ final _customPatterns = <_L10nPattern>[
 
   // 插值成串的泄漏——tr() 只做精确匹配+regex，带
   // 数值/变量的文案必须走 pattern（此前成组泄漏的根因）。
-  // 18077 修复+优化批参数串。
+  // 修复+优化批参数串。
   _L10nPattern(RegExp(r'^归档选中的 (\d+) 个任务？$'), 'Archive {n} selected tasks?', {'n': 1}),
   _L10nPattern(RegExp(r'^将选中的 (\d+) 个任务标为已读？$'), 'Mark {n} selected tasks as read?', {'n': 1}),
   _L10nPattern(RegExp(r'^显示全部 (\d+) 行$'), 'Show all {n} lines', {'n': 1}),
@@ -1039,7 +1039,7 @@ final _customPatterns = <_L10nPattern>[
     {'n': 1, 'failed': 2, 'names': 3},
   ),
   // ── ：动态参数串 pattern（2026-11-04）──
-  // L1：搜索分区头（带括号计数）/归档页/移动到项目/新建切换/任务菜单
+  // 搜索分区头（带括号计数）/归档页/移动到项目/新建切换/任务菜单
   // run() 失败前缀（ASCII 冒号形态：snack('$failPrefix: $e')）。
   _L10nPattern(RegExp(r'^置顶 \((\d+)\)$'), 'Pinned ({n})', {'n': 1}),
   _L10nPattern(RegExp(r'^运行中 \((\d+)\)$'), 'Running ({n})', {'n': 1}),
@@ -1143,7 +1143,7 @@ final _customPatterns = <_L10nPattern>[
     'This account has {count} computer profiles. After deletion, these computers cannot connect (the profiles are kept; sign in to this account again to restore them).',
     {'count': 1},
   ),
-  // B2：工具组/反馈/分支/链接。
+  // 工具组/反馈/分支/链接。
   _L10nPattern(
     RegExp(r'^终端 · (\d+) 个命令$'),
     'Terminal · {n} commands',
@@ -1181,7 +1181,7 @@ final _customPatterns = <_L10nPattern>[
   ),
   _L10nPattern(RegExp(r'^分支失败：([\s\S]+)$'), 'Branch failed: {error}', {'error': 1}),
   _L10nPattern(RegExp(r'^链接：([\s\S]+)$'), 'Link: {url}', {'url': 1}),
-  // D2：排队条/压缩。
+  // 排队条/压缩。
   _L10nPattern(RegExp(r'^排队中 \((\d+)\)$'), 'Queued ({n})', {'n': 1}),
   _L10nPattern(
     RegExp(r'^排队中 \((\d+)\) · 回合结束后自动发送$'),
@@ -1189,7 +1189,7 @@ final _customPatterns = <_L10nPattern>[
     {'n': 1},
   ),
   _L10nPattern(RegExp(r'^压缩失败：([\s\S]+)$'), 'Compaction failed: {error}', {'error': 1}),
-  // O1/O2：审批卡倒计时/计数条/题数按钮/工具权限标题/Goal/自动化。
+  // 审批卡倒计时/计数条/题数按钮/工具权限标题/Goal/自动化。
   _L10nPattern(RegExp(r'^(\d+) 秒后自动结束$'), 'Auto-resolves in {count}s', {'count': 1}),
   _L10nPattern(
     RegExp(r'^还有 (\d+) 个待处理，处理完当前后依次出现$'),
@@ -1220,7 +1220,7 @@ final _customPatterns = <_L10nPattern>[
     {'title': 1},
   ),
   _L10nPattern(RegExp(r'^已触发（([\s\S]+)）$'), 'Triggered ({status})', {'status': 1}),
-  // N1 P2-2：重置礼包徽标（单机会）与弹层行副标题（倒计时段拼接前先 tr）。
+  // 重置礼包徽标（单机会）与弹层行副标题（倒计时段拼接前先 tr）。
   _L10nPattern(
     RegExp(r'^(\d+) 次重置额度 · 剩余 ([\s\S]+)$'),
     '{count} reset credit · {time} left',
@@ -1231,7 +1231,7 @@ final _customPatterns = <_L10nPattern>[
     '{count} credit(s) · earliest expires in {time}',
     {'count': 1, 'time': 2},
   ),
-  // C1：文件卡回滚族。
+  // 文件卡回滚族。
   _L10nPattern(
     RegExp(r'^回滚预检失败：([\s\S]+)$'),
     'Rollback pre-check failed: {error}',

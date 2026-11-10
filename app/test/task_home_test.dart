@@ -91,7 +91,7 @@ void main() {
         reason: '空时间桶不占位');
   });
 
-  test('最近：前天/3 天前的任务不丢（A2 教训钉；18077 四组化后归本周）', () {
+  test('最近：前天/3 天前的任务不丢（A2 教训钉； 四组化后归本周）', () {
     final rows = prepareTaskHomeRows(
       workspaceTasks: [
         row('d2', '前天任务', ago(const Duration(days: 2))),
@@ -112,7 +112,7 @@ void main() {
         .toList();
     expect(taskIds, containsAll(['d2', 'd3']),
         reason: '修复前：桶常量 N天前 与返回值 前天/3 天前 永不匹配=整条丢失');
-    // 18077 验收#9（四组）：夹具 now=10-26 周一——前天/3 天前落上周
+    // 验收#9（四组）：夹具 now=10-26 周一——前天/3 天前落上周
     // →「以前」档（不丢的核心语义：档键与返回值匹配）。
     expect(items.any((i) => i.key == 'group:recent:以前'), isTrue);
   });
@@ -302,7 +302,7 @@ void main() {
     expect(taskHomeGroupDefaultVisible('recent:以前'), 5);
   });
 
-  test('时间桶：18077 四组口径（今天/昨天/本周/以前）', () {
+  test('时间桶： 四组口径（今天/昨天/本周/以前）', () {
     // 用户拍板四组（偏离官方八档）：前天/3 天前归本周，9 天前/跨月全归
     // 以前。
     // 夹具 now=10-26 周一：前天/3 天前在上周 → 以前。

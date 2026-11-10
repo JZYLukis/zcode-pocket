@@ -33,7 +33,7 @@ class AnchoredChatList extends StatelessWidget {
   }) : assert(itemCount >= 0),
        assert(centerIndex >= 0),
        assert(itemCount == 0 || centerIndex < itemCount),
-       // A2-P3-6：itemCount==0 时 afterCenter=-1 会把 trailing
+       // itemCount==0 时 afterCenter=-1 会把 trailing
        // 静默吞成底距 SizedBox——潜伏地雷（当前调用方用 isNotEmpty 守住，
        // 留断言防未来调用方踩入）。
        assert(itemCount > 0 || trailing == null, 'trailing requires itemCount>0');
@@ -44,7 +44,7 @@ class AnchoredChatList extends StatelessWidget {
       left: padding.left,
       right: padding.right,
     );
-    // A2-P3-6：itemCount==0 时 afterCenter=-1（构造断言已拦
+    // itemCount==0 时 afterCenter=-1（构造断言已拦
     // trailing 非空形态）——clamp 到 0 保 childCount 数学恒正。
     final afterCenter = math.max(0, itemCount - centerIndex - 1);
     final leadingCount = centerIndex + (leading == null ? 0 : 1);

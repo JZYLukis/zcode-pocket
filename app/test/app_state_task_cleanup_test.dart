@@ -121,7 +121,7 @@ void main() {
     expect(
       drafts.sessionsRemoved,
       ['device-x/task-1'],
-      reason: '已归档会话的草稿须清理（ADR 0059:30）',
+      reason: '已归档会话的草稿须清理',
     );
     expect(
       queue.sessionsRemoved,

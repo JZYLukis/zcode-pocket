@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -54,7 +58,7 @@ class ChannelClient {
       try {
         data = decodeValue(reader);
       } on Object catch (e) {
-        // P3-5（D-8 批2）：try 只包解码——handler 自身抛错不得被归因为
+        // （批2）：try 只包解码——handler 自身抛错不得被归因为
         // "载荷损坏"（会以 frameLost 失败在途 call，误报结果未知）。
         onLog?.call('[ipc] invalid payload (id=$id): $e');
         final h2 = _handlers[id];

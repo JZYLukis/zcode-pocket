@@ -36,7 +36,7 @@ void main() {
       expect(await refineDictation(apiKey: 'sk-x', raw: '   '), '   ');
     });
 
-    // D1-P2-3/D2-P2-03/D3-P2-2/P3-P2-4（四路同报）：连接/
+    // （四路同报）：连接/
     // 响应头三级超时只覆盖到 headers，body `.join()` 无界——弱网/劣化
     // 代理下服务端发完头后 body 停滞时，语音面板 refining 态 PopScope
     // canPop=false 锁死只能杀 app。修复=body 读取纳入超时。

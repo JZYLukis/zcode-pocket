@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -22,8 +26,8 @@ class RpcFrameTransport {
   /// (hundreds of thousands of tokens) can produce large snapshots, so this
   /// must be generous enough not to silently drop the initial conversation
   /// frame — which would leave the UI spinning forever (a past regression).
-  //单一真源在 [ValueReader.maxValueBytes]（ /G3
-  /// P2-4：与解码层上限必须一致——此前 64MiB vs 16MiB 各持一个数，16-
+  //单一真源在 [ValueReader.maxValueBytes]（
+  /// 与解码层上限必须一致——此前 64MiB vs 16MiB 各持一个数，16-
   /// 64MiB 消息重组成功后被解码层静默丢弃）。
   static const maxMessageBytes = ValueReader.maxValueBytes;
 
@@ -48,7 +52,7 @@ class RpcFrameTransport {
   final _deliveredMessageSeqs = <int>{};
   static const _deliveredMessageSeqLimit = 512;
 
-  /// 已 dispose 的旧桥：迟到帧丢弃（ H1-P1-01——防残留路由/
+  /// 已 dispose 的旧桥：迟到帧丢弃（——防残留路由/
   /// 竞态窗口把帧打进已 close 的 _messageController 抛 StateError）。
   bool _disposed = false;
 
@@ -241,7 +245,7 @@ class RpcFrameTransport {
       () => _Assembly(fragmentCount, messageBytes, checksum),
     );
     assembly.add(fragmentIndex, chunk);
-    // P3-8：畸形对端可声明小 messageBytes 却投递大分片——
+    // 畸形对端可声明小 messageBytes 却投递大分片——
     // 累计超声明值即整组作废，免内存放大驻留到终局尺寸校验。
     if (assembly.oversized) {
       _assemblies.remove(messageSeq);
@@ -316,7 +320,7 @@ class _Assembly {
   final DateTime createdAt = DateTime.now();
   int received = 0;
 
-  /// 已收分片累计字节（P3-8：超过声明的 messageBytes 即
+  /// 已收分片累计字节（超过声明的 messageBytes 即
   /// oversized，调用方整组作废）。
   int _bytes = 0;
   bool get oversized => _bytes > messageBytes;

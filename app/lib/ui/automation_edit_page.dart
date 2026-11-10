@@ -238,7 +238,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
         }
         return {
           'unit': 'monthly',
-          // F4（复审）：表单没有「每 N 个月」输入——必须保留原 interval，
+          // （复审）：表单没有「每 N 个月」输入——必须保留原 interval，
           // 恒写 1 会把「每 3 个月」静默降级成「每月」（频次×N）。
           'interval': (rule?['interval'] as num?)?.toInt() ?? 1,
           'monthlyMode': 'date',
@@ -405,7 +405,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
         return _interval != ((rule['interval'] as num?)?.toInt() ?? 1) ||
             _minute != ((rule['minute'] as num?)?.toInt() ?? 0);
       case _SchedKind.weekly:
-        // B4：周几也是调度参数——改选周几（不动时分）必须下发。
+        // 周几也是调度参数——改选周几（不动时分）必须下发。
         final prefillDays = <int>{
           for (final d in (rule['weekdays'] as List? ?? const []))
             if (d is num) d.toInt(),
@@ -472,7 +472,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
           ),
           child: ListView(
             key: const ValueKey('automation-model-picker'),
-            // VR-7b（视觉审查 1109）：弹层此前吃满 0.65×屏高约束，短目录
+            // （视觉审查 1109）：弹层此前吃满 0.65×屏高约束，短目录
             // （5 行）底部空 202dp。shrinkWrap=true 让内容自收（maxHeight
             // 上限保留=长目录照常滚，physics 不变）。
             shrinkWrap: true,
@@ -601,14 +601,14 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
                   // 品牌语言脱节——选中收口品牌蓝淡底+蓝字+蓝描边，
                   // 未选中=卡底+常规边（深浅两主题一致的中性语言）。
                   backgroundColor: context.colors.card,
-                  // B2（2026-11-07 用户批）：浅色选中底=蓝 10%
+                  // （2026-11-07 用户批）：浅色选中底=蓝 10%
                   //（#E7EDFF，与全局 secondaryContainer 梯度一致）。
                   selectedColor: context.colors.brandAccent.withValues(
                     alpha: 0.10,
                   ),
                   labelStyle: TextStyle(
                     fontSize: AppType.uiCaption,
-                    // B2：深色 brandAccent(#4099FF) 在选中底上 4.09:1
+                    // 深色 brandAccent(#4099FF) 在选中底上 4.09:1
                     // 不达 4.5——深色分支提亮到 #7FB4FF（≈5.8:1）。
                     color: _kind == kind
                         ? context.colors.brandAccentBright
@@ -674,13 +674,13 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
                     showCheckmark: true,
                     checkmarkColor: context.colors.brandAccent,
                     backgroundColor: context.colors.card,
-                    // B2：同上——蓝 10% 选中底。
+                    // 同上——蓝 10% 选中底。
                     selectedColor: context.colors.brandAccent.withValues(
                       alpha: 0.10,
                     ),
                     labelStyle: TextStyle(
                       fontSize: AppType.uiCaption,
-                      // B2：深色同款提亮（见上）。
+                      // 深色同款提亮（见上）。
                       color: _modeOf(e) == value
                           ? context.colors.brandAccentBright
                           : context.colors.foreground,
@@ -716,7 +716,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
                           : '$_selModel'
                                 '${_selThought != null && _selThought!.isNotEmpty ? ' · 思考 $_selThought' : ''}'
                                 '${_selProvider != null ? ' · ${_providerLabel(_selProvider!, '')}' : ''}',
-                      // VR-7c（视觉审查 1109）：模型值（模型名+思考档+
+                      // （视觉审查 1109）：模型值（模型名+思考档+
                       // 来源三层拼接）此前无 maxLines，长名换行把行高顶破
                       // 并与右侧「继承默认」按钮挤压。单行省略。
                       key: const ValueKey('automation-edit-model-value'),
@@ -853,10 +853,10 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // B4（2026-11-07 用户批）：周几选择器——此前 weekly 档只回填
+            // （2026-11-07 用户批）：周几选择器——此前 weekly 档只回填
             // 旧值无 UI 可改（对抗审查「周几选择器」遗留实际未修完）。
-            // 七只紧凑 chip 与档位/模式 chip 同规格（B2 蓝 10% 选中）。
-            // VR-7a（视觉审查 1109）：Wrap 在 375dp 宽下折成 5+2 两行——
+            // 七只紧凑 chip 与档位/模式 chip 同规格（蓝 10% 选中）。
+            // （视觉审查 1109）：Wrap 在 375dp 宽下折成 5+2 两行——
             // 改 Row+7×Expanded 等分单行（间距 3dp、内容居中）。
             // 紧凑回滚（候选 13 真机反馈⑤「太松散」）：保单行等分
             //（修掉 5+2 折行），密度回 compact 与档位/模式 chip 同规格。

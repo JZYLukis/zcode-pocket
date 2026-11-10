@@ -183,7 +183,7 @@ class ArtifactDataItem {
   final int sequence;
   final Map<String, dynamic>? item;
 
-  /// F2（对抗审查高①）：行身份兜底——声明 key 但该条缺值时官方用
+  /// （对抗审查高①）：行身份兜底——声明 key 但该条缺值时官方用
   /// `siteId@ordinal` 做唯一 id 逐条追加（apply.ts:288-298），我们把
   /// 缺值折叠成 '' 会整组互撞覆盖（数据丢失）。
   final String siteId;
@@ -195,7 +195,7 @@ class ArtifactDataItem {
   String get fallbackId => '$siteId@$ordinal';
 }
 
-/// F2（对抗审查中·数字精度）：行 key 用原样字符串（官方
+/// （对抗审查中·数字精度）：行 key 用原样字符串（官方
 /// formatArtifactValue=String 原样）——toFixed(2) 会把 1.234 与 1.23
 /// 两个不同 key 错误合并成同一行。
 String _cellKey(Object? v) {
@@ -265,7 +265,7 @@ List<List<String>> buildTableRows(DashboardSpec spec, List<ArtifactDataItem> ite
     final rowKey = spec.rowKey;
     if (rowKey != null) {
       final rawKey = readArtifactField(it.item, rowKey);
-      // F2：缺值行用 siteId@ordinal 身份（不折叠互撞）；key 用原样数字。
+      // 缺值行用 siteId@ordinal 身份（不折叠互撞）；key 用原样数字。
       final key = rawKey == null ? it.fallbackId : _cellKey(rawKey);
       final prevCells = rowsByKey[key];
       if (prevCells != null) {
@@ -342,7 +342,7 @@ class _WorkflowDashboardPageState extends State<WorkflowDashboardPage> {
   void initState() {
     super.initState();
     _spec = parseDashboardSpec(_kind, widget.artifact['spec']);
-    // F2（对抗审查·渲染中）：initState 阶段生命周期 created，同步
+    // （对抗审查·渲染中）：initState 阶段生命周期 created，同步
     // AppStateScope.of 必抛 FlutterError（debug 实锤）——延到首帧后
     //（workflow_runs_page:58 同款纪律）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -364,7 +364,7 @@ class _WorkflowDashboardPageState extends State<WorkflowDashboardPage> {
             ),
       ];
 
-  /// F2：自动排空续页（游标不前进即停——官方 advanced 守卫）。
+  /// 自动排空续页（游标不前进即停——官方 advanced 守卫）。
   /// 翻页中途失败不再上抛顶掉整页：保留已渲染 _items，错误落页脚
   ///（重试/停止由 _DashboardBody 给出）。
   Future<void> _drain({required int afterSequence}) async {
@@ -433,7 +433,7 @@ class _WorkflowDashboardPageState extends State<WorkflowDashboardPage> {
         _hasMore = map['hasMore'] == true;
         _loading = false;
       });
-      // F2（官方 useWorkflowRunArtifactData :119-165）：首帧已渲染后
+      // （官方 useWorkflowRunArtifactData :119-165）：首帧已渲染后
       // 自动翻页到排空（否则 >200 条的看板指标取的不是最新值）。
       if (_hasMore && items.isNotEmpty) {
         await _drain(afterSequence: items.last.sequence);
@@ -701,14 +701,14 @@ class _TableViewState extends State<_TableView> {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: context.colors.borderFaint),
       ),
-      // 视觉补跑必修（human-eye-retro-1109，Visual A 复签终版）：5 列
+      // 视觉补跑必修（Visual A 复签终版）：5 列
       // 形态右缘硬切零提示。第一轮只加底部 Scrollbar——A 复签实锤
       // thumb 落在全表底部（34 行≈1630dp 折叠线外），正视区仍零提示；
       // 且内容收缩后卡片右侧留 85dp 空白带。终版=①minWidth 填满卡片
       // ②右缘渐隐随滚动位置显隐（未滚到最右时提示「右边还有列」）
       // ③间距收窄（columnSpacing 56→14、horizontalMargin 24→12）
       // +单元格 224dp 封顶省略（官方 ArtifactTable 对位；定高内滚+
-      // 表头吸顶的完整对位归 backlog VR-3）。
+      // 表头吸顶的完整对位归 backlog）。
       child: LayoutBuilder(
         builder: (context, constraints) => Stack(
           children: [
@@ -859,7 +859,7 @@ class _ChartView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // F2（对抗审查高②）：只取「x 有值的条目」同步构建 x 与序列——
+    // （对抗审查高②）：只取「x 有值的条目」同步构建 x 与序列——
     // 旧实现 x 过滤 null 但序列按全量 items 建，任一条目缺 x 即整体
     // 错位。序列键=官方 y0..yN 序号（displayLabel 做键会在同标签时
     // 覆盖丢序列，apply.ts:178-190）。
@@ -879,7 +879,7 @@ class _ChartView extends StatelessWidget {
         ],
       ));
     }
-    // F2：all-or-nothing 数值轴（官方 apply.ts:225-240）——任一 x 非
+    // all-or-nothing 数值轴（官方 apply.ts:225-240）——任一 x 非
     // 有限数值则整轴退化为到达序号。
     final allNumeric = pts.every((p) => switch (p.x) {
           num n => n.isFinite,
@@ -897,7 +897,7 @@ class _ChartView extends StatelessWidget {
               }
             : i.toDouble(),
     ];
-    // F2：数值轴按 x 升序稳定排序（官方同款；乱序数据 dx 假设首尾
+    // 数值轴按 x 升序稳定排序（官方同款；乱序数据 dx 假设首尾
     // 即 min/max 会左右翻转）。
     if (allNumeric) {
       final order = List<int>.generate(xNums.length, (i) => i);
@@ -929,7 +929,7 @@ class _ChartView extends StatelessWidget {
             size: Size.infinite,
             painter: _DashboardChartPainter(
               xNums: xNums,
-              // F2：series 按点集重建（每条 y 一列）。
+              // series 按点集重建（每条 y 一列）。
               series: [
                 for (var yi = 0; yi < spec.ys.length; yi++)
                   [for (final p in pts) p.ys[yi]],
@@ -941,7 +941,7 @@ class _ChartView extends StatelessWidget {
               chartType: allNumeric ? spec.chartType : 'bar',
               gridColor: context.colors.borderFaint,
               lineColor: context.colors.foregroundSubtlest,
-              // 视觉补跑必修（human-eye-retro-1109，Visual A）：官方
+              // 视觉补跑必修（Visual A）：官方
               // ArtifactChartView 有 XAxis/YAxis+悬浮 tooltip，手机无
               // hover——无刻度=真人只能读形状读不出任何数值。补=左缘
               // y 刻度（网格线对位）+首末 x 标签。
@@ -1124,7 +1124,7 @@ class _DashboardChartPainter extends CustomPainter {
               fill);
         }
       } else {
-        // F2：null 缺测=断线（官方 connectNulls=false），分段绘制——
+        // null 缺测=断线（官方 connectNulls=false），分段绘制——
         // 每段独立成路径，段与段之间不桥接。
         for (final seg in splitChartLineSegments(s)) {
           if (chartType == 'scatter') {
@@ -1193,7 +1193,7 @@ class _BoardView extends StatelessWidget {
       if (!cards.containsKey(key)) order.add(key);
       cards[key] = (title: title, status: status, detail: detail);
     }
-    // F2（对抗审查·board 中三条，官方 apply.ts:358-375）：列=spec 列
+    // （对抗审查·board 中三条，官方 apply.ts:358-375）：列=spec 列
     // 原序 + 未列入的 status 统一落末尾单一「其他」列（不再各造列）；
     // status 缺失/空的卡同样落「其他」不被丢弃。
     final specCols = [...spec.boardColumns];

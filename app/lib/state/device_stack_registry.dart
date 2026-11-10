@@ -77,7 +77,7 @@ class DeviceStackRegistry {
 
   /// 正在拆除的 sid（状态层批）：removeComputer 先摘表 await dispose 的
   /// 窗口内，_doActivate 可能为同 sid 建新活栈，随后收尾按 sid 摘协调器
-  /// 把新栈摘掉/尾巴 removeWhere 误删（M5 家族的同款缺口）。拆栈期间
+  /// 把新栈摘掉/尾巴 removeWhere 误删（家族的同款缺口）。拆栈期间
   /// 登记，activate 直接拒绝——删除完成后用户再点即可。
   final _deleting = <String>{};
 
@@ -341,7 +341,7 @@ class DeviceStackRegistry {
         // 先 reload 再挑下一台：早退路径此前
         // 跳过 reloadProfiles，内存 profiles 滞留已删档案=幽灵条目（点按
         // 可为已删设备重建栈并持久化 activeDeviceSid）；从删除前的陈旧
-        // 列表选 next 还会命中排首的被删档案自身（PF-4 自复活面）。
+        // 列表选 next 还会命中排首的被删档案自身（自复活面）。
         await reloadProfiles();
         final next = profiles.where((p) => !p.invalid).firstOrNull;
         if (next != null) {
@@ -400,7 +400,7 @@ class DeviceStackRegistry {
       final prev = active;
       activeSid = null;
       activeProfile = profile;
-      // P3-10（D-8 批2）：持久指针同步清位——否则冷启动自动激活旧设备，
+      // （批2）：持久指针同步清位——否则冷启动自动激活旧设备，
       // 用户本次"选中失效档案"的语义在重启后被撤销（三处收尾同款）。
       unawaited(_persistActiveDeviceSid(null));
       _onNotify();
@@ -518,7 +518,7 @@ class DeviceStackRegistry {
     );
   }
 
-  /// 按账号拆除其名下全部栈（18079 真机反馈②：设置删除账号只清凭据，
+  /// 按账号拆除其名下全部栈（真机反馈②：设置删除账号只清凭据，
   /// 旧账号的连接栈带着内存里的 JWT 继续活——僵尸连接让"删号后重登"
   /// 状态错乱。2026-11-03 两轮对抗审查补全收尾：同步摘表先行（消灭
   /// dispose await 窗口内新栈入表又被 removeWhere 误删的竞态）、失败
@@ -542,7 +542,7 @@ class DeviceStackRegistry {
         (p.accountId == accountId ||
             (p.accountId == null && lastUsed == accountId));
     // 同步快照+摘表先行：await disposeStack 期间 activate() 新建的栈
-    // 不应被后续 removeWhere 误删（对抗审查 M5）。
+    // 不应被后续 removeWhere 误删（对抗审查）。
     final doomed = <String, ComputerStack>{};
     for (final entry in List.of(_stacks.entries)) {
       if (matches(entry.value.profile)) {
@@ -564,7 +564,7 @@ class DeviceStackRegistry {
           _onLog('dispose stack for account failed (contained): $e');
         }
         _notifyCoordinatorProvider()?.detachStack(sid, ifStack: entry.value);
-        // 失败诊断记录同步清（L4）：2 分钟回捞窗内不闪已删账号的横幅。
+        // 失败诊断记录同步清：2 分钟回捞窗内不闪已删账号的横幅。
         _failureBySid.remove(sid);
         // 设备缓存/草稿/排队数据（M3/乙）：缓存按 deviceSid 分目录不带
         // 账号维度——不清则下一账号连同一台电脑会先渲染上一账号的任务
@@ -586,7 +586,7 @@ class DeviceStackRegistry {
     if (activeSid != null && doomed.containsKey(activeSid)) {
       activeSid = null;
       activeProfile = null;
-      // 全局失败横幅一并清（审查 L4 补）：2 分钟回捞窗内不闪已删账号
+      // 全局失败横幅一并清（审查 补）：2 分钟回捞窗内不闪已删账号
       // 的诊断文案。
       _lastRelayFailReason = null;
       _lastRelayFailMessage = null;
@@ -619,7 +619,7 @@ class DeviceStackRegistry {
     }
     switch (f.reason) {
       case 'auth-required':
-        // （//K1 P2-3 三路）：auth-required
+        // （三路）：auth-required
         // 收窄（「只清失败账号+只拆其名下栈」）此前被 null 旁路
         // 击穿——accountId==null 的 V2 档案（迁移未绑定的存量形态）凭据
         // 实际取 lastUsed，旧实现把 null 传给 clearAccount 触发全清（一次

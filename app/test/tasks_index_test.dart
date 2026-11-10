@@ -375,7 +375,7 @@ void main() {
     });
   });
 
-  group('TaskListModel × controller 行映射（ADR 0031 接线）', () {
+  group('TaskListModel × controller 行映射（接线）', () {
     test('当前工作区行喂 applyWorkspaceListTasks：新增/归档剔除/置顶落集', () {
       final si = SessionsIndexState()..ready = true;
       final model = TaskListModel(sessions: si, workspaceKey: 'ws-a');
@@ -449,7 +449,7 @@ void main() {
 
   group('TasksIndexSubscription 静默看门狗（开源审查 G1 P2-4/G2 P2-4）', () {
     // tasks-index 此前是三个订阅类中唯一没有静默看门狗的：半开连接/桌面
-    // 停推时任务列表永久冻结在旧水位。对照 si 的 F6/R4 看门狗补齐。
+    // 停推时任务列表永久冻结在旧水位。对照 si 的、看门狗补齐。
     test('快照静默 >90s 未到达 → fresh 重订阅', () {
       fakeAsync((async) async {
         final bridge = _TiBridge();

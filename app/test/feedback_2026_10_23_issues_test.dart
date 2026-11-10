@@ -4,7 +4,7 @@
 //   带 projectId（绝不能进 envelope payload，官方 zcodeAgent.ts:498-504
 //   只认 params 顶层）+ 仅 project intent 桥携带（普通桥带会被桌面
 //   cwd-not-in-roots 拒绝）。
-// ③ diff 语法高亮：官方 diff 三表面全带 shiki 高亮（ P1 欠账
+// ③ diff 语法高亮：官方 diff 三表面全带 shiki 高亮（欠账
 //   清偿）——锁 marker 剥离/行对齐/跨行 token 不断色/未知语言回落。
 // ④ ±N 先行值：replayable 档 inputText 定稿才到，结构化 input 进入
 //   running 即随 upsert 到达（协议 rows.ts input 字段）——锁"优先读

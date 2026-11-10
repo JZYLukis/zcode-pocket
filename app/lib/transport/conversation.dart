@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Portions Copyright (c) 2026 Zemote contributors — initially ported from
+// https://github.com/HumanAILoop/zemote, since rewritten against the official
+// implementation (see THIRD-PARTY-NOTICES.md).
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -153,7 +157,7 @@ class ConversationTransport {
     // waitHealthy/handshake 原在 try
     // 之外——闸门通过后、握手窗口内桥恰降级即一次性穿透整个循环（一次
     // 重试都没发生），与注释承诺的"整体重试"矛盾；移入 try 计入 attempt。
-    // P3-8（D-8 批2）：整条重试链总预算——每轮 waitHealthy(45s) 计入
+    // （批2）：整条重试链总预算——每轮 waitHealthy(45s) 计入
     // attempt 后最坏 5×45s 才把错误交给页面；超预算快速失败，桥恢复交给
     // redrive。
     final budgetEnd = DateTime.now().add(const Duration(seconds: 120));
@@ -170,7 +174,7 @@ class ConversationTransport {
         await handshake();
         _log('[v4] subscribe($sessionId) attempt $attempt: _start');
         subscription = ConversationSubscription._(this, sessionId, seed: seed);
-        // F6/R5：外层超时必须 ≥ 内层 RPC 的 120s 宽限——30s 超时会 dispose
+        // 外层超时必须 ≥ 内层 RPC 的 120s 宽限——30s 超时会 dispose
         // 当前 attempt 但其 RPC 在服务端继续，attempt 2 的订阅会被 attempt 1
         // 的迟到 ACK 以同 ownershipKey 静默驱逐，之后帧全被 subId 过滤丢弃
         // （真机"永久运行中"的 P1b 竞态，官方 v4ResyncNotOwnedEvictionRace）。
@@ -185,7 +189,7 @@ class ConversationTransport {
         await Future.delayed(const Duration(seconds: 2));
         continue;
       }
-      // （/G3 对称变体）：订阅在飞期间进入
+      // （对称变体）：订阅在飞期间进入
       // 后台驻留（park 扫描时它尚未登记，`_start` 的对象级 `_parked` 门
       // 够不到它）——落地即拒绝：退订刚拿到的 sid 并抛人话错误，交上层
       // 在回前台后重试（对照 registry demote 的 `_closing` 闸门语义；
@@ -206,15 +210,15 @@ class ConversationTransport {
   bool _parkedForBackground = false;
 
   void _untrackSubscription(String sessionId, _SubscriptionBase sub) {
-    // P3-9：按身份移除——上游（registry 的 pending 去重）使
+    // 按身份移除——上游（registry 的 pending 去重）使
     // 误删不可达，但任何新的 subscribe 直调点都可能踩"旧订阅迟到 dispose
     // 删掉新订阅登记"的雷。
     if (identical(_subscriptions[sessionId], sub)) {
       _subscriptions.remove(sessionId);
     }
-    // P3-8/G2-P3-11：CAS 水位缓存随订阅终结清理（重建订阅后
+    // CAS 水位缓存随订阅终结清理（重建订阅后
     // 首条 CAS 命令回退订阅快照水位——快照本就是服务端权威值）。
-    // _lastCommandIdBySession 刻意不清：A3「结果未知→重新核对」需要跨
+    // _lastCommandIdBySession 刻意不清：「结果未知→重新核对」需要跨
     // 订阅代际查询（页面重进=旧订阅 dispose、新订阅落地，清了就查无可
     // 查），与 transport 同生命周期，量级=触及过的会话数×几十字节。
     _ackedRevisions.remove(sessionId);
@@ -335,7 +339,7 @@ class ConversationTransport {
       'issuedAt': DateTime.now().millisecondsSinceEpoch,
     };
     _log('[v4] command $type');
-    // A3：记录最后发出的命令 id（"结果未知"回捞确权用，进程内）。
+    // 记录最后发出的命令 id（"结果未知"回捞确权用，进程内）。
     // 只记用户发送族（sendText/createSession）——
     // 此前 compact/resolveInteraction/snooze 等一切命令都覆盖此表，
     // 回捞可能查到 compact 的 accepted 就误判"发送已送达"并清稿
@@ -403,7 +407,7 @@ class ConversationTransport {
     return res;
   }
 
-  /// A3（官方 zcodeTaskServiceAdapter.ts:2065-2078 对位）：
+  /// （官方 zcodeTaskServiceAdapter.ts:2065-2078 对位）：
   /// ACK 丢失时查询同一命令的确权接口。result=ack Map（权威结论）或
   /// 'unknown'（查不到）。查询失败抛原错误由调用方兜底。
   Future<dynamic> queryConversationCommand({
@@ -435,11 +439,11 @@ class ConversationTransport {
     return first is Map ? first['result'] : null;
   }
 
-  /// A3：本进程内每会话最后一条已发出命令（重启后丢失——完整 24h 对账
+  /// 本进程内每会话最后一条已发出命令（重启后丢失——完整 24h 对账
   /// 账本属官方 pendingCommandRegistry，手机侧最小版）。
   final Map<String, String> _lastCommandIdBySession = {};
 
-  //createSession 在拿到新 sessionId 前的 A3 记录假键（
+  //createSession 在拿到新 sessionId 前的 记录假键（
   //信封 sessionId 恒 null，先按此键落位、accepted 后
   /// 由 createSession 迁到真实会话键——新会话首条消息超时同样有
   /// 「重新核对」可查）。
@@ -469,7 +473,7 @@ class ConversationTransport {
         'retrying',
       );
       await session.waitHealthy(timeout: const Duration(seconds: 45));
-      // A1（2026-10-29 审查）：重发必须保持同一 commandId
+      // （2026-10-29 审查）：重发必须保持同一 commandId
       // ——官方 command.ts:345 明文"重试不变更 ID，ACK 丢失应查询同一
       // 命令"。桥降级只保证"很可能没到达"，不能保证没到达：换新 ID
       // 重发=首次已落库时二次投递；同 ID 重发由服务端幂等去重兜住。
@@ -478,7 +482,7 @@ class ConversationTransport {
           commandParams(scope, envelope, projectId),
         ], timeout: timeout);
       } catch (e) {
-        // A3：同 ID 重发也失败——查权收敛（官方"查询同一命令，不能生成
+        // 同 ID 重发也失败——查权收敛（官方"查询同一命令，不能生成
         // 新 ID 重发输入"）：查到权威 ack 直接采用；unknown/查询失败才
         // 抛回（上层走"结果未知"呈现）。
         final commandId = '${envelope['commandId'] ?? ''}';
@@ -542,7 +546,7 @@ class ConversationTransport {
     // schema 不分状态）。只认 accepted 会把桌面已建好的任务误报失败。
     if (status != 'accepted' && status != 'duplicate') {
       // 明确拒绝=已知结论，草稿确权位（pending 假键）不再有意义；超时等
-      // 未知结果不在此清（A3「结果未知→重新核对」需要该 commandId）。
+      // 未知结果不在此清（「结果未知→重新核对」需要该 commandId）。
       _lastCommandIdBySession.remove(_pendingCreateSessionKey);
       throw StateError(
         'createSession rejected: ${map?['reasonCode'] ?? status} ${map?['message'] ?? ''}',
@@ -553,7 +557,7 @@ class ConversationTransport {
     if (sessionId is! String || sessionId.isEmpty) {
       throw StateError('createSession: missing sessionId in result');
     }
-    // A3 转正：createSession 的命令
+    // 转正：createSession 的命令
     // id 已按假键记录（见 sendCommand），迁到新会话键——首条消息超时后
     // 「结果未知→重新核对」按 sessionId 可查。
     final pendingCmdId = _lastCommandIdBySession.remove(
@@ -711,7 +715,7 @@ class ConversationTransport {
         },
       });
 
-  /// 写盘开关（官方 toggleWorkspaceHookReviewItem——F1 勘误：此命令
+  /// 写盘开关（官方 toggleWorkspaceHookReviewItem—— 勘误：此命令
   /// 原子修改 .zcode/config.json 的 enabled gate 并以 generation+1 作废
   /// 当前审核代，**不是选择态同步**；UI 选择是纯本地的，本命令当前无
   /// 调用方，保留供未来「直接改开关」功能）。
@@ -813,8 +817,8 @@ class ConversationTransport {
     });
   }
 
-  /// 旧入口，保留为 [sendCompact] 的转发别名（P3-5/G2-P3-8/
-  /// G3-P3-3：两个逐字节等价的双入口并存，未来改 compact 语义极易只改
+  /// 旧入口，保留为 [sendCompact] 的转发别名（
+  /// 两个逐字节等价的双入口并存，未来改 compact 语义极易只改
   /// 一处漏一处；调用方 app_state.compact 不在传输层域，收敛为别名零
   /// 行为变化）。
   Future<dynamic> compact(String sessionId) => sendCompact(sessionId);
@@ -836,7 +840,7 @@ class ConversationTransport {
       'thought': thought,
     });
     final message = res is Map ? '${res['message'] ?? ''}' : '';
-    // P3-6/G3-P3-4：服务端消息一旦本地化/改写措辞，精确串
+    // 服务端消息一旦本地化/改写措辞，精确串
     // 匹配会静默失效（切换模型失败而无第二次尝试）——放宽为大小写无关。
     if (message.toLowerCase().contains('unsupported reasoning effort')) {
       final fallback = (thought == 'enabled' || thought == 'off')
@@ -949,7 +953,7 @@ class ConversationTransport {
     await handshake();
     // wire schema（transport.ts v4ConversationFileChangesParamsSchema）：
     // baseRevision/baseLogEpoch 必填（官方 UI 每次都带当前投影锚点，zemote
-    // 写成可省略是缺陷——真机实测缺参必被服务端拒绝，F10 根因）。
+    // 写成可省略是缺陷——真机实测缺参必被服务端拒绝， 根因）。
     // 缺省时从当前订阅状态补齐（与官方「读当前投影」语义一致）。
     final (rev, epoch) = _readAnchor(sessionId, baseRevision, baseLogEpoch);
     return _channels.call(channel, 'conversationFileChangesV4', [
@@ -1031,7 +1035,7 @@ class ConversationTransport {
         (bytes.length + _attachmentChunkBytes - 1) ~/ _attachmentChunkBytes;
     final checksum = 'sha256:${sha256.convert(bytes).toString()}';
 
-    // B35：begin 已受理后任何失败/取消都要 attachmentAbortV4
+    // begin 已受理后任何失败/取消都要 attachmentAbortV4
     // 清服务端 staging（官方 attachmentAbortV4 对位）——否则残留 staging
     // 只能等服务端超时回收。
     Future<void> abortStaging() async {
@@ -1125,7 +1129,7 @@ class ConversationTransport {
   }
 
 
-  /// C4（2026-10-19 审查）：附件预读客户端总量上限——只信服务端 totalBytes
+  /// （2026-10-19 审查）：附件预读客户端总量上限——只信服务端 totalBytes
   /// 时理论上限 1024×384KB（坏数据/协议漂移会把超大附件整段驻留内存）。
   /// 32MB 覆盖正常图片/截图预览，超限抛错由查看器错误路径呈现。
   static const _attachmentReadMaxBytes = 32 << 20;
@@ -1193,7 +1197,7 @@ class ConversationTransport {
     },
   });
 
-  /// A2（2026-10-29 审查）：官方 interactionAutoResolution
+  /// （2026-10-29 审查）：官方 interactionAutoResolution
   /// Command.ts——交互可见即发一条幂等 snooze（accepted/duplicate/noop
   /// 均成功）。不发的后果=倒计时照跑、未处理的提问被提前自动结束
   /// （与「一次一题」产品语义冲突）。官方在弹窗/侧栏胶囊首次渲染时发。
@@ -1225,7 +1229,7 @@ class ConversationTransport {
   /// Subscribes the sessions-index of this workspace
   /// (`subscribeSessionsIndexV4` + `onDynamicSessionsIndexFrame`).
   /// Provides the live session list with title/phase/lastAssistantPreview.
-  /// F12（WR 对齐）：task 级配置目录（model/mode/thought_level 三选项，
+  /// （WR 对齐）：task 级配置目录（model/mode/thought_level 三选项，
   /// 官方 zcodeTaskServiceAdapter.getTaskConfigOptions——web remote 工具栏
   /// 目录的手机端等价真源；model 选项带 providerId+每模型思考档）。
   Future<List<ConfigOption>> getTaskConfigOptions(String taskId) async {
@@ -1248,7 +1252,7 @@ class ConversationTransport {
     ];
   }
 
-  /// F1 冷工作区占位订阅（dormant）：不发起任何 RPC，state 永不 ready，
+  /// 冷工作区占位订阅（dormant）：不发起任何 RPC，state 永不 ready，
   /// 仅供 TaskListModel 绑定；复活由上层 _retrySessionsIndex 重建真实订阅。
   SessionsIndexSubscription dormantSessionsIndex() =>
       SessionsIndexSubscription._dormant(this);
@@ -1344,10 +1348,10 @@ class ConversationTransport {
     for (var attempt = 1; attempt <= 3; attempt++) {
       try {
         await session.waitHealthy(timeout: const Duration(seconds: 45));
-        // H2（审计）：目录真源是官方 zcode-session.readWorkspacePresentation
+        // （审计）：目录真源是官方 zcode-session.readWorkspacePresentation
         // （presentation={mode,slashCommands}，官方 workspacePrepareRpc.ts
         // 同款；mode→目录映射对齐 zcodeWorkspacePresentationToConfigOptions）。
-        // H08-8A（2026-10-29 批次）：旧 zcode-task.prepareWorkspace 为
+        // -8A（2026-10-29 批次）：旧 zcode-task.prepareWorkspace 为
         // zemote 遗产、官方快照（3.16.2 契约）零命中，兜底正式退役——
         // 失败走本循环重试 + 循环外的缓存回落，不再回退自创 RPC。
         final pres = await _channels.call(
@@ -1371,7 +1375,7 @@ class ConversationTransport {
               'type': 'select',
               'currentValue': pres['mode'],
               'options': [
-                // （A6，2026-10-29 审查）：官方可切换子集含
+                // （2026-10-29 审查）：官方可切换子集含
                 // edit（mode.label.glm.edit=自动编辑）——此前硬编码缺该档，
                 // 桌面处于 edit 时手机目录显示不全。
                 for (final m in const [
@@ -1545,7 +1549,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
   String? get subscriptionId => _subscriptionId;
   void Function()? _cancelFrameListener;
   bool _disposed = false;
-  // B6：暴露给 ComputerStack.ensureConversation 的缓存守卫。
+  // 暴露给 ComputerStack.ensureConversation 的缓存守卫。
   bool get isDisposed => _disposed;
 
   /// 后台驻留态（电量优化批 #16）：协议层已退订、帧监听与看门狗已停，
@@ -1557,10 +1561,10 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
   final _stagedFrames = <Map<String, dynamic>>[];
   final _fragments = <String, _LogicalFrameAssembly>{};
 
-  /// F6/D1：subId 不符被丢弃的帧计数（驱逐竞态的决定性信号，一次性+每 20 次日志）。
+  /// subId 不符被丢弃的帧计数（驱逐竞态的决定性信号，一次性+每 20 次日志）。
   int _foreignSubDrops = 0;
 
-  /// F6/R1：notOwned 连续升级计数（封顶防风暴；健康帧到达即清零）。
+  /// notOwned 连续升级计数（封顶防风暴；健康帧到达即清零）。
   int _notOwnedEscalations = 0;
   Timer? _fragmentCleanup;
 
@@ -1703,7 +1707,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     // _resubscribe 可在同一订阅对象上并发跑两个 _start——本次 attempt
     // 登记的监听器/订阅 id 用局部变量持有，失败清理只动自己名下的
     // （旧实现无条件清共享字段：并发 attempt 的帧监听被撕、新 sid 被抹
-    // →服务端订阅永不退订（泄漏）且放大 F6/R5 驱逐竞态）。
+    // →服务端订阅永不退订（泄漏）且放大、驱逐竞态）。
     void Function()? myListener;
     String? mySubId;
     try {
@@ -1714,11 +1718,11 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       await _transport.session.waitHealthy(
         timeout: const Duration(seconds: 45),
       );
-      // disposed 闸门（对抗审查 B3）：抖动期 resubscribe 在途（waitHealthy
+      // disposed 闸门（对抗审查）：抖动期 resubscribe 在途（waitHealthy
       // 45s+subscribe 120s）恰逢用户切工作区/退后台 dispose——继续跑会在
       // 已 dispose 的订阅上重挂帧监听器、置新 _subscriptionId（永不退订，
       // 桌面端泄漏）并经 _onStarted 武装一个无人取消的看门狗定时器。
-      // （G1/G2/）：`_parked` 与 `_disposed` 同权
+      // `_parked` 与 `_disposed` 同权
       // ——驻留（后台电量优化）发生在 `_start` 在飞时同样不得重挂监听/
       // 看门狗，否则被 park 的订阅在后台整段保活收帧、看门狗每 20-40s
       // 发 resync RPC（打电量红线）。
@@ -1752,8 +1756,8 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       );
       if (_disposed || _parked) {
         // dispose/park 在 subscribe 在途时发生：立即退订刚拿到的订阅，防
-        // 泄漏（park 路径=驻留态不得持有服务端订阅，/G2/G3
-        // P2-1——退订后直接 return，不 _onStarted 不重挂看门狗）。
+        // 泄漏（park 路径=驻留态不得持有服务端订阅，//
+        // ——退订后直接 return，不 _onStarted 不重挂看门狗）。
         final ack = res is Map ? res['ack'] : null;
         final sid = ack is Map ? ack['subscriptionId'] as String? : null;
         if (sid != null) {
@@ -1809,9 +1813,9 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     _resubscribe();
   }
 
-  /// resubscribe 互斥（对抗审查 B2）：桥恢复通知/看门狗升级/3s 重试三源
+  /// resubscribe 互斥（对抗审查）：桥恢复通知/看门狗升级/3s 重试三源
   /// 并发触发时，两个实例各自 _start 会产生双帧监听器（前者泄漏）+同
-  /// ownershipKey 双订阅（服务端驱逐竞态，本项目 F6/R5/notOwned 同源）。
+  /// ownershipKey 双订阅（服务端驱逐竞态，本项目 //notOwned 同源）。
   bool _resubscribing = false;
 
   Future<void> _resubscribe() async {
@@ -1828,7 +1832,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     try {
       await _transport.handshake();
     } catch (e) {
-      // 桥 degraded 窗口内握手会 30s 超时抛错（对抗审查 C2：此前裸抛
+      // 桥 degraded 窗口内握手会 30s 超时抛错（对抗审查 ：此前裸抛
       // 且不挂 3s 重试——unawaited 调用点无人 catch，恢复只能靠下一次
       // 桥恢复事件）。纳入统一 3s 重试链。
       _transport._log('[$_logTag] resubscribe handshake failed: $e');
@@ -1840,7 +1844,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       _cancelFrameListener = null;
       final staleId = _subscriptionId;
       _subscriptionId = null;
-      // P3-13（D-8 批2）：旧 id 作废时补退订——非换桥场景（同桥 degraded）
+      // （批2）：旧 id 作废时补退订——非换桥场景（同桥 degraded）
       // 服务端订阅会残留；失败静默（换桥时本就不可达）。
       if (staleId != null) {
         unawaited(_transport._channels.call(_channel, _unsubscribeMethod, [
@@ -1910,8 +1914,8 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     }
   }
 
-  /// pre-ack 窗口的 staged 帧上限（P3-14）：重订阅窗口内旧
-  /// 订阅若仍在推帧（F6 驱逐竞态下服务端旧订阅未死），无上限囤积会整段
+  /// pre-ack 窗口的 staged 帧上限：重订阅窗口内旧
+  /// 订阅若仍在推帧（驱逐竞态下服务端旧订阅未死），无上限囤积会整段
   /// 驻留内存——超限丢最旧；丢帧由 fromSeq gap→resync 自愈。
   static const _stagedFramesLimit = 64;
 
@@ -1952,7 +1956,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       return;
     }
     if (assembly.oversized) {
-      // P3-8：累计字节超护栏即整组作废。
+      // 累计字节超护栏即整组作废。
       _fragments.remove(id);
       _transport._log('[$_logTag] dropped oversized logical frame assembly');
       return;
@@ -1989,7 +1993,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
           ..._wireScope,
           'subscriptionId': id,
           ..._resyncArgs,
-          // M1（审计）：conversationResyncParamsSchema 的 base 必填
+          // （审计）：conversationResyncParamsSchema 的 base 必填
           // 但可空（nullable）——显式 null 合法，整体缺失会被拒。
           'base': _resyncEpoch == null
               ? null
@@ -1999,7 +2003,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       _transport._log('[$_logTag] resync call ok (reply follows as frame)');
     } catch (e) {
       _transport._log('[$_logTag] resync failed: $e');
-      // F6/R1（官方 conversationProjectionStore notOwned 自愈对齐）：
+      // （官方 conversationProjectionStore notOwned 自愈对齐）：
       // notOwned = 该 subId 已被服务端驱逐（同 ownershipKey 二次订阅静默
       // 驱逐）。resync 永远救不回——升级 fresh 重订阅；连续升级封顶 2 次
       // 防风暴（桥恢复路径也在重建时不叠加）。
@@ -2106,11 +2110,11 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
   DateTime _lastFrameAt = DateTime.now();
   Timer? _watchdog;
 
-  /// F6/R2b：静默期间已发出的 resync 次数（帧到达清零；连续 2 次无帧 →
+  /// R2b：静默期间已发出的 resync 次数（帧到达清零；连续 2 次无帧 →
   /// 升级重订阅）。
   int _resyncSinceFrame = 0;
 
-  /// 连续静默 tick 计数（H03 半项 2026-10-25）：看门狗日志降频用——
+  /// 连续静默 tick 计数（半项 2026-10-25）：看门狗日志降频用——
   /// 帧到达/静默解除清零。
   int _quietTicks = 0;
 
@@ -2148,7 +2152,7 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
   @override
   void _onSubscribeAck(Map<String, dynamic> ack) {
     // 阶段 3：ack.mode（resume=增量续传被接受 / snapshot=服务端裁决全量）
-    // + epoch——种子路径成效的直接证据（仲裁 B2 裁决逻辑）。
+    // + epoch——种子路径成效的直接证据（仲裁 裁决逻辑）。
     _transport._log(
       '[v4] subscribe ack mode=${ack['mode']} '
       'epoch=${ack['logEpoch']} (seed=${_seed?.logEpoch ?? 'none'})',
@@ -2177,7 +2181,7 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
 
   @override
   void _onResubscribeCleanup() {
-    // F6/R7：重订阅重建期间保留看门狗（只 dispose 时取消）。无 subId 时
+    // 重订阅重建期间保留看门狗（只 dispose 时取消）。无 subId 时
     // tick 的 resync 自然 no-op，不会叠加风暴；否则桥抖动下订阅重建不成功
     // = 无帧 + 无看门狗 = UI 永久保持旧 phase。
     // 应用审查（#14）：换代即清 applied-base 与未落地 patch——新代 ACK
@@ -2209,7 +2213,7 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
   void _acceptLogicalFrame(Map<String, dynamic> frame) {
     final subId = subscriptionId;
     if (subId == null || frame['subscriptionId'] != subId) {
-      // F6/D1：驱逐竞态的决定性信号——之前完全静默。
+      // 驱逐竞态的决定性信号——之前完全静默。
       if (subId != null && frame['subscriptionId'] is String) {
         _foreignSubDrops++;
         if (_foreignSubDrops == 1 || _foreignSubDrops % 20 == 0) {
@@ -2263,7 +2267,7 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
       // `_parked` 门拦住形成无限循环。
       if (_disposed || _parked) return;
       final quietSeconds = DateTime.now().difference(_lastFrameAt).inSeconds;
-      // 埋点（phase 卡 running 根因时间线）：降频记录（H03 半项 2026-10-25
+      // 埋点（phase 卡 running 根因时间线）：降频记录（半项 2026-10-25
       // 审查）——静默首记+每 60s 一记；原每 tick（10s）一记会在多订阅空闲
       // 时冲刷 app_state 500 条内存日志的排障证据。看门狗活性/静默时长
       // 证据仍在，升级路径（resync/resubscribe）日志不受影响。
@@ -2286,7 +2290,7 @@ class ConversationSubscription extends _SubscriptionBase<ConversationState> {
       if (state.pendingInteractions.isNotEmpty) return;
       final streaming = state.rows.any((r) => r['state'] == 'streaming');
       if (state.isRunning || streaming) {
-        // F6/R2b：resync 连续 2 轮仍无帧到达 → 订阅大概率已被驱逐/半开，
+        // R2b：resync 连续 2 轮仍无帧到达 → 订阅大概率已被驱逐/半开，
         // 升级 fresh 重订阅（对齐官方"停在 error 等手动重连会永久卡死"的
         // 自愈语义）。
         if (_resyncSinceFrame >= 2) {
@@ -2357,7 +2361,7 @@ class WorkspacePrep {
   WorkspacePrep._combined(this.configOptions, this.slashCommands)
     : raw = const {};
 
-  /// 公开工厂（F12）：task 级目录（getTaskConfigOptions）装进同一形状。
+  /// 公开工厂：task 级目录（getTaskConfigOptions）装进同一形状。
   factory WorkspacePrep.fromOptions(List<ConfigOption> options) =>
       WorkspacePrep._combined(options, const []);
 }
@@ -2414,7 +2418,7 @@ class ConfigOptionValue {
 
   /// 官方 zcodeSessionSettingsToZCodeConfigOptions 携带的扩展字段：
   /// providerId 用于 switchModelConfig；modelThoughtLevels 供选择模型后
-  /// 联动思考档（子代理编辑器 F13 同源消费）。
+  /// 联动思考档（子代理编辑器 同源消费）。
   final String? modelProviderId;
   final List<String> modelThoughtLevels;
 
@@ -2476,7 +2480,7 @@ class _LogicalFrameAssembly {
   final DateTime createdAt = DateTime.now();
   int received = 0;
 
-  /// 组装期累计字节上限（P3-8）：v4 wire 分片无声明总长，
+  /// 组装期累计字节上限：v4 wire 分片无声明总长，
   /// 取 rpc-frame 逻辑消息同一真源（64MiB）作绝对护栏——畸形分片流不得
   /// 在组装期无界驻留内存。
   static const _maxTotalBytes = RpcFrameTransport.maxMessageBytes;
@@ -2551,7 +2555,7 @@ class SessionsIndexState extends ChangeNotifier {
 
   List<SessionEntry>? _listCache;
 
-  /// C2（2026-10-19 审查）：排序视图缓存——原 getter 每次 sort+copy 全量
+  /// （2026-10-19 审查）：排序视图缓存——原 getter 每次 sort+copy 全量
   /// （TaskListModel._rebuild 每 si 通知调用，流式期间每帧一次）。全部
   /// 内部变更点（snapshot 清填/upserted/removed）后必经 notifyListeners，
   /// 在此失效；缓存种子路径（computer_stack 预渲直填 map）发生在任何
@@ -2597,7 +2601,7 @@ class SessionsIndexState extends ChangeNotifier {
       ready = true;
       onLog?.call('snapshot toSeq=$toSeq sessions=${sessions.length}');
     } else if (payload['kind'] == 'deltas') {
-      // P3-13：ack 丢失→桌面按 replay 语义重发整条逻辑消息
+      // ack 丢失→桌面按 replay 语义重发整条逻辑消息
       //（新物理 seq 绕过 rpc-frame 的 seq 去重）——重复 delta（toSeq ≤
       // 本地水位）静默丢弃，不误判 gap 触发无谓 forceSnapshot resync
       //（会话订阅 drop-stale 同款语义，ConversationState:drop-stale）。
@@ -2640,7 +2644,7 @@ class SessionsIndexState extends ChangeNotifier {
       seq = toSeq;
       ready = true;
     } else {
-      // P3-7/G2-P3-7：未知 kind 不置 ready——旧行为把空
+      // 未知 kind 不置 ready——旧行为把空
       // sessions 标成就绪（"加载中"变"空列表"），且短路 si 看门狗的
       // `!ready && quiet>=90` 自愈分支；对照 ConversationState 的保守语义
       // `ready = ready || snapshot != null`。打一行漂移信号日志。
@@ -2652,7 +2656,7 @@ class SessionsIndexState extends ChangeNotifier {
 }
 
 /// 官方 createRuntimeUnavailableError 错误串（refs zcodeAgentService.ts
-/// :938-949"ZCode Agent runtime is not running."）——F1 dormant 判定。
+/// 938-949"ZCode Agent runtime is not running."）—— dormant 判定。
 bool isRuntimeUnavailableError(Object e) =>
     '$e'.contains('runtime is not running');
 
@@ -2674,7 +2678,7 @@ class SessionsIndexSubscription extends _SubscriptionBase<SessionsIndexState> {
     super._onBridgeRecovered();
   }
 
-  /// F6/R4：si 订阅此前没有任何看门狗——尾帧丢失则任务卡永久 running，
+  /// si 订阅此前没有任何看门狗——尾帧丢失则任务卡永久 running，
   /// 只有桥恢复/重开工作区能修。30s 对账：静默 >90s 且仍有 running 条目
   /// → resync；连续 3 轮无帧 → fresh 重订阅。
   DateTime _lastFrameAt = DateTime.now();
@@ -2886,16 +2890,16 @@ class TasksIndexState extends ChangeNotifier {
       return (applied: true, gap: false, removedIds: const []);
     }
     if (kind == 'deltas') {
-      // P3-13：重复逻辑帧（ack 丢失后桌面 replay，新物理 seq
+      // 重复逻辑帧（ack 丢失后桌面 replay，新物理 seq
       // 绕过 rpc-frame 去重）静默丢弃——toSeq ≤ 本地水位即陈旧，不误判
       // gap 触发 forceSnapshot resync 风暴。
-      // P3-4（D-8 批2）：仅当 toSeq 字段合法（≥0）才走 drop-stale——
+      // （批2）：仅当 toSeq 字段合法（≥0）才走 drop-stale——
       // 缺字段的畸形帧（toSeq=-1）此前也命中此判据被静默吞掉，从
       // "立即 resync" 退化为等 90s 看门狗兜底。
       if (toSeq >= 0 && toSeq <= seq) {
         return (applied: false, gap: false, removedIds: const []);
       }
-      // P3-16：帧顶 logEpoch 缺席时不参与 gap 判定（只按
+      // 帧顶 logEpoch 缺席时不参与 gap 判定（只按
       // subId+seq）——epoch 换代必有 seq 断档兜底；若按 ''!='epoch' 恒真
       // 判 gap，桌面一旦省略该字段即每条 delta 触发 resync 风暴。哨兵
       // 留痕。
@@ -2969,7 +2973,7 @@ class TasksIndexSubscription extends _SubscriptionBase<TasksIndexState> {
     : super(transport, TasksIndexState(), 'tasks-index');
 
   //tasks-index 此前是三个订阅类中
-  /// 唯一没有静默看门狗的——si 有 F6/R4 先例（2026-10-23"尾帧丢失则任务
+  /// 唯一没有静默看门狗的——si 有、先例（2026-10-23"尾帧丢失则任务
   /// 卡永久 running"），tasks-index 作为现行主任务数据源反而裸奔：帧丢失
   /// 自愈只有"后续帧 fromSeq 断档暴露 gap"一条路，丢的是最后一帧/订阅被
   /// 服务端静默驱逐后无新帧时，任务列表永久冻结在旧水位直到桥恢复事件。
@@ -3137,7 +3141,7 @@ class ConversationState extends ChangeNotifier {
   bool ready = false;
   bool historyExhausted = false;
 
-  /// 投影失效版本（R1-part2，2026-10-17）：applyFrame 每次 effective
+  /// 投影失效版本（-part2，2026-10-17）：applyFrame 每次 effective
   /// 应用后递增。deltas 路径对 rows 是原地变更（rows.add/rows[i]=），
   /// 页面的引用级记忆化（identical）永远不会失效——流式增量全部
   /// 不触发重投影，页面冻结在初始快照（真机"回复不可见，重进才见"）。
@@ -3145,7 +3149,7 @@ class ConversationState extends ChangeNotifier {
 
   /// 应用缓存种子（阶段 3）：把本地缓存的一致投影装进本订阅状态——
   /// 页面立即有内容（不等首快照），且订阅携带的 base 与此严格一致
-  ///（官方水位不变量）。首个快照到达时整体替换（R6 同规则）。
+  ///（官方水位不变量）。首个快照到达时整体替换（同规则）。
   void applySeed(ConversationSeed seed) {
     rows = List<Map<String, dynamic>>.of(seed.rows);
     logEpoch = seed.logEpoch;
@@ -3169,12 +3173,12 @@ class ConversationState extends ChangeNotifier {
     if (payload is! Map) return;
     final toSeq = (frame['toSeq'] as num?)?.toInt() ?? seq;
 
-    // 规范 §2.4 三分支之二：deltas 的 toSeq <= 本地 seq ⇒ 迟到/重复帧
+    // 规范 三分支之二：deltas 的 toSeq <= 本地 seq ⇒ 迟到/重复帧
     // 静默丢弃（不丢弃会把流式文本重复拼接）。
-    // R6（官方 conversationProjectionStore 规则1对齐，2026-10-16）：
+    // （官方 conversationProjectionStore 规则1对齐，2026-10-16）：
     // **snapshot 永远整体替换、不做 seq 守门**——服务端 rehydrate/
     // replacement 会把 sentSeq 清 0，旧规则会把 recovery 快照当 stale
-    // 丢弃（审计 P3 路径：phase 卡 running 的候选根因之一）。
+    // 丢弃（审计 路径：phase 卡 running 的候选根因之一）。
     // _applySnapshot 自带旧 rows 合并，分页历史不丢。
     final isSnapshot = payload['kind'] == 'snapshot';
     String? frameEpoch;
@@ -3225,7 +3229,7 @@ class ConversationState extends ChangeNotifier {
         for (final d in deltas) {
           if (d is Map) _applyDelta(d.cast<String, dynamic>());
         }
-        // C3：帧尾统一物化追加缓冲（notifyListeners 前，UI 只见终值）。
+        // 帧尾统一物化追加缓冲（notifyListeners 前，UI 只见终值）。
         _flushAllAppends();
       }
       seq = toSeq;
@@ -3297,7 +3301,7 @@ class ConversationState extends ChangeNotifier {
   void _applyDelta(Map<String, dynamic> delta) {
     switch (delta['op']) {
       case 'row.appended':
-        // C3：非 row.delta 的行操作前先物化缓冲——保序（缓冲中的追加
+        // 非 row.delta 的行操作前先物化缓冲——保序（缓冲中的追加
         // 在时序上先于本操作，必须落在被替换/移除前的旧行上）。
         _flushAllAppends();
         final row = (delta['row'] as Map).cast<String, dynamic>();
@@ -3338,7 +3342,7 @@ class ConversationState extends ChangeNotifier {
         }
         break;
       case 'row.delta':
-        // C3（2026-10-19 审查）：追加只进缓冲，帧尾/干扰操作前统一物化。
+        // （2026-10-19 审查）：追加只进缓冲，帧尾/干扰操作前统一物化。
         // 原实现每 delta 全串重拼（'${old}$append' O(n²)）+整 map 拷贝；
         // 流式期间 UI 每帧只消费终值，帧内中间串无人读取。path/kind 的
         // 忽略规则在物化时执行（见 _materializeAppend），时序等价由
@@ -3381,7 +3385,7 @@ class ConversationState extends ChangeNotifier {
     _pendingPatch = null;
   }
 
-  // C3：追加缓冲（rowId → path → StringBuffer）。
+  // 追加缓冲（rowId → path → StringBuffer）。
   final Map<int, Map<String, StringBuffer>> _appendBufs = {};
 
   void _flushAllAppends() {
@@ -3444,7 +3448,7 @@ class ConversationState extends ChangeNotifier {
   /// Optimistic local update (command already accepted; the confirming
   /// `state.updated` frame may lag). Merges into snapshot immediately.
   ///
-  /// F2（2026-10-19 核销防守注释）：本组 optimistic* 只 notifyListeners
+  /// （2026-10-19 核销防守注释）：本组 optimistic* 只 notifyListeners
   /// **不递增 dataVersion**——刻意语义：它们不改变投影输入（rows 不进
   /// 快照投影 / snapshot 字段非投影键），页面引用级记忆化不需要失效。
   /// 若未来让 optimistic 变更进入投影消费的行数据，必须同步递增
@@ -3498,7 +3502,7 @@ class ConversationState extends ChangeNotifier {
   Map<String, dynamic>? get config =>
       (snapshot?['config'] as Map?)?.cast<String, dynamic>();
 
-  /// 乐观写回（A3+A5 修复批 2026-10-24）：命令 accepted 即把提交值写进
+  /// 乐观写回（+ 修复批 2026-10-24）：命令 accepted 即把提交值写进
   /// 本地 config 快照（官方 draft 语义）——UI 立即反映最终值，服务端
   /// config 回显同值零闪烁；桌面端外部改档由后续 patch 覆盖 config，
   /// 药丸自然跟随（替代永不失效的 _appliedMode）。快照整体替换语义
@@ -3603,7 +3607,7 @@ class ConversationState extends ChangeNotifier {
     }
   }
 
-  /// F3（对抗审查高③）：快照 workflowRuns 投影（官方 snapshot.ts:527
+  /// （对抗审查高③）：快照 workflowRuns 投影（官方 snapshot.ts:527
   /// ——工具卡→run 的联接权威源；run.toolCallId 是关联键）。
   List<Map<String, dynamic>> get workflowRunsList {
     final w = snapshot?['workflowRuns'];

@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/transport/conversation.dart';
 
-/// C3 等价性对拍（回归防护 7.2 第 5 条）：同一 delta 帧序列，
+/// 等价性对拍（回归防护 7.2 第 5 条）：同一 delta 帧序列，
 /// 新实现（帧内缓冲、帧尾物化）vs 旧实现（逐条立即拼接）产出的
 /// rows/snapshot/totalCount 必须完全一致。旧实现按 2026-10-19 改造前
 /// 源码原样拷贝于此作参照。

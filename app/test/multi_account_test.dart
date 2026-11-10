@@ -1,4 +1,4 @@
-// 多账号行为红绿（multi-account-plan.md §4.2，2026-10-25）：
+// 多账号行为红绿（multi-account-plan.md，2026-10-25）：
 // ①auth-required 收窄——只清失败账号，另一账号凭据/档案原样；②device
 // -not-owned 不再标档案失效（引导而非死路）；③换账号重连改绑最近使用
 // 账号并重建栈。

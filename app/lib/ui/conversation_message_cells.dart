@@ -64,7 +64,7 @@ class SearchTargetFrame extends StatelessWidget {
 /// 稳定行渲染缓存（优化批 #8）：流式期页面合帧后仍会整列 rebuild，未变化的
 /// 历史正文（非末轮 markdown/用户气泡文本）逐次全文重解析仍是每帧大头。cacheKey
 /// 深比较（元素 ==：字符串按内容、Map 按引用——row.upserted
-/// 换新实例的协议不变量，见 _ToolCallTile A2 备注）未变时复用上次 child
+/// 换新实例的协议不变量，见 _ToolCallTile 备注）未变时复用上次 child
 /// 实例——Element.updateChild 的 identical 短路直接跳过整棵子树 rebuild。
 /// InheritedWidget（主题/MediaQuery/L10n）变化不受影响——依赖注册在
 /// 子树自身 element 上，仍会直接标记重建。只缓存文本型内容（
@@ -73,7 +73,7 @@ class SearchTargetFrame extends StatelessWidget {
 class CachedContent extends StatefulWidget {
   final List<Object?> cacheKey;
 
-  /// 惰性构建（ B3-P3-1）：命中时不再热构建 child——AssistantText
+  /// 惰性构建：命中时不再热构建 child——AssistantText
   /// 的 child 含 parseVisualizeSegments 全文正则与整棵子树，缓存命中期
   /// 的每帧重建是纯浪费。
   final Widget Function() childBuilder;
@@ -99,7 +99,7 @@ class CachedContentState extends State<CachedContent> {
   Widget build(BuildContext context) => _cached ??= widget.childBuilder();
 }
 
-/// 文件卡行首类型图标（18077 验收#16 优化意见 O）：路径过长无法区分
+/// 文件卡行首类型图标（验收#16 优化意见 O）：路径过长无法区分
 /// md/html/代码/图片——行首小图标给文件属性一眼可辨。
 
 List<InlineSpan> buildSearchHighlightSpans(
@@ -108,7 +108,7 @@ List<InlineSpan> buildSearchHighlightSpans(
   required TextStyle base,
   required TextStyle hit,
 }) {
-  // B1-P1-1/B2-P2-4/B3-P1-1：toLowerCase 对 İ（U+0130）等
+  // toLowerCase 对 İ（U+0130）等
   // 扩长字符改变码元长度，折叠串下标切原串会错位/RangeError——改用
   // 长度稳定折叠（foldCaseStable），命中下标恒在原串坐标系。
   final needle = foldCaseStable(query.trim());
@@ -148,7 +148,7 @@ class AssistantText extends StatelessWidget {
   /// 占 6dp，外部实例清零由外层 Padding 统一控制节奏）。
   final double verticalPadding;
 
-  /// 18074 验收③：::visualize 指令卡片取本轮 fileChanges 用（所属轮
+  /// 验收③：::visualize 指令卡片取本轮 fileChanges 用（所属轮
   /// turnHeader 行与 sessionId）；缺省=null 不解析指令（旧行为）。
   final String? sessionId;
   final Map<String, dynamic>? header;
@@ -189,11 +189,11 @@ class AssistantText extends StatelessWidget {
           // 稳定行渲染缓存（优化批 #8）：文本/流式态/高亮开关/搜索词
           // 未变时复用上次子树，跳过 MarkdownBody 全文重解析（宽屏约
           // 束在缓存外，尺寸变化经约束传导仍会重排）。
-          // B3-P3-1：键里的 header 由实例身份换成 rowId/
+          // 键里的 header 由实例身份换成 rowId/
           // entityId 值——turnHeader 每次 upsert（文件变更/轮状态迁移）
           // 都换新实例，同轮全部 AssistantText 缓存被击穿=全文重解析，
           // 而 header 实际只被 VisualizeCard 读这两个值。
-          // B1-P3-9/B2-7/B3-P3-2：亮度掺键——span 里的命中
+          // 亮度掺键——span 里的命中
           // 底色/前景色在祖先 build 烘焙，主题切换（浅↔深）时 cacheKey
           // 不含亮度会复用旧主题配色的子树。
           child: CachedContent(
@@ -207,7 +207,7 @@ class AssistantText extends StatelessWidget {
               searchQuery,
               Theme.of(context).brightness,
             ],
-            // B3-P1-2：空关键词按无高亮处理——页面在搜索开启
+            // 空关键词按无高亮处理——页面在搜索开启
             // 且输入为空时传 ''（非 null），缺非空守卫会让全部助手正文
             // 从 markdown 降级纯文本（与 UserBubble 的 isNotEmpty 守卫
             // 及上方注释契约对齐）。
@@ -242,7 +242,7 @@ class AssistantText extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 18074 验收③：::visualize 指令位渲染成可点卡片（官方
+                      // 验收③：::visualize 指令位渲染成可点卡片（官方
                       // gen-ui 引用；桌面投影沙箱，手机=点卡经 fileChanges
                       // 取全文进渲染页）。无指令=单段直渲染（零开销路径）。
                       if (sessionId == null || header == null)
@@ -278,13 +278,13 @@ class AssistantText extends StatelessWidget {
 }
 
 /// timelineMarker 的「─ 图标 文案 ─」标记行（官方 MarkerDividerRow 对
-/// 位）。 B2-1（lane 语义）：顶层（轮边界 lane，经
+/// 位）。 （lane 语义）：顶层（轮边界 lane，经
 /// TimelineMarkerItem）与段内（mid-turn compact，lane=assistantWork 落
 /// 进 TurnWork.work 由 conversation_turn_view 渲染）两处共用同一渲染。
 class TimelineMarkerDivider extends StatelessWidget {
   final String label;
 
-  /// B11：运行中标记（压缩进行中/目标校验中）。
+  /// 运行中标记（压缩进行中/目标校验中）。
   final bool running;
 
   const TimelineMarkerDivider({
@@ -336,7 +336,7 @@ class TimelineMarkerDivider extends StatelessWidget {
 class TurnTailActions extends StatefulWidget {
   final Map<String, dynamic> row;
 
-  /// 轮尾复制内容（对抗审查 B1：官方=整轮全部 text 段 join("\n\n")；
+  /// 轮尾复制内容（对抗审查 ：官方=整轮全部 text 段 join("\n\n")；
   /// 缺省回落本行 text）。
   final String? copyText;
 
@@ -363,11 +363,11 @@ class TurnTailActionsState extends State<TurnTailActions> {
   /// 乐观反馈覆盖值（null=跟随行数据 row.feedback）。
   String? _override;
 
-  /// 权威行值同步锚（对抗审查 B4）：行数据推送更新 feedback 字段后
+  /// 权威行值同步锚（对抗审查）：行数据推送更新 feedback 字段后
   /// override 不得永久遮蔽——官方 useEffect([feedback]) 同步本地态。
   String? _syncedRowFeedback;
 
-  /// 分支在途防抖（对抗审查 B7）：连点=两条 forkAssistant=服务端两个
+  /// 分支在途防抖（对抗审查）：连点=两条 forkAssistant=服务端两个
   /// 子会话+路由叠栈。
   bool _forking = false;
 
@@ -392,8 +392,8 @@ class TurnTailActionsState extends State<TurnTailActions> {
     SnackBar(content: Text(t), duration: const Duration(seconds: 2)),
   );
 
-  /// B3：conversationRowTargetSchema 的 entityId 必填
-  /// （strict）——缺失时返回 null，调用方降级为纯本地操作（与 H1 的
+  /// conversationRowTargetSchema 的 entityId 必填
+  /// （strict）——缺失时返回 null，调用方降级为纯本地操作（与 的
   /// 行菜单口径一致；此前两处口径相反）。
   Map<String, dynamic>? get _target {
     final entityId = '${widget.row['entityId'] ?? ''}'.trim();
@@ -462,7 +462,7 @@ class TurnTailActionsState extends State<TurnTailActions> {
         return;
       }
       // sessionId 嵌套在 ack.result 下（command.ts:392-401/450-463，官方
-      // 消费 ack.result.sessionId——对抗审查 A1：此前读顶层恒为空，
+      // 消费 ack.result.sessionId——对抗审查 ：此前读顶层恒为空，
       // 分支永远打不开子会话还提示成功）。
       final result = res is Map ? res['result'] : null;
       final sid = result is Map ? '${result['sessionId'] ?? ''}' : '';
@@ -487,7 +487,7 @@ class TurnTailActionsState extends State<TurnTailActions> {
 
   @override
   Widget build(BuildContext context) {
-    // H1（审计纪律）：conversationRowTargetSchema 的 entityId 必填——
+    // （审计纪律）：conversationRowTargetSchema 的 entityId 必填——
     // 旧行缺 entityId 时只保留复制，协议按钮禁用。
     final canCommand =
         widget.sessionId != null &&
@@ -585,7 +585,7 @@ class UserBubble extends StatelessWidget {
   final void Function(int index)? onAttachment;
   final bool searchReveal;
 
-  /// 18077 验收#11（Bug H）：搜索激活时提问同享词级高亮（此前仅
+  /// 验收#11（Bug H）：搜索激活时提问同享词级高亮（此前仅
   /// assistant 路径接入，提问命中只有行级定位效果）。
   final String? searchQuery;
 
@@ -716,7 +716,7 @@ class UserBubble extends StatelessWidget {
               if (text.trim().isNotEmpty)
                 // V2 审美优化：左缘 3px 品牌蓝竖条——「我的话」成为
                 // 长会话滚动的视觉锚点（评审 2.2#1）。竖条为独立元素
-                // （视觉验收 S03 实锤：多色 Border + borderRadius 触发
+                // （视觉验收 实锤：多色 Border + borderRadius 触发
                 // Flutter paint 断言「borders with uniform colors」）。
                 IntrinsicHeight(
                   child: Row(
@@ -801,7 +801,7 @@ class FoldableUserText extends StatefulWidget {
   final Widget Function(String) selectable;
   final bool searchReveal;
 
-  /// 18077 验收#11：搜索词变化时缓存必须失效（高亮重建）。
+  /// 验收#11：搜索词变化时缓存必须失效（高亮重建）。
   final String? searchQuery;
 
   const FoldableUserText({
@@ -853,7 +853,7 @@ class FoldableUserTextState extends State<FoldableUserText> {
     // 稳定行渲染缓存（优化批 #8）：文本与展开态未变时复用上次
     // SelectionArea/Text 实例（流式期间整列 rebuild 的稳定行短路）。
     final content = CachedContent(
-      // P3-7（D-8 批4）：键掺亮度——浅↔深切换后搜索高亮 span 颜色
+      // （批4）：键掺亮度——浅↔深切换后搜索高亮 span 颜色
       // 沿旧主题（助手正文同款，用户气泡此前漏网）。
       cacheKey: [
         widget.text,
@@ -957,7 +957,7 @@ class FoldableUserTextState extends State<FoldableUserText> {
   }
 }
 
-/// 轮尾文件变更卡（官方 ConversationFileSummaryPanel 对位，F5 重做）：
+/// 轮尾文件变更卡（官方 ConversationFileSummaryPanel 对位， 重做）：
 /// 折叠头「N 个文件已更改 +A/-D」（reverted 态带「已撤销」标签并禁用撤销）；
 /// 展开拉取明细（fileChanges，锚点修复后）平铺文件行；点行进查看器审查；
 /// 「撤销」走整轮 rewind 预检（safe/unsafe/ignored 三计数）→ apply。

@@ -11,7 +11,7 @@ import '../core/theme.dart';
 /// 扫码添加电脑：对准桌面端远程控制二维码，扫到后 pop 返回 URL 文本。
 /// 相机不可用（未授权/模拟器）时提示改用粘贴链接。
 ///
-/// 18092 扫码黑屏终局方案：**不再挂载 MobileScanner 预览
+/// 扫码黑屏终局方案：**不再挂载 MobileScanner 预览
 /// 纹理**——agent 自动复现实证，相机纹理（Flutter texture registry）的
 /// 生命周期在部分华为机型会把渲染管线楔死（窗口黑、进程健康；Skia 回退/
 /// 停流先行/帧看门狗三层防御均不治，帧仍在产但合成器输出黑=检测面之
@@ -49,7 +49,7 @@ class _QrScanPageState extends State<QrScanPage> {
       },
     );
     // 不手动 start：零尺寸挂载的 MobileScanner(widget) 携 autoStart 启动
-    // （18095 教训：手动 start 与 widget 自动启动竞态抛 controllerInitializing
+    // （教训：手动 start 与 widget 自动启动竞态抛 controllerInitializing
     // ——测试环境实测；插件要求 controller 必须挂 widget，启动责任归 widget）。
   }
 
@@ -64,7 +64,7 @@ class _QrScanPageState extends State<QrScanPage> {
   /// `_cameraError` 此前是死状态——mobile_scanner 默认 errorBuilder 渲染
   /// 在 0×0 挂载盒内不可见，权限被拒/无相机=静默死页。一次性闩锁
   /// （mobile_scanner 的错误态不随重试自动清除）；错误态只出文字提示+
-  /// 「粘贴链接」引导，不恢复预览纹理（18092 拍板取舍不变）。
+  /// 「粘贴链接」引导，不恢复预览纹理（拍板取舍不变）。
   void _onCameraError(MobileScannerException error) {
     debugPrint('[qr-scan] camera error: $error');
     if (_cameraError) return;
@@ -81,7 +81,7 @@ class _QrScanPageState extends State<QrScanPage> {
     });
   }
 
-  /// 停流后再退出（18091 根治层 2，保留）：检测命中与系统返回统一走
+  /// 停流后再退出（根治层 2，保留）：检测命中与系统返回统一走
   /// "停相机→等一拍→pop"，彻底避免与路由转场并发。
   /// ：stop 加 1s 超时——异常设备上 stop 挂起时返回键
   /// 会被永久吞掉（_handled 已置位+pop 永不到达）。
@@ -117,7 +117,7 @@ class _QrScanPageState extends State<QrScanPage> {
           children: [
             // 无预览模式的暗色底（原为相机画面）。
             Container(color: Colors.black87),
-            // 零尺寸挂载 MobileScanner（18095 诊断实证：mobile_scanner 7.5.0
+            // 零尺寸挂载 MobileScanner（诊断实证：mobile_scanner 7.5.0
             // 的 controller 必须挂上 widget 才能 start——controllerNotAttached
             // 异常=相机从未启动=用户"相机不可用"）。零尺寸=纹理注册、参与
             // 扫描分析流，但不绘制任何像素（渲染管线零负担）。
@@ -144,7 +144,7 @@ class _QrScanPageState extends State<QrScanPage> {
                 child: Stack(
                   children: [
                     // Stack 对 non-positioned 子级是松约束——CustomPaint
-                    // 必须显式给 size，否则塌缩 0×0（视觉验收 S07 实锤）。
+                    // 必须显式给 size，否则塌缩 0×0（视觉验收 实锤）。
                     CustomPaint(
                       key: const ValueKey('corner-frame'),
                       size: const Size(240, 240),

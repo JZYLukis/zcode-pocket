@@ -12,7 +12,7 @@ import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/usage_page.dart';
 
-/// H15-2（2026-10-29 批次）：个人套餐强刷失败保留旧图。
+/// （2026-10-29 批次）：个人套餐强刷失败保留旧图。
 /// 修复前红：_callCodingPlanUsage 吞异常返 null 且 reason 为空，
 /// 成功分支 `_cp = cp` 直接把已渲染的图表清空。
 /// 伴生断言：首载即失败出内联提示（非静默空白）、恢复成功后提示消失。

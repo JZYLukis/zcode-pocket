@@ -5,7 +5,7 @@ import 'package:zcode_pocket/state/profile_store.dart';
 import 'package:zcode_pocket/transport/relay_client.dart';
 import 'package:zcode_pocket/transport/z_transport.dart';
 
-/// backlog 36 红绿（2026-10-29 批次）：后台栈失败被 A6② 过滤门拦下
+/// backlog 36 红绿（2026-10-29 批次）：后台栈失败被 过滤门拦下
 /// 不顶替展示（多电脑防串台），但切回该电脑时必须回捞这条近期失败
 /// 重放给诊断状态——修复前 relayDiagnosis 无数据，横幅只剩通用
 /// "重连中"。单电脑场景（activate 同一活跃栈）行为无变化。
@@ -43,7 +43,7 @@ void main() {
     final stackB = _frozenStack('sid-b');
     app.debugRegisterStackForTest(stackB);
 
-    // 后台栈失败 → A6② 过滤门拦下（不顶替展示）。
+    // 后台栈失败 → 过滤门拦下（不顶替展示）。
     await app.debugStackFailure(stackB, const RelayFailure('network-dns'));
     expect(
       app.lastRelayFailReason,

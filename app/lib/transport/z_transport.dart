@@ -40,7 +40,7 @@ class RelayProfile extends DeviceProfile {
   @override
   final bool invalid;
 
-  /// 上次使用的工作区（D4：账号数据按档案隔离——重连后恢复现场）。
+  /// 上次使用的工作区（账号数据按档案隔离——重连后恢复现场）。
   @override
   final String? lastWorkspaceKey;
 
@@ -131,7 +131,7 @@ class LanProfile extends ConnectionProfile {
   const LanProfile({required this.baseUrl, this.token});
 }
 
-// P3-4/G2-P3-9/G3-P3-1：阶段 0 骨架遗存的
+// 阶段 0 骨架遗存的
 // TransportPhase/ZTransport/RelayTransport 全仓库零引用（且内含未经
 // 检验的缺陷——attachWorkspace 的监听订阅不保存、_bridge 覆盖不
 // dispose），已删除。本文件仅保留连接/设备

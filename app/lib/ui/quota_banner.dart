@@ -4,7 +4,7 @@ import '../core/localized_text.dart';
 import '../core/theme.dart';
 
 /// 配额横幅（阶段 3 第三段，对照官方 sessionQuotaBannerState.ts /
-/// startPlanQuotaBuckets.ts 的手机端实现；2026-10-24 修复批 PF-1 补
+/// startPlanQuotaBuckets.ts 的手机端实现；2026-10-24 修复批 补
 /// 官方总门、reminderKey 有效性与模型过滤）。
 ///
 /// 官方语义要点：
@@ -55,7 +55,7 @@ const _startPlanProviderIds = {
 
 bool _finite(num? v) => v is num && v.isFinite;
 
-/// 两类载荷口径差异（PF-1 复核注；逻辑=官方 bucketRemainingRatio 逐字
+/// 两类载荷口径差异（复核注；逻辑=官方 bucketRemainingRatio 逐字
 /// 对齐，不动）：Start Plan 桶的 remaining/number 与 percentage 回退都是
 /// 0-1 剩余比例；Coding Pro quota 接口的 percentage 是 0-100 已用占比
 /// （官方 usage-quota.ts:69-72"展示端负责反转"）——口径相反，但被

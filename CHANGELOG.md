@@ -54,6 +54,25 @@
 - 用量页：趋势卡摘要从纯文字改为结构化明细卡；图例右缘渐隐；热力图
   新增每日/每周/累计三档时间粒度切换。
 
+### Checksums（预编译 APK）
+
+公开树 tag `v1.0.2` 构建，versionCode 基码 `2026111002`（arm64
+`2026113002` / armeabi-v7a `2026112002` / x86_64 `2026115002`）。
+
+**2026-11-10 签名修正**：首发资产误用调试密钥签名（构建树缺签名配置，
+gradle 静默回落 debug 档），当日已用正式密钥同树重签并替换 Release 资产
+（tag/versionCode 不变；Release 说明留痕）。若你下载过首小时的包且
+无法覆盖安装，请卸载后重新下载。
+
+| APK | SHA-256 |
+|---|---|
+| `app-arm64-v8a-release.apk` | `0f7ed0d1e9256c9ae885061f9a177e2c86b21d72db84dbf721e7af71435c40a5` |
+| `app-armeabi-v7a-release.apk` | `916d7d393ff563c19ea7f3886a5d64943cb07dea4694626e8ee31080f02daacc` |
+| `app-x86_64-release.apk` | `9c6d8c85afd369541b3a6f383a236eaed922cecd1e7488a0b29141ac1b805fe3` |
+
+签名证书 SHA-256 与 v1.0.0/v1.0.1 相同：
+`2e079b31d61d3f6fbbc5aa4fc9ed0cb0d2787b4de7e558345b630a59c546b681`。
+
 ## [1.0.1] - 2026-11-05
 
 修复与体验优化版本（versionCode `2026110504`）。公开源码与维护者自用包共用同一

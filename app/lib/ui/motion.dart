@@ -5,7 +5,7 @@
 /// 「移除动画」设置（MediaQuery.disableAnimations），关闭时退化为
 /// 静态呈现。
 ///
-/// 官方对位：refs/ZCode packages/ui/src/styles.css
+/// 官方对位：ZCode 官方开源实现 packages/ui/src/styles.css
 /// - wf-lamp-running / wf-beat（:1660/:2130）：运行灯 1.6s 心跳
 /// - animated-gradient-text（:856）：运行中文字扫光，4s 循环
 library;
@@ -179,7 +179,7 @@ class _ShimmerTextState extends State<ShimmerText>
     final size =
         widget.style.fontSize ?? DefaultTextStyle.of(context).style.fontSize ?? 14;
     final lineHeight = widget.style.height ?? 1.45;
-    // 公式修正（对抗审查 B1）：Flutter 实际行高 = scale(字号)×行高
+    // 公式修正（对抗审查）：Flutter 实际行高 = scale(字号)×行高
     // （先缩放字号再乘行高）；Android 14+ 非线性 FontScaler 下
     // scale(字号×行高) 会算矮 → 第二行底部被裁。
     final scaled = MediaQuery.textScalerOf(context).scale(size) * lineHeight;
@@ -193,7 +193,7 @@ class _ShimmerTextState extends State<ShimmerText>
   }
 }
 
-/// 定高文本占位（对抗审查 A1 2026-10-24：思考条流式→完成边沿从
+/// 定高文本占位（对抗审查 2026-10-24：思考条流式→完成边沿从
 /// minLines 两行塌到单行=完成瞬间一次跳变；完成态沿用同款定高公式
 /// 保持高度恒定）。与 ShimmerText._fixedLines 同公式：字号×行高
 /// （默认 1.45）×行数，文字缩放感知，内容顶对齐。

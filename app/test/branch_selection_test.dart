@@ -190,7 +190,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('branch-item-dev')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      // SnackBar 断言教训（§2.4）：固定时长泵，禁 pumpAndSettle。
+      // SnackBar 断言教训：固定时长泵，禁 pumpAndSettle。
       expect(find.textContaining('已切换到 dev'), findsOneWidget);
       final sw = stub.calls.where((c) => c.$1 == 'switchBranch').toList();
       expect(sw.length, 1);

@@ -11,8 +11,8 @@ import 'package:zcode_pocket/ui/task_home.dart';
 import 'package:zcode_pocket/ui/turn_model.dart';
 
 /// （2026-10-29 差异审查修复批）纯逻辑回归：
-/// B7 运行优先排序/B10 复制带计划/B11 时间线四类标记/B4 artifact 兜底/
-/// B30 八档时间分桶/B2 自定义答案合并/A6 edit 档/A3 查询确权载荷。
+/// 运行优先排序/ 复制带计划/ 时间线四类标记/ artifact 兜底/
+/// 八档时间分桶/ 自定义答案合并/ edit 档/ 查询确权载荷。
 
 void main() {
   group('B7 任务主页排序（running-first+稳定决胜）', () {
@@ -99,7 +99,7 @@ void main() {
     });
   });
 
-  group('B30 时间分桶（18077 验收#9 用户拍板四组口径，取代官方八档）', () {
+  group('B30 时间分桶（验收#9 用户拍板四组口径，取代官方八档）', () {
     final now = DateTime(2026, 10, 29, 12); // 周四
     int at(DateTime d) =>
         DateTime(d.year, d.month, d.day, 10).millisecondsSinceEpoch;
@@ -205,7 +205,7 @@ void main() {
       expect(markers[3].label, contains('模型已切换'));
     });
 
-    // B2-1（lane 语义，官方 product-projection.ts:4943-4945/
+    // （lane 语义，官方 product-projection.ts:4943-4945/
     // 5015）：compact=assistantWork——marker 归属事件到达时的行尾。
     // auto-compact mid-turn 插入时落在当前回合内部，此前一律 closeTurn
     // 会把运行中轮劈成两半（文件卡提前投出、后续工作行成无头段假
