@@ -86,6 +86,7 @@ desktop **3.16+**):
 
 | Desktop version | Status |
 |---|---|
+| 3.18.0 (not yet released by ZCode) | Assessed against official sources: zero breaking changes, no adaptation needed; on-device verification pending after release |
 | 3.17.x (current) | Verified on 3.17.1 on-device; 3.17.2 reviewed against official sources |
 | 3.16 – 3.16.3 | Verified end-to-end (pairing, tasks, conversations) |
 | 3.15.x | Legacy QR pairing only (old channel; no longer exercised by the maintainer) |
