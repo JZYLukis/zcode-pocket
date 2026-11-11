@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Text;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/core/l10n.dart';
 import 'package:zcode_pocket/core/localized_text.dart';
+import 'package:zcode_pocket/core/oem_vendor.dart';
 import 'package:zcode_pocket/core/theme.dart';
 import 'package:zcode_pocket/state/app_state.dart';
 import 'package:zcode_pocket/state/app_state_scope.dart';
@@ -159,7 +160,8 @@ void main() {
     _expectNoMissing('DiffViewerPage');
   });
 
-  testWidgets('英文·NotifyGuidePage 无未翻译项', (tester) async {
+  testWidgets('英文·NotifyGuidePage 无未翻译项（含各厂商档位）',
+      (tester) async {
     L10n.setTestLocale('en-US');
     L10n.collectMissing = true;
     await tester.pumpWidget(
@@ -169,6 +171,17 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     _expectNoMissing('NotifyGuidePage');
+    // 厂商档位文案（oem_vendor.dart）全部过一遍英文命中。
+    for (final vendor in OemVendor.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: NotifyGuidePage(vendorOverrideForTest: vendor),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      _expectNoMissing('NotifyGuidePage(${vendor.name})');
+    }
   });
 
   testWidgets('英文·VoiceInputSheet 失败降级无未翻译项', (tester) async {

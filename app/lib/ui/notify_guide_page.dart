@@ -2,14 +2,22 @@ import 'package:flutter/material.dart' hide Text;
 import '../core/localized_text.dart';
 import 'package:flutter/services.dart';
 
+import '../core/oem_vendor.dart';
 import '../core/theme.dart';
 
-/// 后台与通知保障引导页（阶段 3 第二段后台专项，三层兜底）：
+/// 后台与通知保障引导页（三层兜底）：
 /// ①按钮自动跳转系统设置（组件名依次尝试）→ ②跳应用详情页手点 →
 /// ③跳不动时图文指引。部分厂商省电机制下代码全对也可能被杀，这三步是
-/// "审批提醒"可靠工作的前提（用户 2026-10-18 拍板：开提醒时一次配好）。
+/// "审批提醒"可靠工作的前提（开启提醒前一次配好）。
+///
+/// 第 1 步文案与跳转目标按厂商档位切换（详见 oem_vendor.dart）；
+/// 读取失败回落华为档（与该机制引入前的行为一致）。
 class NotifyGuidePage extends StatefulWidget {
-  const NotifyGuidePage({super.key});
+  const NotifyGuidePage({super.key, this.vendorOverrideForTest});
+
+  /// 测试缝：跳过通道读取直接指定档位（先例=
+  /// ConversationPage.debugFabHintForce）。
+  final OemVendor? vendorOverrideForTest;
 
   @override
   State<NotifyGuidePage> createState() => _NotifyGuidePageState();
@@ -18,6 +26,8 @@ class NotifyGuidePage extends StatefulWidget {
 class _NotifyGuidePageState extends State<NotifyGuidePage>
     with WidgetsBindingObserver {
   static const _channel = MethodChannel('companion/notify');
+  // 初始=华为档（与档位机制引入前一致）；通道回读后按真机档位覆写。
+  OemStartupGuide _guide = oemStartupGuideFor(OemVendor.huawei);
   String _startupJumpResult = '';
   bool? _batteryIgnored;
 
@@ -26,6 +36,25 @@ class _NotifyGuidePageState extends State<NotifyGuidePage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _refreshBattery();
+    _readVendor();
+  }
+
+  Future<void> _readVendor() async {
+    final override = widget.vendorOverrideForTest;
+    if (override != null) {
+      _guide = oemStartupGuideFor(override);
+      return;
+    }
+    String raw;
+    try {
+      raw = await _channel.invokeMethod<String>('manufacturer') ?? '';
+    } catch (_) {
+      // 通道异常（测试环境无 handler 等）：维持华为档回落。
+      return;
+    }
+    if (mounted) {
+      setState(() => _guide = oemStartupGuideFor(oemVendorFromManufacturer(raw)));
+    }
   }
 
   @override
@@ -56,10 +85,8 @@ class _NotifyGuidePageState extends State<NotifyGuidePage>
       final res = await _channel.invokeMethod<String>('openStartupManage');
       if (!mounted) return;
       setState(() => _startupJumpResult = switch (res) {
-        'startup' => '已跳到「启动管理」：找到 ZCode Pocket 改为手动管理，'
-            '开启自启动/关联启动/后台活动三个开关',
-        'details' => '已跳到应用详情页：请点「启动管理」（或「应用启动管理」）'
-            '进入后改为手动管理，开三个开关',
+        'startup' => _guide.startupNote,
+        'details' => _guide.detailsNote,
         _ => '跳转失败，请按下方图文步骤手动操作',
       });
     } catch (_) {
@@ -114,9 +141,8 @@ class _NotifyGuidePageState extends State<NotifyGuidePage>
           const SizedBox(height: 16),
           _StepCard(
             index: 1,
-            title: '启动管理三开关',
-            body: '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，'
-                '开启 自启动 / 关联启动 / 后台活动 三个开关。',
+            title: _guide.title,
+            body: _guide.body,
             actionLabel: '去设置',
             onAction: _jumpStartupManage,
             footnote: _startupJumpResult,

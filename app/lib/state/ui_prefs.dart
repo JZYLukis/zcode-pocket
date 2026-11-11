@@ -54,9 +54,14 @@ class UiPrefs extends ChangeNotifier {
   /// 不再打扰）。
   static const _keyFabMenuHintShown = 'ui.fabMenuHintShown';
 
+  /// 宽屏双栏左栏收起态（折叠屏用户反馈需要整栏收起/展开）。
+  /// 收起后右栏全宽，顶栏同位钮切换。
+  static const _keyDualPaneCollapsed = 'ui.dualPaneCollapsed';
+
   final FlutterSecureStorage _storage;
   bool _showToolCalls = true;
   bool _fabMenuHintShown = false;
+  bool _dualPaneCollapsed = false;
   String? _lastModel;
   String? _lastThought;
   String _themeMode = 'system';
@@ -159,6 +164,7 @@ class UiPrefs extends ChangeNotifier {
         _storage.read(key: _keyProjectOrders), // 17
         _storage.read(key: _keyShowOtherComputers), // 18
         _storage.read(key: _keyFabMenuHintShown), // 19
+        _storage.read(key: _keyDualPaneCollapsed), // 20
       ]);
       final raw = reads[0];
       if (raw != null) _showToolCalls = raw == 'true';
@@ -184,6 +190,7 @@ class UiPrefs extends ChangeNotifier {
       _codeHighlightEnabled = reads[13] != 'false';
       _showOtherComputers = reads[18] == 'true';
       _fabMenuHintShown = reads[19] == 'true';
+      _dualPaneCollapsed = reads[20] == 'true';
       try {
         final qr = reads[14];
         if (qr != null && qr.isNotEmpty) {
@@ -336,6 +343,16 @@ class UiPrefs extends ChangeNotifier {
   }
   Set<String> get homeCollapsedGroups =>
       Set.unmodifiable(_homeCollapsedGroups);
+
+  /// 双栏左栏收起态（本机界面偏好，跨会话记忆）。
+  bool get dualPaneCollapsed => _dualPaneCollapsed;
+
+  Future<void> setDualPaneCollapsed(bool value) async {
+    if (_dualPaneCollapsed == value) return;
+    _dualPaneCollapsed = value;
+    notifyListeners();
+    await _persist(_keyDualPaneCollapsed, value ? 'true' : 'false');
+  }
 
   /// 自动采纳开关（下发副作用由调用方处理——设置页直发 CLI）。
   Future<void> setAskAutoResolutionEnabled(bool value) async {

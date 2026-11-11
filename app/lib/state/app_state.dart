@@ -27,6 +27,7 @@ import 'notify_store.dart';
 import 'profile_store.dart';
 import 'task_list.dart';
 import 'ui_prefs.dart';
+import '../core/system_inset.dart';
 import '../core/l10n.dart' show L10n, tr;
 
 export 'link_phase.dart';
@@ -205,8 +206,8 @@ class AppState extends ChangeNotifier {
       _log('dispose stacks for account failed (contained): $e');
     }
     notifyListeners();
-    // 乙：绕过 _onStackChanged 的话常驻通知（审批提醒 FGS）不会
-    // 刷新——拆完全部栈后仍显示"已连接 · N 个任务运行中"。补一次。
+    // 绕过 _onStackChanged 时常驻通知（审批提醒 FGS）不会刷新——
+    // 拆完全部栈后仍显示"已连接 · N 个任务运行中"，此处补一次。
     _updateForegroundText();
   }
 
@@ -1844,6 +1845,9 @@ class AppState extends ChangeNotifier {
   void onAppResumed() {
     _appInBackground = false;
     _lifecycleGen++;
+    // 回前台重拉底部安全区——任务栏开关后回 app 的值跟随
+    // （listener 推送与首帧重试之外的第三重保险）。
+    unawaited(refreshSystemInset());
     _bgDisconnectTimer?.cancel();
     _bgDisconnectTimer = null;
     // 掉线对账收尾（状态层批）：摘后台监听；仍不在线的候选补记对账水位

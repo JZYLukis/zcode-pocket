@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.Build
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
@@ -96,6 +97,20 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // 底部安全区直推：部分厂商 ROM（如 vivo OriginOS 折叠屏展开态）
+        // 的系统任务栏在 rootWindowInsets 正常上报，但 Flutter 的
+        // MediaQuery.viewPadding 拿到 0（透传断裂）——原生监听 insets 变化
+        // 把 bottom（systemBars∪navBars∪cutout 最大值，逻辑 dp）实时推
+        // Dart（system_inset.dart 接收），任务栏开/关实时跟随；返回原
+        // insets 不消费（不改变窗口默认行为）。
+        val notifyChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "companion/notify",
+        )
+        window.decorView.setOnApplyWindowInsetsListener { _, insets ->
+            notifyChannel.invokeMethod("systemInsetChanged", bottomSystemInsetDp(insets))
+            insets
+        }
         // 系统语音识别通道（2026-10-28 语音泛用批）：标准 SpeechRecognizer
         // 无界面流式接线（companion/sys_asr）。
         SystemAsrPlugin.bind(flutterEngine, this)
@@ -270,8 +285,16 @@ class MainActivity : FlutterActivity() {
                             result.error("fg_update_failed", e.message, null)
                         }
                     }
-                    // 华为引导页三层兜底（phase3-notify-design 华为专项）：
-                    // ①已知组件名直跳启动管理 → ②应用详情页 → ③图文指引
+                    // Dart 就绪后主动拉一次当前底部安全区——listener 是
+                    // 变化驱动，任务栏常驻无变化时首次推送可能落在 Dart
+                    // 就绪前丢失。
+                    "currentSystemInset" ->
+                        result.success(bottomSystemInsetDp(window.decorView.rootWindowInsets))
+                    // 厂商原始串回传：Dart 侧规范化出档位并切换引导文案
+                    //（oem_vendor.dart）——原生只透传，两端唯一真值在 Dart（可测）。
+                    "manufacturer" -> result.success(Build.MANUFACTURER ?: "")
+                    // 引导页三层兜底（按厂商出候选）：
+                    // ①本厂商已知组件名直跳 → ②应用详情页 → ③图文指引
                     "openStartupManage" -> {
                         val jumped = tryJumpStartupManage()
                         if (jumped) {
@@ -334,9 +357,36 @@ class MainActivity : FlutterActivity() {
             }
     }
 
-    /// 已知启动管理组件名依次尝试（华为组件名随系统版本漂移——三层兜底第 1 层）。
-    private fun tryJumpStartupManage(): Boolean {
-        val candidates = listOf(
+    /// 底部安全区（systemBars∪navBars∪cutout 最大值，逻辑 dp）——
+    /// listener 推送与 Dart 主动拉取共用同款计算。
+    private fun bottomSystemInsetDp(insets: android.view.WindowInsets?): Float {
+        if (insets == null) return 0f
+        // WindowInsets.Type/getInsets 是 API 30+——minSdk 24（Android 7）
+        // 老设备走 deprecated 兼容取值（systemWindowInsetBottom 自 API 20；
+        // displayCutout 自 API 28，更低版本无刘海屏可视为 0）。
+        if (Build.VERSION.SDK_INT < 30) {
+            @Suppress("DEPRECATION")
+            val navBottom = insets.systemWindowInsetBottom
+            val cutBottom = if (Build.VERSION.SDK_INT >= 28) {
+                insets.displayCutout?.safeInsetBottom ?: 0
+            } else {
+                0
+            }
+            return maxOf(navBottom, cutBottom) / resources.displayMetrics.density
+        }
+        val sb = insets.getInsets(android.view.WindowInsets.Type.systemBars())
+        val nb = insets.getInsets(android.view.WindowInsets.Type.navigationBars())
+        val cut = insets.getInsets(android.view.WindowInsets.Type.displayCutout())
+        return maxOf(sb.bottom, nb.bottom, cut.bottom) / resources.displayMetrics.density
+    }
+
+    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层）。
+    /// 按 Build.MANUFACTURER 选表——其他厂商的包必不在本机，跨厂商尝试
+    /// 无意义；未知厂商（三星等无此类页面的品牌）返回空表直接走详情页兜底。
+    /// 组件名随系统版本漂移，故每厂按新旧顺序多给几个。
+    private fun startupManageCandidates(): List<ComponentName> {
+        val m = (Build.MANUFACTURER ?: "").lowercase()
+        val huawei = listOf(
             ComponentName(
                 "com.huawei.systemmanager",
                 "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
@@ -350,7 +400,61 @@ class MainActivity : FlutterActivity() {
                 "com.huawei.systemmanager.optimize.process.ProtectActivity",
             ),
         )
-        for (component in candidates) {
+        return when {
+            m.contains("huawei") -> huawei
+            // 荣耀分家后走 hihonor 包，老机型（MagicOS 早期及以前）仍是华为
+            // 手机管家——hihonor 候选失败后追加华为表兜底。
+            m.contains("honor") -> listOf(
+                ComponentName(
+                    "com.hihonor.systemmanager",
+                    "com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                ),
+                ComponentName(
+                    "com.hihonor.systemmanager",
+                    "com.hihonor.systemmanager.appcontrol.activity.StartupAppControlActivity",
+                ),
+            ) + huawei
+            m.contains("vivo") || m.contains("iqoo") -> listOf(
+                ComponentName(
+                    "com.vivo.permissionmanager",
+                    "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+                ),
+                ComponentName(
+                    "com.iqoo.secure",
+                    "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager",
+                ),
+                ComponentName(
+                    "com.iqoo.secure",
+                    "com.iqoo.secure.safeguard.PurviewTabActivity",
+                ),
+            )
+            m.contains("xiaomi") || m.contains("redmi") || m.contains("poco") -> listOf(
+                ComponentName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.autostart.AutoStartManagementActivity",
+                ),
+            )
+            m.contains("oppo") || m.contains("oneplus") || m.contains("realme") -> listOf(
+                ComponentName(
+                    "com.coloros.safecenter",
+                    "com.coloros.safecenter.permission.startup.StartupAppListActivity",
+                ),
+                ComponentName(
+                    "com.coloros.safecenter",
+                    "com.coloros.safecenter.startupapp.StartupAppListActivity",
+                ),
+                ComponentName(
+                    "com.oppo.safe",
+                    "com.oppo.safe.permission.startup.StartupAppListActivity",
+                ),
+            )
+            else -> emptyList()
+        }
+    }
+
+    /// 依次尝试候选组件直跳（Activity 不在场/被禁则试下一个）。
+    private fun tryJumpStartupManage(): Boolean {
+        for (component in startupManageCandidates()) {
             try {
                 val intent = Intent()
                     .setComponent(component)

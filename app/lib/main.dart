@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show FlutterError;
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart' show MethodChannel;
+import 'core/system_inset.dart';
 import 'core/localized_text.dart';
 import 'core/system_asr.dart';
 
@@ -120,6 +121,9 @@ void main() {
   // 通道调用须在绑定初始化之后（冒烟实证：runApp 前裸调 invokeMethod
   // 抛 Binding has not yet been initialized，探测失效）。
   WidgetsFlutterBinding.ensureInitialized();
+  // 底部安全区原生直推（厂商 ROM MediaQuery 透传断裂的兜底，
+  // 详见 core/system_inset.dart 头注）。
+  initSystemInsetBridge();
   _installForensicProbes();
   debugPrint('[perf] main_start');
   // 帧看门狗（扫码黑屏根治层 3）：相机纹理销毁后
@@ -158,4 +162,8 @@ void main() {
         ? ZcodeCompanionApp(app: DemoAppState())
         : const ZcodeCompanionApp(),
   );
+  // 首帧后重试一次直推拉取——main 时点的拉取可能撞上 Activity 窗口
+  // 尚未 attach（rootWindowInsets=0），或 listener 首推早于 Dart handler
+  // 注册（消息丢弃）；首帧时窗口必已 attach。
+  WidgetsBinding.instance.addPostFrameCallback((_) => refreshSystemInset());
 }

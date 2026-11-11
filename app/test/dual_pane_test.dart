@@ -209,8 +209,8 @@ void main() {
         reason: '跨区切换已落地');
     final conv = find.byType(ConversationPage);
     expect(conv, findsOneWidget, reason: '切换完成后右栏会话保持');
-    expect(tester.getTopLeft(conv).dx, greaterThan(paneWidthOf(840)),
-        reason: '会话在右栏（不是空态，也不是整页推入）');
+    expect(tester.getTopLeft(conv).dx, closeTo(paneWidthOf(840), 1),
+        reason: '会话在右栏（起点=左栏+把手总宽）');
   });
 
   testWidgets('宽屏无 FAB 防遮输入栏；新建入口=左栏「新建任务」行（验收②）', (
@@ -421,5 +421,129 @@ void main() {
     expect(conv, findsOneWidget);
     final convDx = tester.getTopLeft(conv).dx;
     expect(convDx, lessThan(10), reason: '整页推入（左上角贴边）');
+  });
+
+  // ---- 宽屏整栏收起/展开 + 任务栏 inset 自适应 ----
+  //（折叠屏反馈：需要整栏收起选项；系统任务栏会遮列表末项）
+
+  testWidgets('整栏收起/展开：收起钮在「最近/项目」行尾，收起后左缘展开把手', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(840, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final app = _DualPaneApp();
+    await _pump(tester, app);
+
+    // r4：收起钮宽屏恒在（空态也可收起——收起态空态=全宽引导+左缘
+    // 把手展开；撤自动展开消除闪变）。
+    expect(find.byKey(const ValueKey('toggle-pane-expanded')), findsOneWidget);
+
+    await tester.tap(find.text('示例任务').first);
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(ConversationPage), findsOneWidget);
+    // 诊断
+
+
+    // 有会话：收起钮在左栏「最近/项目」分段行尾（⋮ 右侧，用户反馈③：
+    // 按钮在左栏顶部且不占列表空间）。
+    final collapse = find.byKey(const ValueKey('toggle-pane-expanded'));
+    expect(collapse, findsOneWidget);
+    final btnDx = tester.getTopLeft(collapse).dx;
+    expect(btnDx, lessThan(paneWidthOf(840)),
+        reason: '收起钮在左栏区域内（分段行尾）');
+    expect(btnDx, greaterThan(paneWidthOf(840) - 120),
+        reason: '收起钮靠近左栏右缘（⋮ 右侧）');
+
+    await tester.tap(collapse);
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+        reason: '左栏收起后任务行不可见');
+    expect(find.byType(ConversationPage), findsOneWidget,
+        reason: '会话保持在右栏');
+    expect(tester.getTopLeft(find.byType(ConversationPage)).dx, closeTo(36, 1),
+        reason: '收起后会话页起点=左缘把手右侧（36dp）');
+
+    // 收起态：左缘展开把手；点按恢复左栏。
+    final expand = find.byKey(const ValueKey('toggle-pane-collapsed'));
+    expect(expand, findsOneWidget);
+    expect(tester.getTopLeft(expand).dx, lessThan(2),
+        reason: '展开把手贴屏幕左缘');
+    await tester.tap(expand);
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsOneWidget,
+        reason: '展开后左栏任务行回来');
+    expect(tester.getTopLeft(find.byType(ConversationPage)).dx,
+        greaterThan(paneWidthOf(840)),
+        reason: '会话页回到右栏起点');
+  });
+
+  testWidgets('收起态下返回清选中：右栏收起+保持收起（r4 撤自动展开）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(840, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final app = _DualPaneApp();
+    await _pump(tester, app);
+    await tester.tap(find.text('示例任务').first);
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.tap(find.byKey(const ValueKey('toggle-pane-expanded')));
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+        reason: '已收起');
+
+    // 系统返回 → PopScope 清选中 → 空态 + 收起 → postFrame 自动展开左栏。
+    final dynamic widgetsBinding = WidgetsBinding.instance;
+    await widgetsBinding.handlePopRoute();
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(ConversationPage), findsNothing, reason: '右栏收回');
+    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+        reason: 'r4：空态保持收起（左缘把手负责展开）');
+  });
+
+  testWidgets('任务栏 inset 自适应：列表底部=88+系统安全区（vivo 任务栏遮挡修复）',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(840, 800));
+    addTearDown(() {
+      tester.view.padding = FakeViewPadding.zero;
+      return tester.binding.setSurfaceSize(null);
+    });
+    // 模拟系统任务栏在场（OriginOS 展开态把任务栏高度作为 bottom inset
+    // 下发）：列表尾部留白应=88+80=168；任务栏关闭（inset 缩回）时=88。
+    // FakeViewPadding 单位=物理像素（MediaQuery 侧按 dpr 折算成逻辑）。
+    final dpr = tester.view.devicePixelRatio;
+    tester.view.padding = FakeViewPadding(bottom: 80.0 * dpr);
+    // r2 改读 viewPadding（padding 可能被父级消费）——两者都设。
+    tester.view.viewPadding = FakeViewPadding(bottom: 80.0 * dpr);
+    final app = _DualPaneApp();
+    await _pump(tester, app);
+
+    final list = tester.widget<ListView>(
+      find.descendant(
+        of: find.byKey(const ValueKey('dual-pane-root')),
+        matching: find.byType(ListView),
+      ).first,
+    );
+    expect(list.padding?.resolve(TextDirection.ltr).bottom, 168,
+        reason: '任务栏开着：让开其高度（88 滚动尾巴+80 系统安全区）');
+
+    tester.view.padding = FakeViewPadding.zero;
+    tester.view.viewPadding = FakeViewPadding.zero;
+    await _pump(tester, app);
+    final listNoBar = tester.widget<ListView>(
+      find.descendant(
+        of: find.byKey(const ValueKey('dual-pane-root')),
+        matching: find.byType(ListView),
+      ).first,
+    );
+    expect(listNoBar.padding?.resolve(TextDirection.ltr).bottom, 88,
+        reason: '任务栏关闭：inset 缩回，内容铺到边缘');
   });
 }

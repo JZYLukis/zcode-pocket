@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart' hide Text;
@@ -10,6 +11,7 @@ import 'package:flutter/services.dart';
 
 import '../core/breakpoints.dart';
 import '../core/payload_guard.dart' show intOf;
+import '../core/system_inset.dart';
 import '../core/theme.dart';
 import 'workflow_dashboards.dart' show workflowRunStatusWord;
 import '../state/app_state.dart';
@@ -73,9 +75,21 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   // 窄左栏任务列表+右侧大任务窗口）----
   /// 双栏右栏选中（sessionId null=新建草稿页）。workspaceKey 用于切换
   /// 工作区后自动失效（旧工作区的会话不再占据右栏）。
-  ({String? sessionId, String title, String workspaceKey,
-      String? waitForWorkspace, int? deepLinkAtMs})? _paneSelection;
+  ({
+    String? sessionId,
+    String title,
+    String workspaceKey,
+    String? waitForWorkspace,
+    int? deepLinkAtMs,
+  })?
+  _paneSelection;
   bool _wideLayout = false;
+
+  /// 宽屏双栏左栏收起态（折叠屏用户反馈需要整栏收起/展开）。
+  /// UiPrefs 持久化跨会话记忆；右栏无选中（空态）时保持收起
+  /// （收起只为专注看会话）。
+  bool _paneCollapsed = false;
+  bool _paneCollapsedSeeded = false;
 
   // ---- 批量操作（优化批 #22）：多选归档/标已读/删除 ----
   // 状态放页面级而非 _TaskHomeView：搜索时首页视图会被结果列表替换，
@@ -336,6 +350,48 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 收起态从 UiPrefs 预填（首帧同步 seed，避免展开→收起闪烁）。
+    if (!_paneCollapsedSeeded) {
+      _paneCollapsedSeeded = true;
+      _paneCollapsed = AppStateScope.of(context).uiPrefs.dualPaneCollapsed;
+    }
+  }
+
+  /// 切换左栏收起/展开（持久化）。
+  void _togglePaneCollapsed() {
+    setState(() => _paneCollapsed = !_paneCollapsed);
+    AppStateScope.of(context).uiPrefs.setDualPaneCollapsed(_paneCollapsed);
+  }
+
+  /// 收起态左缘展开把手（36dp，右缘 1px 线兼作与右栏的分界——
+  /// 收起态无左栏内容，不占任何空间；展开态收起钮在「最近/项目」行尾）。
+  Widget _paneHandle(BuildContext context) {
+    return SizedBox(
+      width: 36,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const ValueKey('toggle-pane-collapsed'),
+          onTap: _togglePaneCollapsed,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: context.colors.border)),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.keyboard_double_arrow_right,
+              size: 18,
+              color: context.colors.foregroundSubtle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ---- 任务全文搜索（：官方 listTaskList，标题+对话正文）----
   Timer? _searchDebounce;
   int _searchSeq = 0;
@@ -462,7 +518,8 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     // 与订阅都会打在错误的工作区上）。从全局任务索引（workspaceTasks）
     // 与项目树任务行（projectTasks）反查行，走跨工作区打开链（先切回
     // 所属工作区再订阅）。
-    final row = app.workspaceTasks
+    final row =
+        app.workspaceTasks
             .where((t) => '${t['taskId'] ?? ''}' == target.taskId)
             .firstOrNull ??
         app.projectTasks
@@ -477,15 +534,18 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     // 提示并清掉深链残留，防之后的会话页误弹深链浮层。
     app.clearPendingDeepLink();
     _closeSearch();
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      const SnackBar(content: Text('该任务不在当前工作区，可能已被移除')),
-    );
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(const SnackBar(content: Text('该任务不在当前工作区，可能已被移除')));
   }
 
   /// 统一会话打开路由（6.5 双栏）：宽屏（≥600dp，展开态/平板）=右栏
   /// 就地选中（不跳页）；窄屏=推入整页（原行为）。
-  void _openConversation(String? sessionId, String title,
-      {String? waitForWorkspace, int? deepLinkAtMs}) {
+  void _openConversation(
+    String? sessionId,
+    String title, {
+    String? waitForWorkspace,
+    int? deepLinkAtMs,
+  }) {
     if (!_wideLayout) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -555,8 +615,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       context,
       taskHomeEntry(task),
       // 选择集携带行级工作区键：跨区任务/搜索行的批量操作按行归属执行。
-      onEnterMultiSelect: (id) =>
-          _enterMultiSelect(id, taskWorkspaceKey(task)),
+      onEnterMultiSelect: (id) => _enterMultiSelect(id, taskWorkspaceKey(task)),
       ensureContext: () => _ensureTaskContext(task),
     );
   }
@@ -580,7 +639,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
           ?.showSnackBar(const SnackBar(content: Text('该电脑还在重连，稍后从列表点开')));
       return;
     }
-    app.markTaskRead(entry.sessionId); // 打开即已读（best-effort；卡片无 unreadAt 字段不带 CAS）
+    app.markTaskRead(
+      entry.sessionId,
+    ); // 打开即已读（best-effort；卡片无 unreadAt 字段不带 CAS）
     _closeSearch(); // 进入会话即收起搜索；返回首页不残留旧查询/键盘态。
     _openConversation(entry.sessionId, entry.title);
   }
@@ -589,8 +650,10 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   /// 任务索引就绪）→ 打开会话。：目标不在当前 tabs 时依次回退
   /// 项目归属（project intent）→ 任务 intent（未归类/无项目任务兜底，
   /// 官方手机壳打开侧栏任务同路径）。导航期间保留当前首页，不闪连接中。
-  Future<void> _openCrossWorkspaceTask(Map<String, dynamic> task,
-      {int? deepLinkAtMs}) async {
+  Future<void> _openCrossWorkspaceTask(
+    Map<String, dynamic> task, {
+    int? deepLinkAtMs,
+  }) async {
     if (_taskNavigationPending) return;
     setState(() => _taskNavigationPending = true);
     final app = AppStateScope.of(context);
@@ -603,9 +666,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     final taskId = '${task['taskId'] ?? ''}';
     if (ws == null && project == null && taskId.isEmpty) {
       setState(() => _taskNavigationPending = false);
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        const SnackBar(content: Text('找不到该任务所属的工作区，可能已被桌面端移除')),
-      );
+      ScaffoldMessenger.maybeOf(
+        context,
+      )?.showSnackBar(const SnackBar(content: Text('找不到该任务所属的工作区，可能已被桌面端移除')));
       return;
     }
     // 1.0.1 真机验收⑤A（用户拍板拆两段：点卡瞬间进会话页转圈，后台
@@ -789,6 +852,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
             homeNow: widget.homeNow,
             holdForTaskNavigation: _taskNavigationPending,
             compact: _wideLayout,
+            // r3：宽屏收起钮（分段行尾）；空态禁用条件沿用（null=不渲染）。
+            onPaneCollapse:
+                _wideLayout ? _togglePaneCollapsed : null,
             // 验收反馈①：新建任务行随列表渲染（分组之下），搜索期隐藏。
             showNewTaskNav: _wideLayout && _searchQuery.isEmpty && !_searchOpen,
             selectedSessionId: _paneSelection?.sessionId,
@@ -877,7 +943,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
               title: app.activeAccountLabel == null
                   ? (app.activeProfile?.label ?? 'ZCode Companion')
                   : '${app.activeProfile?.label ?? 'ZCode Companion'} · '
-                      '${app.activeAccountLabel}',
+                        '${app.activeAccountLabel}',
               subtitle: '任务主页',
               onTitleTap: () => showProfilesSheet(context),
               onRefresh: app.refreshWorkspaces,
@@ -913,14 +979,21 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
                 : Row(
                     key: const ValueKey('dual-pane-root'),
                     children: [
-                      // 仿桌面端布局（用户 2026-10-29 拍板）：左栏窄
-                      // （任务列表不占太多空间），右侧大任务窗口。
-                      SizedBox(width: paneWidth, child: homeColumn),
-                      VerticalDivider(
-                        width: 1,
-                        thickness: 1,
-                        color: context.colors.border,
-                      ),
+                      // r3（用户反馈：36dp 分界把手挤占左栏内容）：撤展开态
+                      // 把手恢复全宽左栏+divider，收起钮移「最近/项目」行
+                      // 尾（_TaskHomeView.onPaneCollapse）；收起态=左缘
+                      // 展开把手（不占任何内容空间）。
+                      if (!_paneCollapsed) ...[
+                        // 仿桌面端布局（用户 2026-10-29 拍板）：左栏窄
+                        // （任务列表不占太多空间），右侧大任务窗口。
+                        SizedBox(width: paneWidth, child: homeColumn),
+                        VerticalDivider(
+                          width: 1,
+                          thickness: 1,
+                          color: context.colors.border,
+                        ),
+                      ] else
+                        _paneHandle(context),
                       Expanded(child: _dualPaneRight(app)),
                     ],
                   ),
@@ -934,8 +1007,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   /// 中自动失效回空态）；空态给引导提示。
   Widget _dualPaneRight(AppState app) {
     final sel = _paneSelection;
-    final currentKey =
-        workspaceKeyOf(app.activeWorkspace ?? const {}) ?? '';
+    final currentKey = workspaceKeyOf(app.activeWorkspace ?? const {}) ?? '';
     // 对抗审查高①：跨工作区打开是「先设选中→await 切工作区」两段式——
     // 切换窗口内 sel.workspaceKey 是目标键、activeWorkspace 仍是旧键，
     // 若按「键不等」判失效会在窗口内 post-frame 清空选中（切换完成后
@@ -978,6 +1050,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       });
     }
     if (!valid) {
+      // r4：撤空态自动展开——收起后清空选中（返回键/失效）保持收起
+      // （全宽空态引导+左缘把手展开）。原自动展开与"空态禁用收起钮"
+      // 互为打架源（真机闪变实证），简化为恒可用恒稳定。
       return const _DualPaneEmpty();
     }
     return ConversationPage(
@@ -1476,7 +1551,8 @@ class _TaskHomeView extends StatefulWidget {
   // _TaskCenterPageState 注释）----
   final bool multiSelectMode;
   final Set<String> selectedTaskIds;
-  final void Function(String taskId, String? workspaceKey)? onToggleTaskSelected;
+  final void Function(String taskId, String? workspaceKey)?
+  onToggleTaskSelected;
 
   /// 长按菜单「选择任务」入口（页面级 _enterMultiSelect）。
   final void Function(String taskId)? onEnterMultiSelect;
@@ -1498,6 +1574,9 @@ class _TaskHomeView extends StatefulWidget {
   /// 长按任务菜单（页面级实现：ensureContext 归属护栏+多选入口）。
   final void Function(Map<String, dynamic> task)? onLongPress;
 
+  /// r3：宽屏收起钮回调（「最近/项目」行尾渲染；null=窄屏不渲染）。
+  final VoidCallback? onPaneCollapse;
+
   const _TaskHomeView({
     required this.onOpen,
     this.now,
@@ -1516,6 +1595,8 @@ class _TaskHomeView extends StatefulWidget {
     required this.fullyExpandedGroups,
     required this.onProgressChanged,
     this.onLongPress,
+    // 收起钮在「最近/项目」分段行尾（⋮ 右侧），宽屏恒可用。
+    this.onPaneCollapse,
   });
 
   @override
@@ -1633,8 +1714,9 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
       final sigNow = _otherComputers
           ?.map((e) => '${e.profile.deviceSid}@${e.entry.savedAt}')
           .join('|');
-      final sigNext =
-          out.map((e) => '${e.profile.deviceSid}@${e.entry.savedAt}').join('|');
+      final sigNext = out
+          .map((e) => '${e.profile.deviceSid}@${e.entry.savedAt}')
+          .join('|');
       if (sigNow != sigNext) setState(() => _otherComputers = out);
     }());
   }
@@ -1654,6 +1736,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
       if (d.inDays < 1) return tr('${d.inHours} 小时前');
       return tr('${d.inDays} 天前');
     }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1696,8 +1779,11 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
               child: Row(
                 children: [
-                  Icon(Icons.computer, size: 13,
-                      color: context.colors.foregroundSubtle),
+                  Icon(
+                    Icons.computer,
+                    size: 13,
+                    color: context.colors.foregroundSubtle,
+                  ),
                   const SizedBox(width: 5),
                   Flexible(
                     child: Text(
@@ -1747,9 +1833,8 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
     } catch (_) {
       // （批3）：静默失败=点了没反应——给人话提示。
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('切换电脑失败，请重试'))),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('切换电脑失败，请重试'))));
       }
       return;
     }
@@ -1839,6 +1924,16 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
               PopupMenuItem(value: 'archived', child: Text('已归档的任务')),
             ],
           ),
+          // r3（用户反馈：把手占左栏宽度不可取，按钮应在「最近/项目」行
+          // 右侧）：宽屏收起钮放 ⋮ 旁——不占列表空间，操作发生在左栏顶部。
+          if (widget.onPaneCollapse != null)
+            IconButton(
+              key: const ValueKey('toggle-pane-expanded'),
+              tooltip: tr('收起任务列表'),
+              icon: const Icon(Icons.keyboard_double_arrow_left, size: 20),
+              visualDensity: VisualDensity.compact,
+              onPressed: widget.onPaneCollapse,
+            ),
         ],
       ),
     );
@@ -1955,193 +2050,214 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
       // 标签此前只在下一次数据 notify 才重算，停留期间不刷新（搜索路径
       // 既有同款先例）。
       child: _MinuteTicker(
-        builder: (context) => ListView.builder(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 88),
-          // 批4：尾部两个附加区——其他电脑聚合（开关开且有缓存才占位）
-          // 与「新建任务」行。
-          itemCount: items.length +
-              (widget.showNewTaskNav ? 1 : 0) +
-              1,
-          itemBuilder: (context, index) {
-            // 批4：聚合区固定在最后（新建行之上）。
-            if (index == items.length + (widget.showNewTaskNav ? 1 : 0)) {
-              return KeyedSubtree(
-              key: const ValueKey('home-other-computers'),
-              child: _buildOtherComputers(app),
-            );
-            }
-            // 列表尾「新建任务」行（验收反馈①：最新/项目分组之下）。
-            if (index == items.length) {
-              return KeyedSubtree(
-              key: const ValueKey('home-new-task'),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: _newTaskNavRow(),
-              ),
-            );
-            }
-            final item = items[index];
-            switch (item.kind) {
-              case TaskHomeItemKind.section:
-                // 2026-11-05 反馈②B：条目稳定 key——转场期间数据帧重排
-                // 时同 id 条目元素复用（防重挂=动画重启/闪烁观感）。
+        // 原生直推值变化（任务栏开关/折叠展开）即时重建列表尾部留白。
+        builder: (context) => ValueListenableBuilder<double>(
+          valueListenable: systemInsetBottomDp,
+          builder: (context, nativeBottom, _) => ListView.builder(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const AlwaysScrollableScrollPhysics(),
+            // 任务栏 inset 自适应：底部=滚动尾巴 88 +
+            // max(MediaQuery.viewPadding, 原生直推值)。部分厂商 ROM 的
+            // 任务栏高度在原生层正常上报但 MediaQuery 透传断裂（读到 0），
+            // 故由原生监听 insets 变化直推 dp 值（system_inset.dart），
+            // 任务栏开/关实时跟随；键盘不掺入（多留部分在键盘后不可见）。
+padding: EdgeInsets.only(
+              bottom:
+                  88 +
+                  math.max(
+                    MediaQuery.of(context).viewPadding.bottom,
+                    nativeBottom,
+                  ),
+            ),
+            // 批4：尾部两个附加区——其他电脑聚合（开关开且有缓存才占位）
+            // 与「新建任务」行。
+            itemCount: items.length + (widget.showNewTaskNav ? 1 : 0) + 1,
+            itemBuilder: (context, index) {
+              // 批4：聚合区固定在最后（新建行之上）。
+              if (index == items.length + (widget.showNewTaskNav ? 1 : 0)) {
                 return KeyedSubtree(
-                  key: ValueKey('home-section-${item.key}'),
+                  key: const ValueKey('home-other-computers'),
+                  child: _buildOtherComputers(app),
+                );
+              }
+              // 列表尾「新建任务」行（验收反馈①：最新/项目分组之下）。
+              if (index == items.length) {
+                return KeyedSubtree(
+                  key: const ValueKey('home-new-task'),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      item.key == 'section:pinned' ? 4 : 16,
-                      16,
-                      6,
-                    ),
-                    child: Text(
-                      // 标题先 tr 再拼数量（整串无 exact/
-                      // pattern 命中=英文界面残留）。
-                      '${tr(item.title)} ${item.count}',
-                      style: TextStyle(
-                        fontSize: AppType.uiCaption,
-                        fontWeight: FontWeight.w500,
-                        color: context.colors.foregroundSubtle,
+                    padding: const EdgeInsets.only(top: 12),
+                    child: _newTaskNavRow(),
+                  ),
+                );
+              }
+              final item = items[index];
+              switch (item.kind) {
+                case TaskHomeItemKind.section:
+                  // 2026-11-05 反馈②B：条目稳定 key——转场期间数据帧重排
+                  // 时同 id 条目元素复用（防重挂=动画重启/闪烁观感）。
+                  return KeyedSubtree(
+                    key: ValueKey('home-section-${item.key}'),
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        item.key == 'section:pinned' ? 4 : 16,
+                        16,
+                        6,
+                      ),
+                      child: Text(
+                        // 标题先 tr 再拼数量（整串无 exact/
+                        // pattern 命中=英文界面残留）。
+                        '${tr(item.title)} ${item.count}',
+                        style: TextStyle(
+                          fontSize: AppType.uiCaption,
+                          fontWeight: FontWeight.w500,
+                          color: context.colors.foregroundSubtle,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              case TaskHomeItemKind.group:
-                return KeyedSubtree(
-                  key: ValueKey('home-group-${item.groupKey}'),
-                  child: _HomeGroupHeader(
-                    item: item,
-                    onTap: () => setState(() {
-                      final key = item.groupKey!;
-                      final collapse = !_collapsedGroups.contains(key);
-                      if (collapse) {
-                        _collapsedGroups.add(key);
-                      } else {
-                        _collapsedGroups.remove(key);
-                      }
-                      AppStateScope.of(context).uiPrefs
-                          .setHomeGroupCollapsed(key, collapse);
-                    }),
-                  ),
-                );
-              case TaskHomeItemKind.task:
-                if (widget.compact) {
-                  final rowTaskId = '${item.task!['taskId']}';
+                  );
+                case TaskHomeItemKind.group:
                   return KeyedSubtree(
-                    key: ValueKey('home-task-$rowTaskId'),
-                    child: _CompactTaskRow.fromCross(
-                      task: item.task!,
-                      now: widget.now,
-                      selectedSessionId: widget.selectedSessionId,
-                      onTap: widget.onOpen,
-                      onLongPress: widget.onLongPress,
-                      multiSelectMode: widget.multiSelectMode,
-                      multiSelected: widget.selectedTaskIds.contains(rowTaskId),
-                      onToggleSelect: widget.onToggleTaskSelected == null
-                          ? null
-                          : () => widget.onToggleTaskSelected!(
+                    key: ValueKey('home-group-${item.groupKey}'),
+                    child: _HomeGroupHeader(
+                      item: item,
+                      onTap: () => setState(() {
+                        final key = item.groupKey!;
+                        final collapse = !_collapsedGroups.contains(key);
+                        if (collapse) {
+                          _collapsedGroups.add(key);
+                        } else {
+                          _collapsedGroups.remove(key);
+                        }
+                        AppStateScope.of(context).uiPrefs
+                            .setHomeGroupCollapsed(key, collapse);
+                      }),
+                    ),
+                  );
+                case TaskHomeItemKind.task:
+                  if (widget.compact) {
+                    final rowTaskId = '${item.task!['taskId']}';
+                    return KeyedSubtree(
+                      key: ValueKey('home-task-$rowTaskId'),
+                      child: _CompactTaskRow.fromCross(
+                        task: item.task!,
+                        now: widget.now,
+                        selectedSessionId: widget.selectedSessionId,
+                        onTap: widget.onOpen,
+                        onLongPress: widget.onLongPress,
+                        multiSelectMode: widget.multiSelectMode,
+                        multiSelected: widget.selectedTaskIds.contains(
+                          rowTaskId,
+                        ),
+                        onToggleSelect: widget.onToggleTaskSelected == null
+                            ? null
+                            : () => widget.onToggleTaskSelected!(
                                 rowTaskId,
                                 taskWorkspaceKey(item.task!),
                               ),
+                      ),
+                    );
+                  }
+                  return KeyedSubtree(
+                    key: ValueKey('home-task-${item.task!['taskId']}'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: _CrossTaskCard(
+                        task: item.task!,
+                        onOpen: widget.onOpen,
+                        showWorkspaceLabel: widget.mode == TaskHomeMode.recent,
+                        now: widget.now,
+                        onLongPress: widget.onLongPress,
+                        multiSelectMode: widget.multiSelectMode,
+                        multiSelected: widget.selectedTaskIds.contains(
+                          '${item.task!['taskId']}',
+                        ),
+                        onToggleSelect: widget.onToggleTaskSelected,
+                      ),
                     ),
                   );
-                }
-                return KeyedSubtree(
-                  key: ValueKey('home-task-${item.task!['taskId']}'),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: _CrossTaskCard(
-                      task: item.task!,
-                      onOpen: widget.onOpen,
-                      showWorkspaceLabel: widget.mode == TaskHomeMode.recent,
-                      now: widget.now,
-                      onLongPress: widget.onLongPress,
-                      multiSelectMode: widget.multiSelectMode,
-                      multiSelected: widget.selectedTaskIds.contains(
-                        '${item.task!['taskId']}',
-                      ),
-                      onToggleSelect: widget.onToggleTaskSelected,
-                    ),
-                  ),
-                );
-              case TaskHomeItemKind.more:
-                final key = item.groupKey!;
-                // 紧凑档（fold-dual-pane-2）：官方桌面「显示更多」=低灰文字
-                // 链——窄栏里品牌色实心钮视觉过重。
-                // 优化批 #13：默认档组感知（项目组 3/最近视图时间桶 5），
-                // 与 buildTaskHomeItems 的 _resolveGroupVisible 同口径。
-                // 计数/全展集合为页面级（widget 字段），
-                // 变异后经 onProgressChanged 重建。
-                void showMore() {
-                  final counts = widget.groupVisibleCounts;
-                  final fully = widget.fullyExpandedGroups;
-                  final base = counts[key] ?? taskHomeGroupDefaultVisible(key);
-                  if (base < 0) {
-                    // 近四日全展档正常不产 more 项，防御性兜底=全展。
-                    fully.add(key);
-                  } else if (item.count > 5) {
-                    counts[key] = base + 5;
-                  } else {
-                    fully.add(key);
+                case TaskHomeItemKind.more:
+                  final key = item.groupKey!;
+                  // 紧凑档（fold-dual-pane-2）：官方桌面「显示更多」=低灰文字
+                  // 链——窄栏里品牌色实心钮视觉过重。
+                  // 优化批 #13：默认档组感知（项目组 3/最近视图时间桶 5），
+                  // 与 buildTaskHomeItems 的 _resolveGroupVisible 同口径。
+                  // 计数/全展集合为页面级（widget 字段），
+                  // 变异后经 onProgressChanged 重建。
+                  void showMore() {
+                    final counts = widget.groupVisibleCounts;
+                    final fully = widget.fullyExpandedGroups;
+                    final base =
+                        counts[key] ?? taskHomeGroupDefaultVisible(key);
+                    if (base < 0) {
+                      // 近四日全展档正常不产 more 项，防御性兜底=全展。
+                      fully.add(key);
+                    } else if (item.count > 5) {
+                      counts[key] = base + 5;
+                    } else {
+                      fully.add(key);
+                    }
+                    widget.onProgressChanged();
                   }
-                  widget.onProgressChanged();
-                }
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: Row(
-                    children: [
-                      // 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
-                      // 统一低灰文字钮（对齐 fold-dual-pane-2 宽屏档；用户
-                      // 拍板弱化：原品牌色实心钮太抢眼且占空间）。
-                      Expanded(
-                        child: TextButton.icon(
-                          key: ValueKey('home-show-more-$key'),
-                          onPressed: showMore,
-                          icon: Icon(
-                            item.count > 5
-                                ? Icons.expand_more
-                                : Icons.unfold_more,
-                            size: 16,
-                            color: context.colors.foregroundSubtle,
-                          ),
-                          label: Text(
-                            item.count > 5 ? '再显示 5 个' : '展开剩余 ${item.count} 项',
-                            style: TextStyle(
-                              fontSize: AppType.uiCaption,
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: Row(
+                      children: [
+                        // 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
+                        // 统一低灰文字钮（对齐 fold-dual-pane-2 宽屏档；用户
+                        // 拍板弱化：原品牌色实心钮太抢眼且占空间）。
+                        Expanded(
+                          child: TextButton.icon(
+                            key: ValueKey('home-show-more-$key'),
+                            onPressed: showMore,
+                            icon: Icon(
+                              item.count > 5
+                                  ? Icons.expand_more
+                                  : Icons.unfold_more,
+                              size: 16,
                               color: context.colors.foregroundSubtle,
                             ),
-                          ),
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(0, 44),
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                        ),
-                      ),
-                      if (item.count > 5) ...[
-                        const SizedBox(width: 8),
-                        TextButton(
-                          key: ValueKey('home-expand-all-$key'),
-                          onPressed: () {
-                            widget.fullyExpandedGroups.add(key);
-                            widget.onProgressChanged();
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: context.colors.foregroundSubtle,
-                            minimumSize: const Size(0, 44),
-                          ),
-                          child: const Text(
-                            '全部展开',
-                            style: TextStyle(fontSize: AppType.uiCaption),
+                            label: Text(
+                              item.count > 5
+                                  ? '再显示 5 个'
+                                  : '展开剩余 ${item.count} 项',
+                              style: TextStyle(
+                                fontSize: AppType.uiCaption,
+                                color: context.colors.foregroundSubtle,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(0, 44),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
                           ),
                         ),
+                        if (item.count > 5) ...[
+                          const SizedBox(width: 8),
+                          TextButton(
+                            key: ValueKey('home-expand-all-$key'),
+                            onPressed: () {
+                              widget.fullyExpandedGroups.add(key);
+                              widget.onProgressChanged();
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: context.colors.foregroundSubtle,
+                              minimumSize: const Size(0, 44),
+                            ),
+                            child: const Text(
+                              '全部展开',
+                              style: TextStyle(fontSize: AppType.uiCaption),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                );
-            }
-          },
+                    ),
+                  );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -2318,7 +2434,8 @@ class _TaskList extends StatelessWidget {
   final Set<String> selectedTaskIds;
 
   /// 行级工作区键随选择集上报（跨区搜索行/index 未覆盖行的批量归属）。
-  final void Function(String taskId, String? workspaceKey)? onToggleTaskSelected;
+  final void Function(String taskId, String? workspaceKey)?
+  onToggleTaskSelected;
   final void Function(String taskId)? onEnterMultiSelect;
 
   // ---- 主页视图状态（ 提升页面级后的透传）----
@@ -2331,6 +2448,9 @@ class _TaskList extends StatelessWidget {
   /// 跨工作区/搜索行长按菜单（：宽屏搜索跨区紧凑行
   /// 此前无长按——与同视图当前区行同权；ensureContext 护栏支持跨区）。
   final void Function(Map<String, dynamic> task)? onCrossLongPress;
+
+  /// r3：宽屏收起钮回调（透传 _TaskHomeView 分段行尾）。
+  final VoidCallback? onPaneCollapse;
 
   const _TaskList({
     required this.onOpen,
@@ -2354,6 +2474,7 @@ class _TaskList extends StatelessWidget {
     required this.fullyExpandedGroups,
     required this.onProgressChanged,
     this.onCrossLongPress,
+    this.onPaneCollapse,
   });
 
   @override
@@ -2386,6 +2507,7 @@ class _TaskList extends StatelessWidget {
               fullyExpandedGroups: fullyExpandedGroups,
               onProgressChanged: onProgressChanged,
               onLongPress: onCrossLongPress,
+              onPaneCollapse: onPaneCollapse,
             ),
           ),
         ],
@@ -2464,6 +2586,7 @@ class _TaskList extends StatelessWidget {
                 fullyExpandedGroups: fullyExpandedGroups,
                 onProgressChanged: onProgressChanged,
                 onLongPress: onCrossLongPress,
+                onPaneCollapse: onPaneCollapse,
                 onOpen: (task) {
                   if (app.conversation == null) {
                     ScaffoldMessenger.of(
@@ -2504,6 +2627,7 @@ class _TaskList extends StatelessWidget {
               fullyExpandedGroups: fullyExpandedGroups,
               onProgressChanged: onProgressChanged,
               onLongPress: onCrossLongPress,
+              onPaneCollapse: onPaneCollapse,
             ),
           ),
         ],
@@ -2856,9 +2980,9 @@ class _TaskList extends StatelessWidget {
                         onToggleSelect: onToggleTaskSelected == null
                             ? null
                             : () => onToggleTaskSelected!(
-                                  crossId,
-                                  taskWorkspaceKey(cross),
-                                ),
+                                crossId,
+                                taskWorkspaceKey(cross),
+                              ),
                       )
                     : _CrossTaskCard(
                         task: cross,
@@ -3474,9 +3598,9 @@ class _CrossTaskCard extends StatelessWidget {
               ? (onToggleSelect == null
                     ? null
                     : () => onToggleSelect!(
-                          '${task['taskId']}',
-                          taskWorkspaceKey(task),
-                        ))
+                        '${task['taskId']}',
+                        taskWorkspaceKey(task),
+                      ))
               : () => onOpen(task),
           onLongPress: onLongPress == null ? null : () => onLongPress!(task),
           child: Padding(
@@ -3529,7 +3653,10 @@ class _CrossTaskCard extends StatelessWidget {
                     // B 批（拍板①）：后台工作小点（非运行态才有，运行态
                     // 状态行自带 spinner）。
                     if (task['hasBackgroundWork'] == true &&
-                        normalizePhase('${task['displayStatus'] ?? task['status'] ?? ''}') != 'running')
+                        normalizePhase(
+                              '${task['displayStatus'] ?? task['status'] ?? ''}',
+                            ) !=
+                            'running')
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: Container(
@@ -3834,7 +3961,7 @@ class _CompactTaskRow extends StatelessWidget {
   );
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     final selected = selectedSessionId != null && selectedSessionId == taskId;
     final timeLabel = updatedAt > 0 ? _relativeTime(updatedAt, now: now) : null;
     final rowHeight = compactTaskRowHeight(
@@ -4143,7 +4270,7 @@ class _TaskCard extends StatelessWidget {
                       ),
                     ],
                   ),
-// 候选 13 验收反馈（2026-11-09 用户拍板）：run 摘要预览未读可见、
+                  // 候选 13 验收反馈（2026-11-09 用户拍板）：run 摘要预览未读可见、
                   // 已读隐藏——si 的 lastAssistantPreview 在会话末尾是
                   // run 行且无后续正文时不会更新，读后仍常驻副行。
                 ] else if ((entry.preview ?? '').isNotEmpty &&
@@ -4291,10 +4418,7 @@ Future<void> _createProjectFlow(
     ),
   );
   // 对话框退场动画期 dialog 树仍存活——延后释放防动画期编辑事件触碰。
-  Future<void>.delayed(
-    const Duration(milliseconds: 400),
-    controller.dispose,
-  );
+  Future<void>.delayed(const Duration(milliseconds: 400), controller.dispose);
   if (name == null || name.isEmpty) {
     return;
   }
@@ -4327,43 +4451,43 @@ Future<void> _createProjectFlow(
     context: navigator.context,
     barrierDismissible: false,
     builder: (dialogCtx) => PopScope(
-        // 系统返回不得静默关掉进度层（关了之后 pop 会误关下一页）。
-        canPop: false,
-        child: AlertDialog(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: 16),
-              Expanded(child: Text('正在创建项目 $name…')),
-            ],
-          ),
-          actions: [
-            TextButton(
-              key: const ValueKey('new-project-progress-cancel'),
-              onPressed: () {
-                // 取消=放弃等待，但创建可能已提交到电脑端（结果未知）。
-                cancelled = true;
-                closeProgress();
-                messenger?.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      !createdDone
-                          ? '已提交创建，结果未知——稍后刷新项目列表查看'
-                          : '项目已创建，已取消进入——可从项目列表打开',
-                    ),
-                    duration: const Duration(seconds: 4),
-                  ),
-                );
-              },
-              child: const Text('取消等待'),
+      // 系统返回不得静默关掉进度层（关了之后 pop 会误关下一页）。
+      canPop: false,
+      child: AlertDialog(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
+            const SizedBox(width: 16),
+            Expanded(child: Text('正在创建项目 $name…')),
           ],
         ),
+        actions: [
+          TextButton(
+            key: const ValueKey('new-project-progress-cancel'),
+            onPressed: () {
+              // 取消=放弃等待，但创建可能已提交到电脑端（结果未知）。
+              cancelled = true;
+              closeProgress();
+              messenger?.showSnackBar(
+                SnackBar(
+                  content: Text(
+                    !createdDone
+                        ? '已提交创建，结果未知——稍后刷新项目列表查看'
+                        : '项目已创建，已取消进入——可从项目列表打开',
+                  ),
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            },
+            child: const Text('取消等待'),
+          ),
+        ],
       ),
+    ),
   );
   // 挂载进度层（持有 route 引用，closeProgress 用 removeRoute 精确摘除）。
   unawaited(navigator.push(progressRoute!));
@@ -4404,9 +4528,7 @@ Future<void> _createProjectFlow(
   } catch (e) {
     if (cancelled) return;
     closeProgress();
-    messenger?.showSnackBar(
-      SnackBar(content: Text('进入新项目失败：$e（可从项目列表手动打开）')),
-    );
+    messenger?.showSnackBar(SnackBar(content: Text('进入新项目失败：$e（可从项目列表手动打开）')));
     return;
   }
   if (cancelled) return;
@@ -4902,8 +5024,11 @@ class _ProjectOrderSheetState extends State<_ProjectOrderSheet> {
 /// （批3）：其他电脑聚合只取最近任务——缓存行带 updatedAt，
 /// 此前直接 take(5) 恒取缓存序前 5 条，可能展示很久以前的而藏掉最近的。
 List<Map<String, dynamic>> _recentTasks(
-    List<Map<String, dynamic>> tasks, int count) {
-  final sorted = [...tasks]..sort((a, b) {
+  List<Map<String, dynamic>> tasks,
+  int count,
+) {
+  final sorted = [...tasks]
+    ..sort((a, b) {
       final au = (a['updatedAt'] as num?)?.toInt() ?? 0;
       final bu = (b['updatedAt'] as num?)?.toInt() ?? 0;
       return bu.compareTo(au);
@@ -4919,8 +5044,8 @@ double compactTaskRowHeight(int runCount, TextScaler scaler) {
   final lines = runCount == 0
       ? 0
       : (runCount > WorkflowRunLines.maxLines
-          ? WorkflowRunLines.maxLines + 1
-          : runCount);
+            ? WorkflowRunLines.maxLines + 1
+            : runCount);
   // （复审）：系数按 M3 bodyMedium 实际行高 1.43 取 1.45（+逐行
   // padding 预算 3px）——1.25 会让 3 行 + 1.3× 字号仍轻微溢出。
   return 48 + lines * (scaler.scale(10) * 1.45 + 3);
@@ -4940,9 +5065,7 @@ class WorkflowRunLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visible = runs.length <= maxLines
-        ? runs
-        : runs.sublist(0, maxLines);
+    final visible = runs.length <= maxLines ? runs : runs.sublist(0, maxLines);
     final overflow = runs.length - visible.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -5019,9 +5142,14 @@ class WorkflowRunLines extends StatelessWidget {
 /// （workspaceTasks 空时的 taskHomeCardRow 序列化）键=workflowRuns。
 List<Map<String, dynamic>> _cardRuns(Map<String, dynamic> task) {
   for (final k in const ['workflowActivity', 'workflowRuns']) {
-    final w = k == 'workflowRuns' ? task['workflowRuns'] : (task[k] as Map?)?['runs'];
+    final w = k == 'workflowRuns'
+        ? task['workflowRuns']
+        : (task[k] as Map?)?['runs'];
     if (w is List && w.isNotEmpty) {
-      return [for (final r in w) if (r is Map) r.cast<String, dynamic>()];
+      return [
+        for (final r in w)
+          if (r is Map) r.cast<String, dynamic>(),
+      ];
     }
   }
   return const [];

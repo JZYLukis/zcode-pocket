@@ -101,6 +101,9 @@ const _customEn = <String, String>{
   '重试': 'Retry',
   '已完成': 'Completed',
   '定时任务': 'Scheduled tasks',
+  // 宽屏左栏收起/展开钮 tooltip。
+  '收起任务列表': 'Collapse task list',
+  '展开任务列表': 'Expand task list',
   '主题': 'Theme',
   '关闭': 'Close',
   '个人套餐': 'Individual Plan',
@@ -261,11 +264,47 @@ const _customEn = <String, String>{
   '部分手机的省电机制会在后台清理应用——代码全部正确，通知仍可能收不到。开启「审批提醒」前，请把下面几步一次配好（全阶段只用配一次）。': 'Battery management on some devices can kill background apps. Even if the code is correct, notifications may still be missed. Before enabling approval reminders, complete these steps once.',
   '启动管理三开关': 'Three background launch switches',
   '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关。': 'Settings → Apps → App launch → ZCode Pocket → choose Manual management, then enable Auto-launch, Secondary launch, and Background activity.',
+  // 引导页第 1 步按厂商档位出文案（华为档零变化，
+  // 其余为新增档；华为/荣耀两条 footnote 与「跳转失败」是存量串本批
+  // 补译——此前英文界面点跳转按钮会冒中文）。
+  '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关（老系统在 手机管家 内）。':
+      'Settings → Apps → App launch → ZCode Pocket → choose Manual management, then enable Auto-launch, Secondary launch, and Background activity (on older systems this lives in Phone Manager).',
+  '自启动与后台运行': 'Auto-launch and background activity',
+  '自启动与省电策略': 'Auto-launch and battery strategy',
+  '设置 → 应用 → 应用管理 → ZCode Pocket → 开启「自启动」；再到 设置 → 电池 → 后台耗电管理，允许 ZCode Pocket 后台运行（OriginOS 的后台清理不在应用详情页，须从电池侧放行）。':
+      'Settings → Apps → App management → ZCode Pocket → enable Auto-launch; then Settings → Battery → Background power management, allow ZCode Pocket to run in the background (OriginOS background cleanup is not in the app details page — it must be allowed from the battery side).',
+  '设置 → 应用设置 → 应用管理 → ZCode Pocket → 开启「自启动」；省电策略 选「无限制」（MIUI 的后台白名单在省电策略里）。':
+      'Settings → Manage apps → ZCode Pocket → enable Auto-launch; set Battery saver policy to No restrictions (MIUI\u2019s background allowlist lives in the battery strategy).',
+  '设置 → 应用 → 应用管理 → ZCode Pocket → 允许自启动、允许后台运行（部分版本在「耗电管理」内）；再到 设置 → 电池 → 应用速冻，将 ZCode Pocket 移出速冻名单。':
+      'Settings → Apps → App management → ZCode Pocket → allow Auto-launch and Background activity (under Power usage on some versions); then Settings → Battery → App quick freeze, remove ZCode Pocket from the frozen list.',
+  '请在系统设置中找到 ZCode Pocket 的应用信息页，开启 自启动 / 后台运行 相关开关（不同品牌的入口名称与路径不同，通常在应用详情或电池/省电设置内）。':
+      'Open ZCode Pocket\u2019s app info page in system settings and enable the auto-launch / background activity switches (names and locations vary by brand — usually under app details or battery settings).',
+  '已跳到「启动管理」：找到 ZCode Pocket 改为手动管理，开启自启动/关联启动/后台活动三个开关':
+      'Opened Launch management: set ZCode Pocket to Manual management and enable auto-launch, secondary launch, and background activity',
+  '已跳到应用详情页：请点「启动管理」（或「应用启动管理」）进入后改为手动管理，开三个开关':
+      'Opened the app details page: tap Launch management (or App launch), switch to Manual management, and enable the three switches',
+  '已跳到后台管理页：开启 ZCode Pocket 的自启动与后台运行':
+      'Opened the background management page: enable auto-launch and background activity for ZCode Pocket',
+  '已跳到自启动管理页：开启 ZCode Pocket 的自启动，省电策略选无限制':
+      'Opened the auto-launch management page: enable auto-launch for ZCode Pocket and set the battery strategy to No restrictions',
+  '已跳到自启动管理页：允许 ZCode Pocket 自启动与后台运行':
+      'Opened the auto-launch management page: allow auto-launch and background activity for ZCode Pocket',
+  '已跳到应用详情页：请开启「自启动」；再到 设置 → 电池 → 后台耗电管理 允许后台运行':
+      'Opened the app details page: enable Auto-launch there, then go to Settings → Battery → Background power management and allow background activity',
+  '已跳到应用详情页：请开启「自启动」；省电策略选「无限制」':
+      'Opened the app details page: enable Auto-launch and set the battery strategy to No restrictions',
+  '已跳到应用详情页：请允许「自启动/后台运行」；电池 → 应用速冻 移出本应用':
+      'Opened the app details page: allow Auto-launch/Background activity there; Battery → App quick freeze, remove this app',
+  '已跳到应用详情页：请在应用信息内找到 自启动/后台运行 开关开启':
+      'Opened the app details page: find and enable the auto-launch / background activity switches there',
+  '跳转失败，请按下方图文步骤手动操作':
+      'Could not open automatically. Follow the steps below manually',
   '去设置': 'Open settings',
   '通知双开关': 'Two notification switches',
   '设置 → 通知 → ZCode Pocket：「允许通知」与「锁屏通知」都打开（锁屏上要看到提醒，两个都必须开）。': 'Settings → Notifications → ZCode Pocket: enable both Allow notifications and Lock screen notifications. Both are required to see alerts on the lock screen.',
   '去通知设置': 'Open notification settings',
   '忽略电池优化': 'Ignore battery optimizations',
+  '已忽略电池优化': 'Battery optimizations ignored',
   '允许应用不受电池优化限制，后台连接不被系统休眠打断。': 'Allow the app to ignore battery optimizations so background connections are not interrupted by system sleep.',
   '最近任务锁定（手动）': 'Lock the app in Recents (manual)',
   '打开最近任务（多任务）视图 → 找到 ZCode Pocket 卡片 → 下拉（或长按）→ 点锁图标 🔒。锁定后上滑清理不会误清本应用。\n此步无法自动跳转，请在最近任务界面对照操作。': 'Open Recents → find the ZCode Pocket card → swipe down (or long-press) → tap the lock icon 🔒. This prevents the app from being removed when you clear recent apps.\nThis step cannot be opened automatically. Follow it in the Recents screen.',
