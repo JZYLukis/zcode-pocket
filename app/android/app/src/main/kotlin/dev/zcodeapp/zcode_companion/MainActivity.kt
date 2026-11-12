@@ -10,6 +10,8 @@ import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import java.io.File
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -49,6 +51,10 @@ class MainActivity : FlutterActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // 不 setIntent 会导致系统重建（字体缩放等未覆盖
+        // configChanges 的变更）时 getIntent() 仍是旧 intent——过期的
+        // 配对/快捷动作被重放。setIntent + readExtras 后即清 extras。
+        setIntent(intent)
         // singleTop 复用时的热更新（自动化测试反复推链接）
         readExtras(intent)
         // 快捷入口热路径（开源审查、修正留存语义）：
@@ -93,16 +99,35 @@ class MainActivity : FlutterActivity() {
             relayV2Origin = null
             accountJwt = null
         }
+        // ：读完即清——防 Activity/引擎重建路径重放过期 extras
+        // （recreate 路径手动 removeExtra 的既有防线推广到全部路径）。
+        intent.removeExtra("pairing_url")
+        intent.removeExtra("pairing_name")
+        intent.removeExtra("shortcut_action")
+    }
+
+    // 应用锁：系统锁屏凭证验证的 onActivityResult 转发
+    // （AppLockPlugin.requestSystemUnlock 的 pending result 在此收尾）。
+    override fun onDestroy() {
+        // 释放通道插件持有的 Activity 强引用与挂起 result
+        // （进程因 FGS 常驻时静态单例的泄漏面）。
+        AppLockPlugin.release()
+        super.onDestroy()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        AppLockPlugin.handleActivityResult(requestCode, resultCode)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // 底部安全区直推：部分厂商 ROM（如 vivo OriginOS 折叠屏展开态）
-        // 的系统任务栏在 rootWindowInsets 正常上报，但 Flutter 的
-        // MediaQuery.viewPadding 拿到 0（透传断裂）——原生监听 insets 变化
-        // 把 bottom（systemBars∪navBars∪cutout 最大值，逻辑 dp）实时推
-        // Dart（system_inset.dart 接收），任务栏开/关实时跟随；返回原
-        // insets 不消费（不改变窗口默认行为）。
+        // 底部安全区直推：
+        // vivo 展开态任务栏在 rootWindowInsets 正常上报（169px）但 Flutter
+        // 的 MediaQuery.viewPadding 拿 0（透传断裂，探针/截图双证）——原生
+        // 监听 insets 变化把 bottom（systemBars∪navBars∪cutout 最大值，
+        // 逻辑 dp）实时推 Dart（system_inset.dart 接收），任务栏开/关实时
+        // 跟随；返回原 insets 不消费（不改变窗口默认行为）。
         val notifyChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "companion/notify",
@@ -114,6 +139,8 @@ class MainActivity : FlutterActivity() {
         // 系统语音识别通道（2026-10-28 语音泛用批）：标准 SpeechRecognizer
         // 无界面流式接线（companion/sys_asr）。
         SystemAsrPlugin.bind(flutterEngine, this)
+        // 应用锁通道：系统锁屏凭证验证 + FLAG_SECURE 联动。
+        AppLockPlugin.bind(flutterEngine, this)
         readExtras(intent)
         // companion/test 通道（名字沿用历史测试缝）：现承载
         // 生产功能——长按图标快捷入口（冷启动 getLaunchArgs + 热启动
@@ -252,6 +279,81 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
+        // 应用内更新通道：ABI/安装能力/安装器调起/
+        // 官方签名比对（自行构建包跨签名覆盖必失败→提示走手动更新）/
+        // 网络类型（移动数据先问流量）。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/update")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "abi" -> result.success(Build.SUPPORTED_ABIS.firstOrNull() ?: "unknown")
+                    "networkType" -> {
+                        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+                        val caps = cm.getNetworkCapabilities(cm.activeNetwork)
+                        val type = when {
+                            caps == null -> "none"
+                            caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+                            caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+                            else -> "other"
+                        }
+                        result.success(type)
+                    }
+                    "canInstall" -> {
+                        // API 26+ per-app 授权；24-25 无此机制（旧全局未知源）恒 true。
+                        result.success(
+                            Build.VERSION.SDK_INT < 26 ||
+                                packageManager.canRequestPackageInstalls(),
+                        )
+                    }
+                    "openInstallSettings" -> {
+                        try {
+                            val intent = Intent(
+                                android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:$packageName"),
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "officialSignatureMatches" -> {
+                        result.success(officialSignatureMatches())
+                    }
+                    // 安装前校验 APK 文件本身的包名与官方签名
+                    // 指纹（SHA 只锚到 API 响应，这里锚到官方签名）。
+                    "verifyApk" -> {
+                        val path = call.argument<String>("path")
+                        if (path == null) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        result.success(verifyApkSignature(File(path)))
+                    }
+                    "openApk" -> {
+                        val path = call.argument<String>("path")
+                        if (path == null) {
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        try {
+                            val file = File(path)
+                            val uri = FileProvider.getUriForFile(
+                                this, "$packageName.fileprovider", file,
+                            )
+                            val intent = Intent(Intent.ACTION_VIEW)
+                                .setDataAndType(uri, "application/vnd.android.package-archive")
+                                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            Log.i("update", "openApk failed: $e")
+                            result.success(false)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/notify")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -285,16 +387,18 @@ class MainActivity : FlutterActivity() {
                             result.error("fg_update_failed", e.message, null)
                         }
                     }
-                    // Dart 就绪后主动拉一次当前底部安全区——listener 是
-                    // 变化驱动，任务栏常驻无变化时首次推送可能落在 Dart
-                    // 就绪前丢失。
+                    // r5：Dart 就绪后主动拉一次当前底部安全区——listener 是
+                    // 变化驱动，任务栏常驻无变化时首次推送落在 Dart 就绪前
+                    // 丢失（候选 06 真机实证：钮位✓遮挡仍在=恒 0）。
                     "currentSystemInset" ->
                         result.success(bottomSystemInsetDp(window.decorView.rootWindowInsets))
-                    // 厂商原始串回传：Dart 侧规范化出档位并切换引导文案
-                    //（oem_vendor.dart）——原生只透传，两端唯一真值在 Dart（可测）。
+                    // 厂商原始串回传：Dart 侧规范化
+                    // 出档位并切换引导文案（oem_vendor.dart）——原生只透传，
+                    // 保持两端唯一真值在 Dart（可测）。
                     "manufacturer" -> result.success(Build.MANUFACTURER ?: "")
-                    // 引导页三层兜底（按厂商出候选）：
-                    // ①本厂商已知组件名直跳 → ②应用详情页 → ③图文指引
+                    // 引导页三层兜底（phase3-notify-design，
+                    // 起按厂商出候选）：①本厂商已知组件名直跳 → ②应用详情页
+                    // → ③图文指引
                     "openStartupManage" -> {
                         val jumped = tryJumpStartupManage()
                         if (jumped) {
@@ -357,6 +461,44 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    /// 校验下载 APK 文件：包名一致 + 签名证书 SHA-256 == 官方指纹。
+    private fun verifyApkSignature(file: File): Boolean {
+        return try {
+            val info = packageManager.getPackageArchiveInfo(
+                file.absolutePath,
+                android.content.pm.PackageManager.GET_SIGNATURES,
+            ) ?: return false
+            if (info.packageName != packageName) return false
+            val sig = info.signatures?.firstOrNull() ?: return false
+            val hex = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(sig.toByteArray())
+                .joinToString("") { "%02x".format(it) }
+            hex == "2e079b31d61d3f6fbbc5aa4fc9ed0cb0d2787b4de7e558345b630a59c546b681"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /// 本机签名 SHA-256 是否等于官方发布钥指纹（check_public_apk 同源
+    /// 值）。自行构建包（debug/自签）会得到 false——应用内更新到官方包
+    /// 必然 INSTALL_FAILED_UPDATE_INCOMPATIBLE，提前提示走手动路线。
+    private fun officialSignatureMatches(): Boolean {
+        return try {
+            @Suppress("DEPRECATION")
+            val info = packageManager.getPackageInfo(
+                packageName,
+                android.content.pm.PackageManager.GET_SIGNATURES,
+            )
+            val sig = info.signatures?.firstOrNull() ?: return false
+            val md = java.security.MessageDigest.getInstance("SHA-256")
+            val hex = md.digest(sig.toByteArray())
+                .joinToString("") { "%02x".format(it) }
+            hex == "2e079b31d61d3f6fbbc5aa4fc9ed0cb0d2787b4de7e558345b630a59c546b681"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     /// 底部安全区（systemBars∪navBars∪cutout 最大值，逻辑 dp）——
     /// listener 推送与 Dart 主动拉取共用同款计算。
     private fun bottomSystemInsetDp(insets: android.view.WindowInsets?): Float {
@@ -380,9 +522,9 @@ class MainActivity : FlutterActivity() {
         return maxOf(sb.bottom, nb.bottom, cut.bottom) / resources.displayMetrics.density
     }
 
-    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层）。
-    /// 按 Build.MANUFACTURER 选表——其他厂商的包必不在本机，跨厂商尝试
-    /// 无意义；未知厂商（三星等无此类页面的品牌）返回空表直接走详情页兜底。
+    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层；
+    /// 起按 Build.MANUFACTURER 选表——其他厂商的包必不在本机，跨厂商尝试
+    /// 无意义；未知厂商（三星等无此类页面的品牌）返回空表直接走详情页兜底）。
     /// 组件名随系统版本漂移，故每厂按新旧顺序多给几个。
     private fun startupManageCandidates(): List<ComponentName> {
         val m = (Build.MANUFACTURER ?: "").lowercase()

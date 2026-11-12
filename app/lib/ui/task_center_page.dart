@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart' hide Text;
@@ -85,9 +84,9 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   _paneSelection;
   bool _wideLayout = false;
 
-  /// 宽屏双栏左栏收起态（折叠屏用户反馈需要整栏收起/展开）。
-  /// UiPrefs 持久化跨会话记忆；右栏无选中（空态）时保持收起
-  /// （收起只为专注看会话）。
+  /// 宽屏双栏左栏收起态（折叠屏用户反馈
+  /// 「左栏没有展开收起选项」）。UiPrefs 持久化跨会话记忆；右栏无选中
+  /// （空态）时自动展开——收起只为专注看会话，无会话可看时收起无意义。
   bool _paneCollapsed = false;
   bool _paneCollapsedSeeded = false;
 
@@ -353,7 +352,8 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 收起态从 UiPrefs 预填（首帧同步 seed，避免展开→收起闪烁）。
+    // 收起态从 UiPrefs 预填（首帧同步 seed，
+    // 避免展开→收起闪烁）。
     if (!_paneCollapsedSeeded) {
       _paneCollapsedSeeded = true;
       _paneCollapsed = AppStateScope.of(context).uiPrefs.dualPaneCollapsed;
@@ -362,29 +362,44 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
 
   /// 切换左栏收起/展开（持久化）。
   void _togglePaneCollapsed() {
+    // ③：收起时顺手收搜索/多选——否则状态被藏进收起的左栏，返回键
+    // 连按无可见反馈（第一次按在清不可见的搜索态）。
+    if (!_paneCollapsed) {
+      if (_searchOpen) _closeSearch();
+      if (_multiSelectMode) _exitMultiSelect();
+    }
     setState(() => _paneCollapsed = !_paneCollapsed);
     AppStateScope.of(context).uiPrefs.setDualPaneCollapsed(_paneCollapsed);
   }
 
-  /// 收起态左缘展开把手（36dp，右缘 1px 线兼作与右栏的分界——
-  /// 收起态无左栏内容，不占任何空间；展开态收起钮在「最近/项目」行尾）。
+  /// r3：收起态左缘展开把手（36dp，右缘 1px 线兼作与右栏的分界——
+  /// 收起态无左栏内容，不占任何东西；展开态收起钮在「最近/项目」行尾）。
   Widget _paneHandle(BuildContext context) {
     return SizedBox(
       width: 36,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          key: const ValueKey('toggle-pane-collapsed'),
-          onTap: _togglePaneCollapsed,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(right: BorderSide(color: context.colors.border)),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              Icons.keyboard_double_arrow_right,
-              size: 18,
-              color: context.colors.foregroundSubtle,
+        child: Tooltip(
+          message: tr('展开任务列表'),
+          child: Semantics(
+            button: true,
+            label: tr('展开任务列表'),
+            child: InkWell(
+              key: const ValueKey('toggle-pane-collapsed'),
+              onTap: _togglePaneCollapsed,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: BorderSide(color: context.colors.border),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.keyboard_double_arrow_right,
+                  size: 18,
+                  color: context.colors.foregroundSubtle,
+                ),
+              ),
             ),
           ),
         ),
@@ -559,7 +574,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       );
       return;
     }
-    // （对抗审查）：宽屏右栏同传 deepLinkAtMs——平板深链浮层此前恒不弹。
+    // ：宽屏右栏同传 deepLinkAtMs——平板深链浮层此前恒不弹。
     setState(() {
       _paneSelection = (
         sessionId: sessionId,
@@ -647,7 +662,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   }
 
   /// 跨工作区搜索：点按其他工作区的任务 → 切换工作区（等待桥与
-  /// 任务索引就绪）→ 打开会话。：目标不在当前 tabs 时依次回退
+  /// 任务索引就绪）→ 打开会话。目标不在当前 tabs 时依次回退
   /// 项目归属（project intent）→ 任务 intent（未归类/无项目任务兜底，
   /// 官方手机壳打开侧栏任务同路径）。导航期间保留当前首页，不闪连接中。
   Future<void> _openCrossWorkspaceTask(
@@ -702,7 +717,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
         return;
       }
       // 跨工作区打开即已读（best-effort+compare-and-clear）。
-      // 对抗审查中⑥修：合成行 unreadAt=1（card.unread 布尔折叠）
+      // 中⑥修：合成行 unreadAt=1（card.unread 布尔折叠）
       // 不是真实 CAS marker——只有 >1 的时间戳才带 CAS（==1 时传
       // null 走无条件写，未读可清）。
       final unreadAt = intOf(task['unreadAt']);
@@ -853,8 +868,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
             holdForTaskNavigation: _taskNavigationPending,
             compact: _wideLayout,
             // r3：宽屏收起钮（分段行尾）；空态禁用条件沿用（null=不渲染）。
-            onPaneCollapse:
-                _wideLayout ? _togglePaneCollapsed : null,
+            onPaneCollapse: _wideLayout ? _togglePaneCollapsed : null,
             // 验收反馈①：新建任务行随列表渲染（分组之下），搜索期隐藏。
             showNewTaskNav: _wideLayout && _searchQuery.isEmpty && !_searchOpen,
             selectedSessionId: _paneSelection?.sessionId,
@@ -1008,7 +1022,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   Widget _dualPaneRight(AppState app) {
     final sel = _paneSelection;
     final currentKey = workspaceKeyOf(app.activeWorkspace ?? const {}) ?? '';
-    // 对抗审查高①：跨工作区打开是「先设选中→await 切工作区」两段式——
+    // 高①：跨工作区打开是「先设选中→await 切工作区」两段式——
     // 切换窗口内 sel.workspaceKey 是目标键、activeWorkspace 仍是旧键，
     // 若按「键不等」判失效会在窗口内 post-frame 清空选中（切换完成后
     // 右栏永远空态）。等待型选中（waitForWorkspace != null）在落地前
@@ -1053,7 +1067,13 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
       // r4：撤空态自动展开——收起后清空选中（返回键/失效）保持收起
       // （全宽空态引导+左缘把手展开）。原自动展开与"空态禁用收起钮"
       // 互为打架源（真机闪变实证），简化为恒可用恒稳定。
-      return const _DualPaneEmpty();
+      // 收起态空态不能是死画面——文案不得指向宽屏不存在的
+      // 「新建」按钮；给显式「展开任务列表」+「新建任务」双出口。
+      return _DualPaneEmpty(
+        collapsed: _paneCollapsed,
+        onExpand: _paneCollapsed ? _togglePaneCollapsed : null,
+        onNewTask: _newSession,
+      );
     }
     return ConversationPage(
       key: ValueKey('dual-pane-${sel.sessionId ?? 'draft'}'),
@@ -1069,7 +1089,12 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
 /// 双栏右栏空态：引导提示（首版无选中高亮联动左栏——选中态由右栏
 /// 内容自证）。
 class _DualPaneEmpty extends StatelessWidget {
-  const _DualPaneEmpty();
+  const _DualPaneEmpty({this.collapsed = false, this.onExpand, this.onNewTask});
+
+  /// ③：宽屏左栏收起时的空态——给显式出口（展开/新建）。
+  final bool collapsed;
+  final VoidCallback? onExpand;
+  final VoidCallback? onNewTask;
 
   @override
   Widget build(BuildContext context) {
@@ -1078,18 +1103,33 @@ class _DualPaneEmpty extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.chat_bubble_outline,
+            collapsed ? Icons.menu_open : Icons.chat_bubble_outline,
             size: 40,
             color: context.colors.foregroundSubtlest,
           ),
           const SizedBox(height: 12),
           Text(
-            tr('从左侧选择任务，或点「新建」开始'),
+            collapsed ? tr('任务列表已收起') : tr('从左侧选择任务，或点「新建」开始'),
             style: TextStyle(
               fontSize: AppType.uiSm,
               color: context.colors.foregroundSubtle,
             ),
           ),
+          if (collapsed) ...[
+            const SizedBox(height: 16),
+            FilledButton.tonalIcon(
+              key: const ValueKey('empty-expand-pane'),
+              onPressed: onExpand,
+              icon: const Icon(Icons.keyboard_double_arrow_right, size: 18),
+              label: Text(tr('展开任务列表')),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              key: const ValueKey('empty-new-task'),
+              onPressed: onNewTask,
+              child: Text(tr('新建任务')),
+            ),
+          ],
         ],
       ),
     );
@@ -1122,7 +1162,7 @@ class _MultiSelectBar extends StatelessWidget {
       key: const ValueKey('multi-select-bar'),
       color: context.colors.brandAccent.withValues(alpha: AppAlpha.faint),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
+        padding: EdgeInsets.fromLTRB(16, 4, 8, 4),
         child: Row(
           children: [
             if (running)
@@ -1503,7 +1543,7 @@ class _OtherComputerTaskRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
           child: Row(
             children: [
               Icon(
@@ -1557,7 +1597,7 @@ class _TaskHomeView extends StatefulWidget {
   /// 长按菜单「选择任务」入口（页面级 _enterMultiSelect）。
   final void Function(String taskId)? onEnterMultiSelect;
 
-  // ---- 视图状态（/ 提升到页面级）----
+  // ---- 视图状态（提升到页面级）----
   /// 「最近/项目」页签（页面级持有——本视图在搜索开合/分支切换时销毁
   /// 重建，State 级会被重置回「最近」）。
   final TaskHomeMode mode;
@@ -1595,6 +1635,7 @@ class _TaskHomeView extends StatefulWidget {
     required this.fullyExpandedGroups,
     required this.onProgressChanged,
     this.onLongPress,
+    // /r4（用户反馈：把手占左栏宽度不可取）——
     // 收起钮在「最近/项目」分段行尾（⋮ 右侧），宽屏恒可用。
     this.onPaneCollapse,
   });
@@ -1744,7 +1785,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
           key: const ValueKey('other-computers-header'),
           onTap: () => setState(() => _otherExpanded = !_otherExpanded),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
             child: Row(
               children: [
                 Icon(
@@ -1776,7 +1817,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
         if (_otherExpanded)
           for (final g in list) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+              padding: EdgeInsets.fromLTRB(16, 10, 16, 2),
               child: Row(
                 children: [
                   Icon(
@@ -1861,7 +1902,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+      padding: EdgeInsets.fromLTRB(16, 8, 4, 8),
       child: Row(
         children: [
           Expanded(
@@ -1949,7 +1990,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         onTap: widget.onNew,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          padding: EdgeInsets.fromLTRB(16, 6, 16, 6),
           child: Row(
             children: [
               Icon(Icons.add, size: 18, color: context.colors.foregroundSubtle),
@@ -1985,7 +2026,12 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
         onRefresh: app.refreshWorkspaces,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 96, 16, 88),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            96,
+            16,
+            taskListBottomInset(context),
+          ),
           children: [
             if (error != null) ...[
               Icon(
@@ -2056,19 +2102,13 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
           builder: (context, nativeBottom, _) => ListView.builder(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             physics: const AlwaysScrollableScrollPhysics(),
-            // 任务栏 inset 自适应：底部=滚动尾巴 88 +
-            // max(MediaQuery.viewPadding, 原生直推值)。部分厂商 ROM 的
-            // 任务栏高度在原生层正常上报但 MediaQuery 透传断裂（读到 0），
-            // 故由原生监听 insets 变化直推 dp 值（system_inset.dart），
-            // 任务栏开/关实时跟随；键盘不掺入（多留部分在键盘后不可见）。
-padding: EdgeInsets.only(
-              bottom:
-                  88 +
-                  math.max(
-                    MediaQuery.of(context).viewPadding.bottom,
-                    nativeBottom,
-                  ),
-            ),
+            // 任务栏 inset 自适应：
+            // 底部=滚动尾巴 88 + max(MediaQuery.viewPadding, 原生直推值)。
+            // r1 padding/r2 viewPadding 在 vivo 均拿到 0（透传断裂——原生
+            // 169px 在场但 Flutter 收不到，探针/截图双证），r3 起原生监听
+            // insets 变化直推 dp 值（system_inset.dart），任务栏开/关实时
+            // 跟随；键盘不掺入（多留部分在键盘后不可见）。
+            padding: EdgeInsets.only(bottom: taskListBottomInset(context)),
             // 批4：尾部两个附加区——其他电脑聚合（开关开且有缓存才占位）
             // 与「新建任务」行。
             itemCount: items.length + (widget.showNewTaskNav ? 1 : 0) + 1,
@@ -2200,7 +2240,7 @@ padding: EdgeInsets.only(
                     widget.onProgressChanged();
                   }
                   return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 10),
                     child: Row(
                       children: [
                         // 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
@@ -2284,7 +2324,7 @@ class _HomeGroupHeader extends StatelessWidget {
         key: ValueKey('home-${item.key}'),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+          padding: EdgeInsets.fromLTRB(16, 12, 8, 8),
           child: Row(
             children: [
               Icon(
@@ -2360,6 +2400,14 @@ class _HomeGroupHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 任务列表底部让位（③ 统一）：滚动尾巴 88 + max(MediaQuery 安全区,
+/// 原生直推值)——主页/搜索/空列表三处共用，防只修一支。
+double taskListBottomInset(BuildContext context) {
+  final mq = MediaQuery.of(context).viewPadding.bottom;
+  final native = systemInsetBottomDp.value;
+  return 88 + (mq > native ? mq : native);
 }
 
 bool _hasHomeData(AppState app) =>
@@ -2884,7 +2932,12 @@ class _TaskList extends StatelessWidget {
         builder: (context) => ListView.builder(
           key: const ValueKey('task-list'),
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
+          padding: EdgeInsets.fromLTRB(
+            12,
+            4,
+            12,
+            taskListBottomInset(context),
+          ),
           itemCount: rows.length,
           itemBuilder: (context, i) {
             final (kind, data) = rows[i];
@@ -2932,7 +2985,7 @@ class _TaskList extends StatelessWidget {
               kDormant => _dormantBanner(context),
               kHeader => AppSectionHeader(data! as String),
               kSearchStatus => Padding(
-                padding: const EdgeInsets.fromLTRB(4, 6, 4, 10),
+                padding: EdgeInsets.fromLTRB(4, 6, 4, 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -3111,7 +3164,7 @@ class _SearchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!open) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 2),
+      padding: EdgeInsets.fromLTRB(12, 6, 12, 2),
       child: TextField(
         key: const ValueKey('task-search'),
         autofocus: true,
@@ -3193,7 +3246,7 @@ Future<void> showMoveToProjectSheet(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   '移动「${entry.title.isEmpty ? '(未命名任务)' : entry.title}」到项目',
                   maxLines: 1,
@@ -3333,7 +3386,7 @@ void _showTaskActions(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   entry.title.isEmpty ? '(未命名任务)' : entry.title,
                   // 用户任务标题不得过词典
@@ -4041,7 +4094,7 @@ class _CompactTaskRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // （对抗审查·月亮压未读）：月亮归元信息列
+                    // （·月亮压未读）：月亮归元信息列
                     //（官方 TaskListItem 月亮在时间前 meta 位）。
                     if ((offPeakTaskId ?? '').isNotEmpty) ...[
                       Icon(
@@ -4502,7 +4555,7 @@ Future<void> _createProjectFlow(
     return;
   }
   if (cancelled) return;
-  // （对抗审查高·并发路）：官方约定=workspace-bridge-open.project
+  // （高·并发路）：官方约定=workspace-bridge-open.project
   //（无 project intent 的开桥只在当前窗口 tabs 里找，workspace-create
   // 只建目录不建 tab——全新项目（主用例）必失败）。走 project intent：
   // 构造项目档案交 switchToProject（projectId 随创建返回携带）。
@@ -4758,7 +4811,7 @@ Future<void> showNewTaskSheet(
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                    padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
                     child: TextField(
                       key: const ValueKey('new-task-project-search'),
                       autofocus: false,
@@ -4925,7 +4978,7 @@ class _ProjectOrderSheetState extends State<_ProjectOrderSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+            padding: EdgeInsets.fromLTRB(16, 4, 16, 4),
             child: Text(
               '调整项目顺序',
               style: TextStyle(
@@ -5002,7 +5055,7 @@ class _ProjectOrderSheetState extends State<_ProjectOrderSheet> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: SizedBox(
               width: double.infinity,
               child: FilledButton(

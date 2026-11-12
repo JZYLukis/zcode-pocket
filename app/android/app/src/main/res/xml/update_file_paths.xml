@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 应用内更新：临时下载目录（cache-path=应用私有
+     cache，FileProvider 仅授权安装器一次性读取，不暴露其他目录）。 -->
+<paths>
+    <cache-path name="update_apk" path="updates/"/>
+</paths>

@@ -255,13 +255,13 @@ class FileSummaryCardState extends State<FileSummaryCard> {
     final add = intOrZero(fc['additions']);
     final del = intOrZero(fc['deletions']);
     final reverted = '${fc['state'] ?? 'active'}' == 'reverted';
-    // 对抗审查 3b-6（C 修复）：撤销按钮按协议能力位门控——官方
+    // 官方
     // ConversationFileSummaryPanel.tsx:131-134 仅 header.actions.
     // canRewindFiles===true 且非已撤销才可撤；此前无门控点了才预检失败。
     final actions = widget.header?['actions'];
     final canRewind =
         !reverted && actions is Map && actions['canRewindFiles'] == true;
-    // 对抗审查 ：files==0 但 subagents>0（只读不改文件的轮）仍渲染
+    // files==0 但 subagents>0（只读不改文件的轮）仍渲染
     // ——「N 个子代理」胶囊不随文件数消失；两者皆 0 才收缩。
     if (files == 0 && widget.subagentCount == 0) {
       return const SizedBox.shrink();
@@ -443,7 +443,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
                             for (final item in _items)
                               InkWell(
                                 key: ValueKey('file-row-${item['path']}'),
-                                // 对抗审查 3a-6：点行落在该文件（此前打开整轮
+                                // a-6：点行落在该文件（此前打开整轮
                                 // 列表不定位，导航语义断裂）。
                                 onTap: () => _openViewer(item: item),
                                 child: Padding(

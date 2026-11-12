@@ -95,7 +95,7 @@ void main() {
     }
     expect(app.contains('final Map<String, ComputerStack> _stacks ='), isFalse);
     expect(app.contains('List<DeviceProfile> profiles ='), isFalse);
-    // 对抗审查 （双盲乙）：批次证据 negative 声明的 _failureBySid
+    // （双盲乙）：批次证据 negative 声明的 _failureBySid
     // 第二份真值此前无守卫覆盖——补齐断言（账与测对齐）。
     expect(app.contains('_failureBySid'), isFalse);
   });

@@ -2425,7 +2425,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
     Map<String, dynamic>? selDay;
     if (_sel != null) {
       final (w, d) = _sel!;
-      // 双侧越界守卫（对抗审查）：档间切换周数缩档（已缓存档的
+      // 双侧越界守卫：档间切换周数缩档（已缓存档的
       // State 存活、_sel 残留），week 侧此前无守卫——weeks[w] 直接
       // RangeError 崩溃（release 同崩）。
       final days = w < weeks.length ? weeks[w]['days'] : null;
@@ -2519,7 +2519,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                       if (_gran != _HeatGran.daily)
                         for (var wi = 0; wi < weeks.length; wi++)
                           Padding(
-                            // （对抗审查·渲染中）：补 gap——daily 子项宽
+                            // （daily 子项宽
                             // hitWidth+gap，周档漏 gap 会右空 132dp（53 周）。
                             padding: EdgeInsets.only(right: gap),
                             child: Builder(builder: (_) {
@@ -2613,7 +2613,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                                             : emptyCell;
                                       }
                                       final selected = _sel == (wi, d);
-                                      // 命中盒外扩（对抗审查）：视觉格子
+                                      // 命中盒外扩：视觉格子
                                       // 11px 低于 44 触控纪律——命中区扩大到
                                       // 22×22（含邻缝），视觉尺寸不变。
                                       return GestureDetector(
@@ -2814,7 +2814,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                   for (final e in mTotals.entries)
                     (name: e.key, tokens: e.value),
                 ]..sort((a, b) => b.tokens.compareTo(a.tokens));
-                // （对抗审查·口径混用）：总额=累计、轮次/工具/模型行=当周
+                // （·口径混用）：总额=累计、轮次/工具/模型行=当周
                 // ——两组口径并存须显式标注，标题已带「累计（截至本周）」，
                 // 计数行前缀「本周」消歧。
                 final label = _gran == _HeatGran.cumulative ? '累计（截至本周）' : '本周';

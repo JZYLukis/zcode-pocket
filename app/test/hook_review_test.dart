@@ -275,7 +275,7 @@ void main() {
     }
     // 红点：页面仍在（不 pop），失败人话在场。
     expect(find.byKey(const ValueKey('hook-review-body')), findsOneWidget,
-        reason: '业务拒绝不得当成功 pop（对抗审查中②）');
+        reason: '业务拒绝不得当成功 pop（中②）');
     expect(find.textContaining('信任未生效'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

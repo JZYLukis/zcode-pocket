@@ -36,7 +36,7 @@ class SystemAsrPlugin(private val context: Context) : MethodChannel.MethodCallHa
             plugin.channel = MethodChannel(engine.dartExecutor.binaryMessenger, CHANNEL).also {
                 it.setMethodCallHandler(plugin)
             }
-            // 引擎生命周期收尾（2026-11-08 对抗审查）：Dart 面板 dispose
+            // 引擎生命周期收尾：Dart 面板 dispose
             // 靠通道 cancel 消息，引擎销毁/热重启时消息到不了——原生
             // recognizer 会悬空继续拾音。引擎销毁前主动 destroy。
             engine.addEngineLifecycleListener(object : FlutterEngine.EngineLifecycleListener {

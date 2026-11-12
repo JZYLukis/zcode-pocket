@@ -27,6 +27,7 @@ import 'notify_store.dart';
 import 'profile_store.dart';
 import 'task_list.dart';
 import 'ui_prefs.dart';
+import '../core/app_lock.dart';
 import '../core/system_inset.dart';
 import '../core/l10n.dart' show L10n, tr;
 
@@ -185,8 +186,7 @@ class AppState extends ChangeNotifier {
   Future<void> retryActiveProfileWithNewAccount() =>
       _deviceRegistry.retryActiveProfileWithNewAccount();
 
-  /// 删除账号的完整编排（真机反馈②；2026-11-03 对抗审查
-  /// 调序）：**先删凭据再拆栈**——拆栈链上任一步抛异常都不该留下
+  /// 删除账号的完整编排（真机反馈②；2026-11-03 /// 调序）：**先删凭据再拆栈**——拆栈链上任一步抛异常都不该留下
   /// "账号已不在但凭据还在"的中间态；拆栈内部逐栈 try/catch（单栈
   /// 失败不阻断其余），并同步清该账号名下设备的缓存/草稿/排队数据
   /// （防下一账号连同一台电脑先闪上一账号的任务缓存）+ 活跃指针/
@@ -206,8 +206,8 @@ class AppState extends ChangeNotifier {
       _log('dispose stacks for account failed (contained): $e');
     }
     notifyListeners();
-    // 绕过 _onStackChanged 时常驻通知（审批提醒 FGS）不会刷新——
-    // 拆完全部栈后仍显示"已连接 · N 个任务运行中"，此处补一次。
+    // 乙：绕过 _onStackChanged 的话常驻通知（审批提醒 FGS）不会
+    // 刷新——拆完全部栈后仍显示"已连接 · N 个任务运行中"。补一次。
     _updateForegroundText();
   }
 
@@ -621,7 +621,7 @@ class AppState extends ChangeNotifier {
     // 是否定位到产生该通知的消息（atMs>0 才提示；无时间戳的老 payload
     // 维持「仅打开会话」）。
     // atMs<=0（老 payload）=清残留——旧值若不清会被下一次通知
-    // 误配对（对抗审查中·陈旧 atMs 跨会话误弹）；有值时记归属 taskId。
+    // 误配对（中·陈旧 atMs 跨会话误弹）；有值时记归属 taskId。
     // 状态层批：目标电脑不可达（档案已删/失效）时同样清位——不能把
     // 深链提示留给之后打开的任意会话（失败收口）。
     if (atMs > 0 && reachable) {
@@ -656,7 +656,7 @@ class AppState extends ChangeNotifier {
 
   /// 两步式深链的目标时刻（通知产生时间）：会话页消费后清空——页面
   /// 据此弹「定位到相关消息？」浮层并滚动。
-  /// （对抗审查中·陈旧残留）：配对目标 taskId——捕获方与消费方都
+  /// （中·陈旧残留）：配对目标 taskId——捕获方与消费方都
   /// 校验归属，防旧通知残留值被下一次 atMs==0 通知误配对给错会话。
   int? pendingDeepLinkAt;
 
@@ -762,12 +762,19 @@ class AppState extends ChangeNotifier {
   /// ——用户看得见界面，通知是噪音（台账记 viewing 留证据）。
   String? viewingSessionId;
 
+  /// 应用锁控制器：独立生命周期观察者（不走本类的
+  /// onAppPaused/onAppResumed——两者各有提前 return 分支）。attach 由
+  /// app 层 initState 负责；loadFromPrefs 由 AppLockGate 首帧/设置页调用。
+  final appLock = AppLockController();
+
   /// app 是否在后台（onAppPaused/onAppResumed 维护）——后台时
   /// "查看中抑制"不生效（用户并没有在看）。
   bool _appInBackground = false;
 
   bool isTaskBeingViewed(String taskId) =>
-      !_appInBackground && viewingSessionId == taskId;
+      // 锁定态不算"在看"——否则锁屏上点通知会替用户清
+      // 未读+上报查看态+吞掉后续通知。
+      !_appInBackground && !appLock.locked && viewingSessionId == taskId;
 
   Future<void> _onStackProfilePersisted(DeviceProfile profile) async {
     await store.updateProfile(profile);
@@ -1420,7 +1427,7 @@ class AppState extends ChangeNotifier {
     String interactionId,
   ) async {
     final conv = _conv;
-    // （对抗审查·并发#3）：静默 return null 会被调用方当成功——
+    // （·并发#3）：静默 return null 会被调用方当成功——
     // _snoozed 永久锁死而服务端从未收到（交互照旧自动结束）。
     if (conv == null) throw StateError('no active computer');
     return conv.snoozeInteractionAutoResolution(sessionId, interactionId);
@@ -1845,8 +1852,8 @@ class AppState extends ChangeNotifier {
   void onAppResumed() {
     _appInBackground = false;
     _lifecycleGen++;
-    // 回前台重拉底部安全区——任务栏开关后回 app 的值跟随
-    // （listener 推送与首帧重试之外的第三重保险）。
+    // r6：回前台重拉底部安全区——任务栏开关后
+    // 回 app 的值跟随（listener 推送+首帧重试之外的第三重保险）。
     unawaited(refreshSystemInset());
     _bgDisconnectTimer?.cancel();
     _bgDisconnectTimer = null;

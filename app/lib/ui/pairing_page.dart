@@ -435,7 +435,7 @@ class _PairingPageState extends State<PairingPage> {
   /// lastUsed 与既有绑定不同）属破坏性操作，弹确认后 forceRebind。
   ///
   /// 返回 true=档案已添加/已改绑，false=用户取消改绑（调用方不得把
-  /// 取消当成功 pop/recreate——2026-11-08 对抗审查）。
+  /// 取消当成功 pop/recreate——2026-11-08 ）。
   Future<bool> _addProfileResolvingRebind(
     AppState app,
     dynamic params, {

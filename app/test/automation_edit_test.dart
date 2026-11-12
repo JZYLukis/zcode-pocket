@@ -201,7 +201,7 @@ void main() {
     expect(args!['automationId'], 'a1');
     expect(args['title'], '每日巡检（改）');
     expect(args['prompt'], '跑一遍构建');
-    // 对抗审查高③修复：只改标题（未动调度）→ 调度字段不下发（防
+    // 高③修复：只改标题（未动调度）→ 调度字段不下发（防
     // 有损投影覆写原 rule）。cron/scheduleRule/scheduleEditedByUser
     // 均缺省。
     expect(args.containsKey('cronExpr'), isFalse,
@@ -254,7 +254,7 @@ void main() {
   });
 
   // （2026-11-07 用户批）：weekly 档周几选择器——此前只回填旧值无 UI
-  // 可改（对抗审查「周几选择器」遗留实际未修完）。红=旧代码无 chip 可点。
+  // 可改（「周几选择器」遗留实际未修完）。红=旧代码无 chip 可点。
   testWidgets('每周档：周几选择器可改 → weekdays 随 scheduleRule 下发', (
     tester,
   ) async {
@@ -501,7 +501,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 对抗审查高②：官方 automationCronValidation.ts:52-56 对任意 unit 都
+  // 高②：官方 automationCronValidation.ts:52-56 对任意 unit 都
   // 要求 hour/minute 整数——minute/hourly 档漏带必被服务端拒（红=旧
   // _buildScheduleRule 只回 unit/interval）。
   testWidgets('每 N 分钟档：scheduleRule 补 hour/minute（否则服务端必拒）', (

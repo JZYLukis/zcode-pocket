@@ -1,4 +1,4 @@
-// 宽屏紧凑行 workflow run 线回归（对抗审查中⑨）：官方
+// 宽屏紧凑行 workflow run 线回归（中⑨）：官方
 // WORKFLOW_RUN_LINE_MAX_LINES=2——最多 2 条行 + 「+n」尾；pending 无
 // phase=等待中（不是运行中）；行高随 textScaler/行数动态（旧固定 68px
 // 在 ≥2 条或大字号下溢出）。红=旧实现全量渲染且固定高度。

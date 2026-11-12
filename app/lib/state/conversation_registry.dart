@@ -30,7 +30,7 @@ class ConversationRegistry {
   final bool Function() _siDormantProvider;
   final Future<void> Function() _retrySessionsIndex;
 
-  /// 宿主栈的 dispose 态（对抗审查 ：disposeStack 只走 close/epoch，
+  /// 宿主栈的 dispose 态（disposeStack 只走 close/epoch，
   /// 不置注册表自身 _disposed——栈级守卫须经回调保持 HEAD 语义）。
   final bool Function() _disposedProvider;
   final void Function(String line) _onLog;
@@ -116,7 +116,7 @@ class ConversationRegistry {
     }
     final existing = _conversations[sessionId];
     if (existing != null && !existing.isDisposed) {
-      // 对抗审查（状态层批）：快路径同样过 _closing 闸门——demote/close
+      // （状态层批）：快路径同样过 _closing 闸门——demote/close
       // 在飞时直接返回旧订阅会让调用方拿到"即将被收尾 dispose"的引用
       // （页面挂监听后帧永久停止）。抛给 ComputerStack 包装层 quiesce
       // 后重试，与新注册路径的失效语义对齐。
@@ -166,7 +166,7 @@ class ConversationRegistry {
       }
       final sub = await conv.subscribe(sessionId, seed: seed);
       if (isStale() || _closing) {
-        // 对抗审查 （双盲甲乙一致）：静默返回已 dispose 的订阅=页面
+        // （双盲甲乙一致）：静默返回已 dispose 的订阅=页面
         // 拿到哑弹（addListener 挂在已 dispose 的 ChangeNotifier 上，
         // release 下永久空白无重试入口）。与缓存读取阶段的 stale 分支
         // 一致：先释放再抛人话错误，调用方走既有错误态（可重开）。
@@ -317,7 +317,7 @@ class ConversationRegistry {
     _pendingConversations.clear();
     await _flushCacheWriters(awaitWrites: awaitWrites);
     _disposeAllConversations();
-    // 对抗审查 M2（双盲乙）：flush 的 await 窗口内新发起的注册捕获的是
+    // （双盲乙）：flush 的 await 窗口内新发起的注册捕获的是
     // 已递增的 epoch，若其 subscribe 在上方 clear 之后落地，isStale 恒假
     // → 订阅挂上垂死传输。结尾再失效+清一遍，把窗口内漏网的注册一并
     // 收掉（幂等：通常第二遍为空）。这批是已作废代际，writer 只摘挂

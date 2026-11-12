@@ -398,7 +398,7 @@ void main() {
     );
   });
 
-  // 对抗审查中④：编辑工作区作用域子代理此前 scope 硬编码 'user'——
+  // 中④：编辑工作区作用域子代理此前 scope 硬编码 'user'——
   // 一次编辑把档案搬到用户目录（位置/归属全变）。
   testWidgets('编辑工作区作用域子代理：scope/projectPath 原样回写', (tester) async {
     final app = _OverrideApp();

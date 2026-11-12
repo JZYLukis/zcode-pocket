@@ -213,7 +213,7 @@ class CompanionClient {
       return true;
     }
     if (session._disposed) return true;
-    // relay 未配对时不发探测/开桥请求（对抗审查 双路交叉命中）：
+    // relay 未配对时不发探测/开桥请求（双路交叉命中）：
     // V2 出站通道非 paired 态把载荷排进 _outboundQueue（上限 100），
     // 无限恢复循环每轮 2 条请求会把队列积满，重连同刻冲刷几十条陈旧
     // bridge-open 给桌面（桥重建风暴， 同类风险）。跳过本轮
@@ -400,7 +400,7 @@ class CompanionClient {
   /// response {success, workspacePath, workspaceKey, projectId?, hostId?}。
   Future<Map<String, dynamic>> createWorkspace(String name) async {
     final id = _reqId('workspace-create');
-    // （对抗审查·协议低×2）：app-error=旧桌面「不支持该动作」的
+    // （·协议低×2）：app-error=旧桌面「不支持该动作」的
     // 立即降级信号（官方 webRemoteControlManager :1457）——不认会干等
     // 满 30s；超时 45s 留桌面 Renderer 30s 上限的往返余量。
     final res = await request(

@@ -1,4 +1,5 @@
-// 底部安全区原生直推通道测试（原生监听 insets 推 dp 值，Dart 接收）。
+// 底部安全区原生直推通道（vivo MediaQuery 透传
+// 断裂的终局方案——原生监听 insets 推 dp 值，Dart ValueNotifier 接收）。
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/core/system_inset.dart' show systemInsetBottomDp, initSystemInsetBridge, refreshSystemInset;
@@ -14,7 +15,7 @@ void main() {
     initSystemInsetBridge();
     final binary =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-    // 模拟原生反向调用（折叠屏任务栏典型值≈64dp）。
+    // 模拟原生反向调用（vivo 展开态任务栏≈64dp）。
     await binary.handlePlatformMessage(
       'companion/notify',
       const StandardMethodCodec().encodeMethodCall(
@@ -43,7 +44,7 @@ void main() {
     expect(systemInsetBottomDp.value, 200);
   });
 
-  test('init 主动拉一次当前值（handler 先注册后拉取）', () async {
+  test('r5：init 主动拉一次当前值（handler 先注册后拉取）', () async {
     initSystemInsetBridge();
     final messenger = TestDefaultBinaryMessengerBinding
         .instance.defaultBinaryMessenger;

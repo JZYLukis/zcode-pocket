@@ -1120,7 +1120,7 @@ class OffPeakTaskCard extends StatelessWidget {
   }
 }
 
-/// A 批（拍板⑧）+ 对抗审查返工（高③）：会话内工作流 run 卡。
+/// A 批（拍板⑧）+ 返工（高③）：会话内工作流 run 卡。
 /// runId/status 权威源=快照 workflowRuns 投影按 toolCallId 联接（官方
 /// workflowRunCardJoin.ts:33-51——v4 工具行 output 只有散文，结构化
 /// 字段不在行上）；联接不上=只显示名称不可点（官方同款：编不过的

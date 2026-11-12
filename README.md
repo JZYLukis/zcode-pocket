@@ -211,6 +211,18 @@ with your own API keys in settings.
   Settings → About → "Clear local cache"; drafts, queued messages, accounts
   and settings are not affected.
 
+
+### In-app updates and network access
+
+"Software update" (Settings → Software update, on by default, can be
+turned off) accesses GitHub Releases (`api.github.com` / `github.com`
+and its download domains, or a public mirror) to check for and download
+updates. Downloads are verified against the officially published
+SHA-256 before anything is installed. In-app installation requires the
+system "allow this app to install apps" grant, requested only when you
+tap "Update now". Beyond this, the app connects to no third-party
+services.
+
 ## Known limitations
 
 Each of these is also tracked as a `known-limitation` issue with its current

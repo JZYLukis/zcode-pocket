@@ -39,7 +39,7 @@ class _InlineDiffPreviewState extends State<InlineDiffPreview> {
   Widget build(BuildContext context) {
     final hunks = widget.display['structuredPatch'];
     // 语言按文件路径推（协议 file_diff display 带 filePath，
-    // toolDisplay.ts:27）。总开关关闭时降 null 回落纯色（对抗审查 ：
+    // toolDisplay.ts:27）。总开关关闭时降 null 回落纯色（
     // 同一展开区里预览变纯色而内联 diff 仍彩色=自相矛盾）。裸树容错：
     // 本组件公开承诺可独立挂树（无 AppStateScope 时默认开）。
     final scope = context.getInheritedWidgetOfExactType<AppStateScope>();
@@ -152,7 +152,7 @@ class _InlineDiffPreviewState extends State<InlineDiffPreview> {
             : Border(left: BorderSide(width: 3, color: diffColor)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-      // 长行软换行（对抗审查 ：此前 maxLines:1+ellipsis 使 80+ 字符
+      // 长行软换行（此前 maxLines:1+ellipsis 使 80+ 字符
       // 的代码行尾部永久不可见且无任何表面能看整行——软换行是官方
       // wrapLongLines 模式的手机化，窄屏优先可读性）。
       child: v.spans != null

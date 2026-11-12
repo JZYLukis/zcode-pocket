@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zcode_pocket/core/system_inset.dart';
 import 'package:zcode_pocket/core/theme.dart';
 import 'package:zcode_pocket/state/app_state.dart';
 import 'package:zcode_pocket/state/app_state_scope.dart';
@@ -70,7 +71,7 @@ class _DualPaneApp extends AppState {
       workspaceTasksOverride ?? const [];
 
   /// 跨工作区切换延迟一帧以上：模拟「先设右栏选中→await 切工作区」的
-  /// 真实窗口（对抗审查高①的失效窗口）。
+  /// 真实窗口（高①的失效窗口）。
   @override
   Future<void> switchWorkspace(
     Map<String, dynamic> workspace, {
@@ -198,7 +199,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.byType(ConversationPage), findsOneWidget,
-        reason: '切换落地前右栏选中不得被误清（对抗审查高①）');
+        reason: '切换落地前右栏选中不得被误清（高①）');
     expect(find.text('从左侧选择任务，或点「新建」开始'), findsNothing);
 
     // 切换落地后仍在右栏（等待目标转正不丢选中）。
@@ -423,8 +424,8 @@ void main() {
     expect(convDx, lessThan(10), reason: '整页推入（左上角贴边）');
   });
 
-  // ---- 宽屏整栏收起/展开 + 任务栏 inset 自适应 ----
-  //（折叠屏反馈：需要整栏收起选项；系统任务栏会遮列表末项）
+  // ---- 整栏收起/展开 + 任务栏 inset 自适应 ----
+  // （折叠屏反馈：左栏无展开收起选项；系统任务栏遮列表末项）
 
   testWidgets('整栏收起/展开：收起钮在「最近/项目」行尾，收起后左缘展开把手', (tester) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));
@@ -441,7 +442,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.byType(ConversationPage), findsOneWidget);
-    // 诊断
 
 
     // 有会话：收起钮在左栏「最近/项目」分段行尾（⋮ 右侧，用户反馈③：
@@ -545,5 +545,70 @@ void main() {
     );
     expect(listNoBar.padding?.resolve(TextDirection.ltr).bottom, 88,
         reason: '任务栏关闭：inset 缩回，内容铺到边缘');
+  });
+  testWidgets(' 钉死：原生直推支路不可删（vivo viewPadding=0 场景）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(840, 800));
+    addTearDown(() {
+      tester.view.viewPadding = FakeViewPadding.zero;
+      return tester.binding.setSurfaceSize(null);
+    });
+    final dpr = tester.view.devicePixelRatio;
+    // vivo 真实形态：MediaQuery viewPadding=0，唯一有效支路=原生直推。
+    tester.view.viewPadding = FakeViewPadding.zero;
+    systemInsetBottomDp.value = 50;
+    addTearDown(() => systemInsetBottomDp.value = 0);
+    final app = _DualPaneApp();
+    await _pump(tester, app);
+    final list = tester.widget<ListView>(
+      find.descendant(
+        of: find.byKey(const ValueKey('dual-pane-root')),
+        matching: find.byType(ListView),
+      ).first,
+    );
+    expect(list.padding?.resolve(TextDirection.ltr).bottom, 138,
+        reason: '88+max(0,50)=138——删掉 native 支路退回 r2 时此处必红（审查实证）');
+    // 双支取大：viewPadding 80 > native 50。
+    tester.view.viewPadding = FakeViewPadding(bottom: 80.0 * dpr);
+    await tester.pump(const Duration(milliseconds: 120));
+    final list2 = tester.widget<ListView>(
+      find.descendant(
+        of: find.byKey(const ValueKey('dual-pane-root')),
+        matching: find.byType(ListView),
+      ).first,
+    );
+    expect(list2.padding?.resolve(TextDirection.ltr).bottom, 168,
+        reason: '88+max(80,50)=168（MediaQuery 支路仍有效时取大）');
+  });
+
+  testWidgets(' 钉死：收起态空态有展开/新建出口（死画面修复）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(840, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final app = _DualPaneApp();
+    await _pump(tester, app);
+    await tester.tap(find.text('示例任务').first);
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.tap(find.byKey(const ValueKey('toggle-pane-expanded')));
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    // 返回清选中 → 收起态空态：必须有显式出口（修复前=死画面）。
+    final dynamic widgetsBinding = WidgetsBinding.instance;
+    await widgetsBinding.handlePopRoute();
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byKey(const ValueKey('empty-expand-pane')), findsOneWidget,
+        reason: '收起态空态必须有「展开任务列表」按钮');
+    expect(find.byKey(const ValueKey('empty-new-task')), findsOneWidget,
+        reason: '收起态空态必须有「新建任务」出口');
+    // 点展开恢复左栏。
+    await tester.tap(find.byKey(const ValueKey('empty-expand-pane')));
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsOneWidget,
+        reason: '空态展开按钮可恢复左栏');
   });
 }

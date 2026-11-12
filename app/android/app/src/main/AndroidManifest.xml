@@ -28,6 +28,10 @@
          声明的 foregroundServiceType 配套；原 dataSync 型权限随类型退役） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- 应用内更新：下载官方 APK 并调起系统安装器
+         （用户点「立即更新」时才触发授权流程；更新检查/开关关闭状态
+         完全不涉及本权限）。静态断言见 android_manifest_guard_test.dart。 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- （2026-10-25 审查）：整体关闭安卓云备份与设备迁移
          ——应用目录的会话缓存/通知台账/电量日志均为明文 JSON，不随系统
          备份外带（凭据本在 Keystore，secure storage 不参与备份）。个人
@@ -49,6 +53,17 @@
         <meta-data
             android:name="io.flutter.embedding.android.EnableImpeller"
             android:value="false" />
+        <!-- 应用内更新：下载目录 FileProvider（openApk 调起安装器需要
+             content:// URI 授权读取；paths 见 res/xml/update_file_paths.xml）。 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_file_paths"/>
+        </provider>
         <activity
             android:name=".MainActivity"
             android:exported="true"

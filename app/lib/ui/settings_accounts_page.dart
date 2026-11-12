@@ -262,7 +262,7 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             onSelected: (v) {
               if (v == 'connect') {
-                // 多账号配对（2026-11-08 对抗审查）：给指定账号配电脑
+                // 多账号配对：给指定账号配电脑
                 // ——进配对页时把目标账号显式带下去，扫码/V2 直连/设备
                 // 列表都按该账号建档案（此前只能落 lastUsed）。
                 Navigator.of(context).push(

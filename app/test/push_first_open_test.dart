@@ -106,7 +106,7 @@ class _SlowSwitchApp extends AppState {
   final _MemoryQueueStore queue;
   final Completer<void> switchDone = Completer<void>();
   bool switchStarted = false;
-  // 对抗审查遗留核实修（2026-11-07）测试缝：等待失败时清首页残留预览。
+  // 遗留核实修（2026-11-07）测试缝：等待失败时清首页残留预览。
   String? wsError;
   int previewClears = 0;
   Map<String, dynamic>? _active = const {
@@ -207,7 +207,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 对抗审查遗留核实修（2026-11-07）：等待失败（切换报错/超时）时，
+  // 遗留核实修（2026-11-07）：等待失败（切换报错/超时）时，
   // 首页 keepHomePreview 保住的旧列表不能再以可用状态示人——页面
   // 错误态就位的同时必须清残留预览（与 task_center 失败路径同语义）。
   testWidgets('等待失败：错误态就位+首页残留预览被清', (tester) async {
@@ -235,7 +235,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // #2 高（2026-11-08 对抗审查）：草稿身份旧实现是首帧一次性闩锁——
+  // #2 高：草稿身份旧实现是首帧一次性闩锁——
   // push-first 等待期 activeWorkspace 仍是旧工作区，输入/入队全记错桶。
   testWidgets('等待期输入：草稿键=目标工作区（#2 高）', (tester) async {
     tester.view.physicalSize = const Size(375, 806);

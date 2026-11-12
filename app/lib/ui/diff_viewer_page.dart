@@ -20,7 +20,7 @@ class DiffViewerPage extends StatefulWidget {
   final String sessionId;
   final Map<String, dynamic>? rowTarget; // {rowId, entityId?}（turnHeader 行）
 
-  /// 进入时预展开的文件（对抗审查 3a-6：点文件行应落在该文件而非整轮列表）。
+  /// 进入时预展开的文件（a-6：点文件行应落在该文件而非整轮列表）。
   final String? initialPath;
 
   const DiffViewerPage({
@@ -43,7 +43,7 @@ class _DiffViewerPageState extends State<DiffViewerPage> {
   @override
   void initState() {
     super.initState();
-    // 对抗审查 3a-6：点文件行进入即预展开该文件（官方 openDiff 单文件
+    // a-6：点文件行进入即预展开该文件（官方 openDiff 单文件
     // 语义的手机化）。
     _openPath = widget.initialPath;
     // AppStateScope.of 不能在 initState 同步调用（阶段 1 根因陷阱）
@@ -474,7 +474,7 @@ class _FileCard extends StatelessWidget {
   ) {
     final lines =
         (listOf(patch['lines']) ?? []).whereType<String>().toList();
-    // 总开关关闭时降 null 回落纯色呈现（对抗审查 ：与内联 diff/
+    // 总开关关闭时降 null 回落纯色呈现（与内联 diff/
     // 预览/消息代码块同受一个开关，不自相矛盾）。裸树容错默认开。
     final scope = context.getInheritedWidgetOfExactType<AppStateScope>();
     final highlightOn =
@@ -532,7 +532,7 @@ class _DiffLine extends StatelessWidget {
             : Border(left: BorderSide(width: 3, color: diffColor)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      // 长行软换行（对抗审查 ：此前 maxLines:1 截断使长代码行尾部
+      // 长行软换行（此前 maxLines:1 截断使长代码行尾部
       // 永久不可见；与内联 diff 同步改软换行）。
       child: view.spans != null
           ? Text.rich(TextSpan(children: view.spans, style: base))

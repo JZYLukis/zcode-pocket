@@ -253,7 +253,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   final AppGitColors git;
   final AppChartPalette charts;
 
-  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（对抗审查路C ：
+  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（ ：
   /// 原先 BoxShadow 字面量与 AppColors 双源同值独立维护，改一处漏一处
   /// 不会被测试抓——派生后只维护 colors 侧，两套测试各自锁值即闭环）。
   AppShadows get shadows => AppShadows(
@@ -556,7 +556,7 @@ abstract final class AppType {
 abstract final class AppRadius {
   static const sm = 8.0; // 小控件
   static const bubble = 12.0; // 气泡（右上 2px 指向）
-  static const block = 12.0; // 代码块（官方 rounded-xl，对抗审查 2026-10-22）
+  static const block = 12.0; // 代码块（官方 rounded-xl，）
   static const bubbleTail = 2.0; // 气泡右上指向角（官方 rounded-tr-xs；批次 B 入单源）
   static const card = 16.0; // 输入卡/审批卡/弹窗
   static const glassChrome = 20.0; // 悬浮 chrome 容器（输入卡/悬浮胶囊）
@@ -625,7 +625,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       surface: c.card,
       error: c.destructive,
       brightness: brightness,
-      // 对抗审查路B （2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
+      // B （2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
       // 等槽位带紫调（#2B2930/#4A4458 系），深色下大面积漏出（弹层/chip/
       // snackbar/未覆盖文字）——深色分支收口到官方灰阶；浅色侧 2026-11-07
       // 用户拍板同批收口到**智谱蓝图系**（「纯黑白过于冷淡」——原紫调

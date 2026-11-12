@@ -352,7 +352,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
           (_selProvider ?? '') != e.provider ||
           (_selModel ?? '') != e.model ||
           (_selThought ?? '') != e.thoughtLevel;
-      // 对抗审查高③：此前无条件重写 scheduleRule——表单是对 rule 的
+      // 表单是对 rule 的
       // 有损投影（interval>1→1、monthlyMode=weekday→date、yearly→清），
       // 只改标题也会静默改调度。修：只在用户实际改过调度（档位/参数/
       // cron 与预填态不同）才下发调度字段。
@@ -386,7 +386,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
     }
   }
 
-  /// 对抗审查高③：判断用户是否实际改过调度（预填态与当前态对比）。
+  /// 高③：判断用户是否实际改过调度（预填态与当前态对比）。
   /// 未改→不下发调度字段（保留原 rule 不被有损投影覆写）。
   bool _scheduleChanged(AutomationEntry e) {
     final rule = e.scheduleRule;
@@ -854,7 +854,7 @@ class _AutomationEditPageState extends State<AutomationEditPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // （2026-11-07 用户批）：周几选择器——此前 weekly 档只回填
-            // 旧值无 UI 可改（对抗审查「周几选择器」遗留实际未修完）。
+            // 旧值无 UI 可改（「周几选择器」遗留实际未修完）。
             // 七只紧凑 chip 与档位/模式 chip 同规格（蓝 10% 选中）。
             // （视觉走查）：Wrap 在 375dp 宽下折成 5+2 两行——
             // 改 Row+7×Expanded 等分单行（间距 3dp、内容居中）。

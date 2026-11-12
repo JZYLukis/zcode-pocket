@@ -140,7 +140,7 @@ void main() {
     'createdAt': 1,
   };
 
-  test('F25 批尾对抗审查 A 级修正：逐条 upsert 路径迭代循环不重发 verifying',
+  test('F25 批尾A 级修正：逐条 upsert 路径迭代循环不重发 verifying',
       () async {
     final stack = _FakeStack('d1');
     coordinator.attachStack(stack);

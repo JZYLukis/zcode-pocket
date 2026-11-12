@@ -86,7 +86,7 @@ String barRangeTotalText(num total, String Function(num) formatter) =>
 
 // ── 2026-10-23 用户反馈批①：图表可点选（折线/饼图/热力图）─────────
 
-/// 折线图点选命中换算（对抗审查）：与 LineChartPainter 布点同式
+/// 折线图点选命中换算：与 LineChartPainter 布点同式
 /// （x = width * i / (n-1)，首末点贴边）——此前复用柱状 slot=width/n
 /// 公式，中间点系统性半槽偏移。n<=1 时直接命中首点。
 int? linePointHitIndex(double dx, double width, int n) {
@@ -572,7 +572,7 @@ class BarChartPainter extends CustomPainter {
       !listEquals(old.values, values) ||
       !listEquals(old.xLabels, xLabels) ||
       old.selectedIndex != selectedIndex ||
-      // 对抗审查路A （2026-10-23）：漏比较颜色参数——主题深浅切换时
+      // 主题深浅切换时
       // values/选中态不变则不重绘，浅色侧残留深色柱/网格。与 Line 同口径。
       old.barColor != barColor ||
       old.selectedColor != selectedColor ||

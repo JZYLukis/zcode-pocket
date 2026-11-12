@@ -83,7 +83,7 @@ class TurnBar extends StatefulWidget {
 }
 
 class TurnBarState extends State<TurnBar> {
-  /// 默认展开档（对抗审查收敛 2026-10-22，官方三条件手机化）：
+  /// 默认展开档（收敛 2026-10-22，官方三条件手机化）：
   /// ①异常终态（completedInterrupted/failed 官方强制展开——不展会把
   /// 我方"失败工具自动展开"整个吞进收起区）；②无可见正文轮（收起=
   /// 光杆空条，官方同样默认展开）。
@@ -222,7 +222,7 @@ class TurnBarState extends State<TurnBar> {
 
     final headerRow = Container(
       padding: const EdgeInsets.only(bottom: 8),
-      // 对抗审查收敛：底分隔线官方为 border 的 50%（border-b
+      // 收敛：底分隔线官方为 border 的 50%（border-b
       // border-[var(--color-border)]/50）——降浓不再抢正文。
       decoration: BoxDecoration(
         border: Border(
@@ -236,7 +236,7 @@ class TurnBarState extends State<TurnBar> {
           Expanded(
             child: Text(
               _durationLabel(),
-              // 对抗审查收敛：工作区行族 13→14（官方 text-ui-base，
+              // 收敛：工作区行族 13→14（官方 text-ui-base，
               // ConversationTurnGroup.tsx:683）；完成态退到最淡档（官方
               // foreground-subtlest，让工作行整体退后于正文）。
               style: TextStyle(
@@ -261,7 +261,7 @@ class TurnBarState extends State<TurnBar> {
                 ),
               ),
             ),
-          // 对抗审查勘误（2026-10-22）：官方仅“默认展开态”（运行中/
+          // 勘误（2026-10-22）：官方仅“默认展开态”（运行中/
           // 强开）隐藏 chevron，手动展开完成轮时保留旋转箭头；我方全
           // 态允许收起，箭头常驻并随展开翻转。
           if (expandable)
@@ -300,7 +300,7 @@ class TurnBarState extends State<TurnBar> {
       // 收起态：外置「可见正文」（官方语义：折叠区收起后最终正文
       // 仍可见，位于状态条之外）。
       final vt = work.visibleTextRow;
-      // 对抗审查 3-5 折中（2026-10-22）：官方运行中即渲染文件卡
+      // -5 折中（2026-10-22）：官方运行中即渲染文件卡
       // （in-flight 缓存档）；手机先给收起态「已更改 N 个文件」计数
       // 提示，完整文件卡仍随轮关闭投出。
       final runningFiles = running ? intOrZero(work.fileChanges?['files']) : 0;
@@ -329,7 +329,7 @@ class TurnBarState extends State<TurnBar> {
             ),
             // 轮尾操作行（2026-10-23 用户反馈批，桌面 ConversationRowView
             // :1580-1649 对位）：复制/点赞/点踩/分支 ghost 一排。
-            // 对抗审查 /：仅轮正常完成（官方只认 complete）且为轮内
+            // /：仅轮正常完成（官方只认 complete）且为轮内
             // 最后一个工作段（guided 追问一轮多段只挂末段）才渲染；
             // 复制内容=整轮正文合并（官方 join("\n\n")）。
             // 2026-10-24 验收：发了文件卡的轮操作行改挂卡后（官方
@@ -380,7 +380,7 @@ class TurnBarState extends State<TurnBar> {
           children: [
             // 子步骤一行摘要（各自收起态，点开是 细节）——不按
             // showTools 过滤（③语义：显式展开永远可见步骤列表）。
-            // 对抗审查 3-1/4-4（2026-10-22）：连续同类工具成组——官方
+            // -1/4-4（2026-10-22）：连续同类工具成组——官方
             // EXPLORE/TERMINAL 分组开关默认开（CHANGES 关=编辑不合并，
             // 不替官方开 flag）：连续 ≥2 只读类=「查阅」、连续 ≥2 Bash=
             // 「终端 · N 个命令」；单条不造组（官方同款）。
@@ -443,7 +443,7 @@ class TurnBarState extends State<TurnBar> {
                         (running ||
                             unitIdx != lastTextUnitIdx ||
                             '${row['state']}' == 'streaming' ||
-                            // 对抗审查 ：中断/失败轮不出操作行（官方
+                            // 中断/失败轮不出操作行（官方
                             // 只认 complete）；：guided 只挂末段。
                             !work.completedOk ||
                             !work.isLastSegment ||
@@ -586,7 +586,7 @@ class ReasoningTileState extends State<ReasoningTile> {
   Timer? _ticker;
   bool _userOpen = false;
 
-  /// 完成边沿冻结的实测时长（对抗审查 2-1，2026-10-22：服务端从不
+  /// 完成边沿冻结的实测时长（-1，2026-10-22：服务端从不
   /// 下发 reasoning durationMs，官方在完成边沿用秒表实测值定稿——
   /// 此前我方测到的值被丢弃，标签退化「几秒」）。
   int? _frozenMs;
@@ -617,7 +617,7 @@ class ReasoningTileState extends State<ReasoningTile> {
   @override
   void didUpdateWidget(covariant ReasoningTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 完成边沿当帧处理（对抗审查 2-6：原 1 秒轮询最多迟 1 秒）：
+    // 完成边沿当帧处理（-6：原 1 秒轮询最多迟 1 秒）：
     // ①秒表实测值定稿（官方 reasoning.tsx:129-133 同款）；②即时收起
     // （userInteracted 锁：用户手动展开过的不自动收）。
     if (_wasStreaming && !_streaming) {
@@ -644,7 +644,7 @@ class ReasoningTileState extends State<ReasoningTile> {
   void _startTicker() {
     _ticker ??= Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      // 对抗审查 2-6：收起态无秒数不逐秒重绘（官方 reasoning.tsx:142-156
+      // -6：收起态无秒数不逐秒重绘（官方 reasoning.tsx:142-156
       // 同款省电注释）；完成检测已移交 didUpdateWidget 边沿。
       if (!_streaming || !_userOpen) return;
       setState(() {});
@@ -668,7 +668,7 @@ class ReasoningTileState extends State<ReasoningTile> {
     final text = '${widget.row['text'] ?? ''}';
     for (final line in text.split('\n').reversed) {
         if (line.trim().isNotEmpty) {
-        // 对抗审查 2-2：保尾不保头——官方语义"永远显示最新 token"，
+        // 官方语义"永远显示最新 token"，
         // 截头 60 字会让长行摘要冻结在旧内容；手机不做横滚（触屏手势
         // 冲突），前省略号截尾为等价实现。 ：截点走代理对
         // 安全版（劈开 emoji=replacement 字形）。
@@ -691,7 +691,7 @@ class ReasoningTileState extends State<ReasoningTile> {
   Widget build(BuildContext context) {
     if (_streaming) _startTicker();
     if (_userOpen && _streaming) _followBottom();
-    // 对抗审查收敛：完成态退最淡档（官方 foreground-subtlest，
+    // 收敛：完成态退最淡档（官方 foreground-subtlest，
     // reasoning.tsx:339-353）。
     final color = _streaming
         ? context.colors.running
@@ -993,7 +993,7 @@ class ToolGroupTileState extends State<ToolGroupTile> {
   }
 }
 
-/// 工具行输出视口（对抗审查 4-1，2026-10-22）：限高滚动（官方
+/// 工具行输出视口（-1，2026-10-22）：限高滚动（官方
 /// max-h-5lh overflow-auto 对位；原 8 行 ellipsis 死截断全文不可达），
 /// 运行中自动吸底、用户上滚即冻结、回底恢复（官方 ExecuteOutput 同款），
 /// 空输出出「没有输出。」占位；SelectableText=官方错误复制钮的手机

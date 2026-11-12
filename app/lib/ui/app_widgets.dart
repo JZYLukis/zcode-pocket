@@ -69,7 +69,7 @@ class _CopyIconButtonState extends State<CopyIconButton> {
       onPressed: widget.text.isEmpty
           ? null
           : () async {
-              // await+失败反馈（对抗审查）：此前未等待未捕获——失败
+              // await+失败反馈（失败
               // 时勾仍亮 1.2s 且无提示。
               var ok = true;
               try {

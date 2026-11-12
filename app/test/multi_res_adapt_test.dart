@@ -15,7 +15,9 @@ void main() {
   testWidgets('字号钳制：系统 2.0 档被压到 1.3 上限（全路由生效）', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2.0;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.pumpWidget(ZcodeCompanionApp(app: AppState()));
+    final app = AppState();
+    app.uiPrefs.debugMarkLoadedForTest();
+    await tester.pumpWidget(ZcodeCompanionApp(app: app));
     await tester.pump(const Duration(milliseconds: 200));
     final ctx = tester.element(find.byType(HomeShell));
     final scaler = MediaQuery.of(ctx).textScaler;
@@ -25,14 +27,18 @@ void main() {
   testWidgets('字号钳制：1.2 档原样透传（未达上限不拦）', (tester) async {
     tester.platformDispatcher.textScaleFactorTestValue = 1.2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.pumpWidget(ZcodeCompanionApp(app: AppState()));
+    final app = AppState();
+    app.uiPrefs.debugMarkLoadedForTest();
+    await tester.pumpWidget(ZcodeCompanionApp(app: app));
     await tester.pump(const Duration(milliseconds: 200));
     final ctx = tester.element(find.byType(HomeShell));
     expect(MediaQuery.of(ctx).textScaler.scale(20), closeTo(24, 0.01));
   });
 
   testWidgets('字号钳制：1.0 档不受影响', (tester) async {
-    await tester.pumpWidget(ZcodeCompanionApp(app: AppState()));
+    final app = AppState();
+    app.uiPrefs.debugMarkLoadedForTest();
+    await tester.pumpWidget(ZcodeCompanionApp(app: app));
     await tester.pump(const Duration(milliseconds: 200));
     final ctx = tester.element(find.byType(HomeShell));
     expect(MediaQuery.of(ctx).textScaler.scale(20), 20);

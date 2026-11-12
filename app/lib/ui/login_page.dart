@@ -34,7 +34,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-/// 会话卫生状态机（2026-10-26 真机验收③抽出；2026-11-03 对抗审查 M2
+/// 会话卫生状态机（2026-10-26 真机验收③抽出；2026-11-03 
 /// 重构两段式）：登录页必须先经历"清场→导航→二次清场"全部完成才允许
 /// 取 token。旧一阶段版（consume 即置 ready）在置位与 wipe JS 求值之
 /// 间留有几个事件循环——700ms 轮询可抢在清除前读到上一次的 token
@@ -65,7 +65,7 @@ class LoginSessionHygiene {
   }
 }
 
-/// 清场 wipe 命令（反馈①，2026-11-03 对抗审查 修正机制叙述）：
+/// 清场 wipe 命令（反馈①，2026-11-03 修正机制叙述）：
 /// 官方 web 端会话**全部存在 localStorage**（zcodejwttoken/
 /// oauth:active_provider/oauth:&lt;provider&gt;:*/zcode-web-remote-last-device-sid/
 /// mid/known-devices——官方源码全树零 indexedDB/sessionStorage 会话用途）。
@@ -191,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
   /// 静默死端——OAuth 已成功、轮询已停、零反馈，返回还被当“用户取消”）。
   bool _saveFailed = false;
 
-  /// 会话卫生（2026-10-26 真机验收③立；2026-11-03 两轮对抗审查重构，
+  /// 会话卫生（2026-10-26 真机验收③立；2026-11-03 两轮重构，
   /// 机制叙述修正）：WebView 的 zcode.z.ai localStorage/Cookie 跨会话
   /// 留存——再次进入登录页（添加账号/扫码配对）首个轮询就可能取到
   /// **陈旧 token** 秒退，且官方页的 zcode-web-remote-last-device-sid/
@@ -249,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     _controller = controller;
-    // 卫生第一步（对抗审查 /B 采纳，2026-11-03）：平台级三清后再加载
+    // 卫生第一步（/B 采纳，2026-11-03）：平台级三清后再加载
     // ——clearLocalStorage 直接走 Android WebStorage.deleteAllData()，比
     // in-page JS 清得更早（页面 bootstrap 前凭据已不存在，官方页无从
     // "自动恢复旧登录"）；clearCache 防哈希化 JS 资产陈旧（用户失败卡
@@ -292,7 +292,7 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  /// 卫生流程（2026-11-03 对抗审查重构，两段式）：
+  /// 卫生流程：
   /// ①首个 zcode.z.ai 域 finish：in-page 兜底清一次，**立即导航回
   ///   规范地址 _target**（不是 reload()——官方页已用 replaceState 把
   ///   过期 sid/mid 写进当前 URL，reload 会原样重放=失败卡死循环；
@@ -400,7 +400,7 @@ class _LoginPageState extends State<LoginPage> {
       _diag('extract: identity=${identity == null ? "absent" : "ok"}');
       if (!mounted || _done) return;
       final app = AppStateScope.of(context);
-      // 先落库再置 _done（对抗审查）：save 抛出时 _done 保持 false，
+      // 先落库再置 _done：save 抛出时 _done 保持 false，
       // 轮询下一拍重试（token 仍在 localStorage）——否则会停在"已取消
       // 轮询+不 pop"的哑死态。连续失败 5 次放弃（保留页面让用户手动退）。
       String? savedAccountId;
@@ -605,7 +605,7 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () {
-              // 重试走完整清场（对抗审查 M3）：错误页可能是中途文档，
+              // 重试走完整清场：错误页可能是中途文档，
               // reload() 会原样重放其 URL（或带过期 sid）——重置卫生
               // 状态机后回规范地址重来。
               setState(() => _loadError = null);

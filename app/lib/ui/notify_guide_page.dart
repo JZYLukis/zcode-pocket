@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 import '../core/oem_vendor.dart';
 import '../core/theme.dart';
 
-/// 后台与通知保障引导页（三层兜底）：
+/// 后台与通知保障引导页（阶段 3 第二段后台专项，三层兜底）：
 /// ①按钮自动跳转系统设置（组件名依次尝试）→ ②跳应用详情页手点 →
 /// ③跳不动时图文指引。部分厂商省电机制下代码全对也可能被杀，这三步是
-/// "审批提醒"可靠工作的前提（开启提醒前一次配好）。
+/// "审批提醒"可靠工作的前提（用户 2026-10-18 拍板：开提醒时一次配好）。
 ///
-/// 第 1 步文案与跳转目标按厂商档位切换（详见 oem_vendor.dart）；
-/// 读取失败回落华为档（与该机制引入前的行为一致）。
+/// 第 1 步文案与跳转目标按厂商档位切换（详见
+/// oem_vendor.dart）；读取失败回落华为档=本机制引入前的原行为。
 class NotifyGuidePage extends StatefulWidget {
   const NotifyGuidePage({super.key, this.vendorOverrideForTest});
 
@@ -134,7 +134,7 @@ class _NotifyGuidePageState extends State<NotifyGuidePage>
             ),
             child: const Text(
               '部分手机的省电机制会在后台清理应用——代码全部正确，通知仍可能'
-              '收不到。开启「审批提醒」前，请把下面几步一次配好（全阶段只用配一次）。',
+              '收不到。开启「审批提醒」前，请把下面几步一次配好（全程只需配置一次）。',
               style: TextStyle(fontSize: AppType.uiBase, height: 1.5),
             ),
           ),
@@ -160,6 +160,7 @@ class _NotifyGuidePageState extends State<NotifyGuidePage>
             title: '忽略电池优化',
             body: '允许应用不受电池优化限制，后台连接不被系统休眠打断。',
             actionLabel: _batteryIgnored == true ? '已配置 ✓' : '去设置',
+            // 已配置态传 null=渲染禁用按钮（StepCard 恒渲染按钮）。
             onAction: _batteryIgnored == true ? null : _requestBattery,
             footnote: _batteryIgnored == null ? null : (_batteryIgnored! ? '已忽略电池优化' : null),
           ),
@@ -260,7 +261,7 @@ class _StepCard extends StatelessWidget {
               ),
             ),
           ],
-          if (actionLabel != null && onAction != null) ...[
+          if (actionLabel != null) ...[
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,

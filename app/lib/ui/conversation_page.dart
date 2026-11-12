@@ -1235,7 +1235,7 @@ class _ConversationPageState extends State<ConversationPage> {
       ..start();
     // 1.0.1 真机验收⑤A：跨区 push-first——等待目标工作区就绪（键匹配
     // 且桥在场）再订阅；切换失败（workspaceError）/超时走错误态可重试。
-    // 对抗审查高②：等待循环的 throw 原在 try 外（_subscribe 是
+    // 高②：等待循环的 throw 原在 try 外（_subscribe 是
     // fire-and-forget，异常被 PlatformDispatcher 吞→页面永久转圈）。
     // 收进本 try-catch，走 _syncError 错误态+重试按钮。
     final waitKey = widget.waitForWorkspace;
@@ -1265,7 +1265,7 @@ class _ConversationPageState extends State<ConversationPage> {
         }
       } on Object catch (e) {
         if (!mounted) return;
-        // 对抗审查遗留核实修（2026-11-07）：等待超时/切换失败时，首页
+        // 遗留核实修（2026-11-07）：等待超时/切换失败时，首页
         // 仍挂着 keepHomePreview 保住的旧工作区列表——本页已判死，旧
         // 列表不能再以可用状态示人；与 task_center 失败路径同语义
         // （clearStaleHomePreview 幂等，双清无害）。
@@ -1353,7 +1353,7 @@ class _ConversationPageState extends State<ConversationPage> {
       // 验收 C（子代理下钻）：lineage-invalid=子会话工作目录≠父任务
       // 根目录（如 官方 app 源码 子目录），3.16.x CLI 订阅校验拒绝且重试必然
       // 循环失败——人话化；3.17 虽重写解析区，但严格 path 等价校验仍在，
-      // 官方 app 源码 子目录场景升级后仍可能被拒（对抗审查 D6b 源码复核）。
+      // 官方 app 源码 子目录场景升级后仍可能被拒（D6b 源码复核）。
       // 三轮审查 /：新增三类内部 StateError 的人话映射——不再把
       // 「Bad state:」英文前缀裸给用户，桥自建场景也不再误称"已切换"。
       final raw = '$e';
@@ -2402,7 +2402,7 @@ class _ConversationPageState extends State<ConversationPage> {
         // 批⑦（2026-10-23）：mode=权限档、planEnabled=独立开关并行提交
         // （官方 composerSubmissionConfig.ts:35-37 同款；_pendingMode 不再
         // 承载 'plan'——计划从开关来，可为显式 false=关闭会话已开的计划）。
-        // 对抗审查 （2026-10-24）：服务端 resolveExecutionState 对
+        // （2026-10-24）：服务端 resolveExecutionState 对
         // "带 mode 无 planEnabled"的提交按 mode.success⇒false 收敛——
         // 本次提交带 mode 时必须成对冻结当前计划生效值（官方提交瞬间
         // 冻结同款），否则挂起回退场景下计划被静默关闭。
@@ -3888,7 +3888,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     // 立即下发：先挂起显示（药丸即时反馈），accepted 后转本地已生效。
     setState(() => _pendingMode = picked);
-    // 对抗审查 （2026-10-24）：switchCollaborationMode 无 planEnabled
+    // （2026-10-24）：switchCollaborationMode 无 planEnabled
     // 字段，服务端 resolveExecutionState 对任何 success 态权限档都会把
     // planEnabled 置 false（execution-state.ts:12-23）——切档必然关计划
     // （协议无法成对携带，官方桌面靠"切档只改草稿、提交时成对冻结"避开
@@ -3979,7 +3979,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
     Future<void> run(Future<dynamic> Function() op) async {
       try {
-        // ack status 检查（对抗审查）：sendCommand 对 rejected/stale
+        // ack status 检查：sendCommand 对 rejected/stale
         // 耗尽只打日志正常返回——被拒不能当成功。
         final res = await op();
         if (res is Map && res['status'] is String) {
@@ -5756,7 +5756,7 @@ class _ConversationPageState extends State<ConversationPage> {
               if (item is TurnBarItem && idx == lastTurnIdx) {
                 _lastTurnHeaderId = intOf(item.work.header?['rowId']);
               }
-              // 轮距（对抗审查收敛项 2026-10-22 对位官方 56=pt-14）：
+              // 轮距（收敛项 2026-10-22 对位官方 56=pt-14）：
               // 候选 15 验收 用户拍板紧凑优先——轮顶 56→28（手机档
               // 减半；轮内首条 20/条目间 16 不变）。官方节奏在手机长会话
               // 里观感过松（真机实测轮间 ≈84dp 起步）。

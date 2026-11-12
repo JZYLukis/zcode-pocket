@@ -417,7 +417,7 @@ void main() {
         toolPreview({
           'inputText': '{"file_path":"G:/proj/main.dart","limit":50}',
         }),
-        // 对抗审查 3-8：文件名为主（官方 renderFileChip 叶子名+路径窄隐）。
+        // -8：文件名为主（官方 renderFileChip 叶子名+路径窄隐）。
         'main.dart',
       );
       expect(

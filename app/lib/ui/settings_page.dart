@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,8 @@ import '../state/app_state_scope.dart';
 import 'app_widgets.dart';
 import 'about_page.dart';
 import 'settings_accounts_page.dart';
+import 'settings_security_page.dart';
+import 'update_flow.dart';
 import 'settings_conversation_page.dart';
 import 'settings_notifications_page.dart';
 import 'settings_voice_page.dart';
@@ -197,6 +200,52 @@ class SettingsPage extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const UsagePage())),
             ),
+            // 应用内更新：入口行（检查更新+开关收在
+            // 二级动作——开关单独一行，避免一级页过长）。
+            ListTile(
+              leading: const Icon(Icons.system_update_outlined, size: 20),
+              title: const Text(
+                '软件更新',
+                style: TextStyle(fontSize: AppType.uiBase),
+              ),
+              subtitle: const Text(
+                '检查新版本并应用内下载安装（需安装权限）',
+                style: TextStyle(fontSize: AppType.uiCaption),
+              ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
+              onTap: () => unawaited(checkAndPrompt(context, manual: true)),
+            ),
+            SwitchListTile(
+              key: const ValueKey('settings-update-in-app'),
+              secondary: const Icon(Icons.download_outlined, size: 20),
+              title: const Text(
+                '应用内更新',
+                style: TextStyle(fontSize: AppType.uiBase),
+              ),
+              subtitle: const Text(
+                '关闭后仅提示新版本，不下载也不申请安装权限',
+                style: TextStyle(fontSize: AppType.uiCaption),
+              ),
+              value: app.uiPrefs.updateInAppEnabled,
+              onChanged: (v) => app.uiPrefs.setUpdateInAppEnabled(v),
+            ),
+            // 应用锁：安全组（方式三态/自动锁定/防泄露）。
+            const AppSectionHeader('安全'),
+            ListTile(
+              leading: const Icon(Icons.lock_outline, size: 20),
+              title: const Text(
+                '应用锁',
+                style: TextStyle(fontSize: AppType.uiBase),
+              ),
+              subtitle: const Text(
+                '冷启动与后台锁定需验证（系统锁屏 / PIN 码）',
+                style: TextStyle(fontSize: AppType.uiCaption),
+              ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsSecurityPage()),
+              ),
+            ),
             const AppSectionHeader('关于'),
             // 关于页（2026-11-04 开源说明聚合批）：声明/隐私/项目许可/
             // 第三方来源/依赖许可集中到二级页，一级页只留一个入口。
@@ -222,7 +271,7 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-//三档段选器（/ 收敛单源：语言/主题两份逐行
+//三档段选器（收敛单源：语言/主题两份逐行
 /// 同构实现——触控规格/视觉调整需双改，历史上触控高 46→48 修正两处各
 /// 记一遍）。自绘 token 化（官方黑白骨架语言：选中=selected 底+
 /// foreground 字，未选=transparent 底+foregroundSubtle 字；48dp 触控高；

@@ -2,7 +2,7 @@
 // 按钮可以考虑加上」——桌面 ConversationRowView.tsx:1580-1649 轮尾
 // action bar 对位。本文件锁：轮尾四钮（仅完成态轮尾）、反馈乐观切换、
 // 缺 entityId 协议钮禁用、分支 ack 打开子会话。
-// 2026-10-24 对抗审查回填：fork 桩改真实信封形状（ack.result.sessionId
+// 2026-10-24 回填：fork 桩改真实信封形状（ack.result.sessionId
 // ——此前扁平桩形状与 wire 不符把 bug 盖住）；rejected 回滚；
 // 中断轮不出操作行；guided 一轮多段只挂末段；复制=整轮
 // 正文合并。

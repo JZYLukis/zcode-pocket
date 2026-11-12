@@ -160,7 +160,7 @@ void main() {
     _expectNoMissing('DiffViewerPage');
   });
 
-  testWidgets('英文·NotifyGuidePage 无未翻译项（含各厂商档位）',
+  testWidgets('英文·NotifyGuidePage 无未翻译项（含  各档）',
       (tester) async {
     L10n.setTestLocale('en-US');
     L10n.collectMissing = true;
@@ -171,7 +171,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     _expectNoMissing('NotifyGuidePage');
-    // 厂商档位文案（oem_vendor.dart）全部过一遍英文命中。
+    // 厂商档位文案（oem_vendor.dart 新增档）全部过一遍英文命中。
     for (final vendor in OemVendor.values) {
       await tester.pumpWidget(
         MaterialApp(

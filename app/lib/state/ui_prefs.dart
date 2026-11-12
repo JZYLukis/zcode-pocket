@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+
+// ignore: unused_import
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// UI 偏好（阶段 2 波次 1）：工具调用显示开关（需求池 #1，设置页第一项）。
@@ -54,14 +57,35 @@ class UiPrefs extends ChangeNotifier {
   /// 不再打扰）。
   static const _keyFabMenuHintShown = 'ui.fabMenuHintShown';
 
-  /// 宽屏双栏左栏收起态（折叠屏用户反馈需要整栏收起/展开）。
-  /// 收起后右栏全宽，顶栏同位钮切换。
+  /// 宽屏双栏左栏收起态（vivo X Fold 6 真机
+  /// 反馈「左栏没有展开收起选项」）——收起后右栏全宽，顶栏同位钮切换。
   static const _keyDualPaneCollapsed = 'ui.dualPaneCollapsed';
+
+  /// 应用锁：方式三态/自动锁定秒数（0=立即）/锁定期
+  /// FLAG_SECURE 防缩略图泄露/PIN 盐+哈希（不存明文）。
+  static const _keyAppLockMode = 'ui.appLockMode';
+  static const _keyAppLockAutoLockSeconds = 'ui.appLockAutoLockSeconds';
+  static const _keyAppLockSecureFlag = 'ui.appLockSecureFlag';
+  static const _keyAppLockPinSalt = 'ui.appLockPinSalt';
+  static const _keyAppLockPinHash = 'ui.appLockPinHash';
+
+  /// 应用内更新：开关（默认开）+上次自动检查时刻
+  /// （epoch 毫秒；24h 节流静默检查）。
+  static const _keyUpdateInAppEnabled = 'ui.updateInAppEnabled';
+  static const _keyUpdateLastCheckAt = 'ui.updateLastCheckAt';
 
   final FlutterSecureStorage _storage;
   bool _showToolCalls = true;
   bool _fabMenuHintShown = false;
   bool _dualPaneCollapsed = false;
+  String _appLockMode = 'none';
+  int _appLockAutoLockSeconds = 60;
+  bool _appLockSecureFlag = true;
+  bool _updateInAppEnabled = true;
+  bool _loadedFlag = false;
+  int _updateLastCheckAt = 0;
+  String? _appLockPinSalt;
+  String? _appLockPinHash;
   String? _lastModel;
   String? _lastThought;
   String _themeMode = 'system';
@@ -138,12 +162,23 @@ class UiPrefs extends ChangeNotifier {
     }
   }
 
-  Future<void> load() async {
+  Future<void>? _loadInFlight;
+
+  Future<void> load() {
+    // 幂等/防重入：并发调用共享同一次在飞结果（gate 兜底拉起与
+    // main 启动链可能同时到达）。
+    return _loadInFlight ??= _loadOnce();
+  }
+
+  Future<void> _loadOnce() async {
     try {
-      // 16 个键此前串行 await（每键一次平台
+    try {
+      // （历史注释：曾为 16 键串行 await；现 28 键并行读）（每键一次平台
       // 通道+Keystore 解密往返）阻塞启动链——Future.wait 并行读（键间
       // 无顺序依赖），解码与默认值语义不变。
-      final reads = await Future.wait<String?>([
+      // 任一键读取异常不得让全部偏好回默认（应用锁静默
+      // 关闭的 fail-open 面）——逐键捕获为 null（null=默认值语义不变）。
+      final readFutures = <Future<String?>>[
         _storage.read(key: _keyShowToolCalls), // 0
         _storage.read(key: _keyLastModel), // 1
         _storage.read(key: _keyLastThought), // 2
@@ -165,7 +200,19 @@ class UiPrefs extends ChangeNotifier {
         _storage.read(key: _keyShowOtherComputers), // 18
         _storage.read(key: _keyFabMenuHintShown), // 19
         _storage.read(key: _keyDualPaneCollapsed), // 20
-      ]);
+        _storage.read(key: _keyAppLockMode), // 21
+        _storage.read(key: _keyAppLockAutoLockSeconds), // 22
+        _storage.read(key: _keyAppLockSecureFlag), // 23
+        _storage.read(key: _keyAppLockPinSalt), // 24
+        _storage.read(key: _keyAppLockPinHash), // 25
+        _storage.read(key: _keyUpdateInAppEnabled), // 26
+        _storage.read(key: _keyUpdateLastCheckAt), // 27
+      ];
+      final reads = await Future.wait(
+        readFutures.map(
+          (f) => f.catchError((_) => null as String?),
+        ),
+      );
       final raw = reads[0];
       if (raw != null) _showToolCalls = raw == 'true';
       _lastModel = reads[1];
@@ -191,6 +238,20 @@ class UiPrefs extends ChangeNotifier {
       _showOtherComputers = reads[18] == 'true';
       _fabMenuHintShown = reads[19] == 'true';
       _dualPaneCollapsed = reads[20] == 'true';
+      final alm = reads[21];
+      if (alm == 'system' || alm == 'pin') _appLockMode = alm!;
+      final alsec = reads[22];
+      if (alsec != null) {
+        final v = int.tryParse(alsec);
+        if (v != null && v >= 0 && v <= 3600) _appLockAutoLockSeconds = v;
+      }
+      // 缺省 true（防泄露默认开）；显式 'false' 才关。
+      _appLockSecureFlag = reads[23] != 'false';
+      _appLockPinSalt = (reads[24] ?? '').isNotEmpty ? reads[24] : null;
+      _appLockPinHash = (reads[25] ?? '').isNotEmpty ? reads[25] : null;
+      // 更新开关缺省 true；显式 'false' 才关。
+      _updateInAppEnabled = reads[26] != 'false';
+      _updateLastCheckAt = int.tryParse(reads[27] ?? '') ?? 0;
       try {
         final qr = reads[14];
         if (qr != null && qr.isNotEmpty) {
@@ -244,8 +305,11 @@ class UiPrefs extends ChangeNotifier {
       debugPrint('[prefs] load-fail: $e');
     }
     loaded = true;
+    _loadedFlag = true;
     notifyListeners();
-  }
+  } finally {
+      _loadInFlight = null;
+    }}
 
   /// 主题档位切换（system|light|dark）。即时生效由 app 根的
   /// ListenableBuilder(uiPrefs) 驱动 MaterialApp.themeMode 重建。
@@ -354,6 +418,78 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyDualPaneCollapsed, value ? 'true' : 'false');
   }
 
+  // ---- 应用锁----
+  String get appLockModeRaw => _appLockMode;
+  int get appLockAutoLockSeconds => _appLockAutoLockSeconds;
+  bool get appLockSecureFlag => _appLockSecureFlag;
+  String? get appLockPinSalt => _appLockPinSalt;
+  String? get appLockPinHash => _appLockPinHash;
+
+  Future<void> setAppLockMode(String value) async {
+    if (_appLockMode == value) return;
+    _appLockMode = value;
+    notifyListeners();
+    await _persist(_keyAppLockMode, value);
+  }
+
+  Future<void> setAppLockAutoLockSeconds(int value) async {
+    if (_appLockAutoLockSeconds == value) return;
+    _appLockAutoLockSeconds = value;
+    notifyListeners();
+    await _persist(_keyAppLockAutoLockSeconds, '$value');
+  }
+
+  Future<void> setAppLockSecureFlag(bool value) async {
+    if (_appLockSecureFlag == value) return;
+    _appLockSecureFlag = value;
+    notifyListeners();
+    await _persist(_keyAppLockSecureFlag, value ? 'true' : 'false');
+  }
+
+  /// PIN 盐+哈希成对写入（调用方：settings_security_page 设置流程）。
+  Future<void> setAppLockPin(String saltHex, String hashHex) async {
+    _appLockPinSalt = saltHex;
+    _appLockPinHash = hashHex;
+    notifyListeners();
+    await _persist(_keyAppLockPinSalt, saltHex);
+    await _persist(_keyAppLockPinHash, hashHex);
+  }
+
+  // ---- 应用内更新----
+  bool get updateInAppEnabled => _updateInAppEnabled;
+
+  /// load 是否已完成（AppLockGate 装载门闩——未完成时
+  /// 不得把内存默认值当配置消费）。
+  bool get isLoaded => _loadedFlag;
+
+  /// 测试缝：标记已就绪（secure storage 在测试环境 read 挂起时注入）。
+  @visibleForTesting
+  void debugMarkLoadedForTest() => _loadedFlag = true;
+  int get updateLastCheckAt => _updateLastCheckAt;
+
+  Future<void> setUpdateInAppEnabled(bool value) async {
+    if (_updateInAppEnabled == value) return;
+    _updateInAppEnabled = value;
+    notifyListeners();
+    await _persist(_keyUpdateInAppEnabled, value ? 'true' : 'false');
+  }
+
+  Future<void> setUpdateLastCheckAt(int epochMs) async {
+    if (_updateLastCheckAt == epochMs) return;
+    _updateLastCheckAt = epochMs;
+    notifyListeners();
+    await _persist(_keyUpdateLastCheckAt, '$epochMs');
+  }
+
+  /// 关闭应用锁时清 PIN 材料（mode 由调用方另写 none）。
+  Future<void> clearAppLockPin() async {
+    _appLockPinSalt = null;
+    _appLockPinHash = null;
+    notifyListeners();
+    await _persist(_keyAppLockPinSalt, null);
+    await _persist(_keyAppLockPinHash, null);
+  }
+
   /// 自动采纳开关（下发副作用由调用方处理——设置页直发 CLI）。
   Future<void> setAskAutoResolutionEnabled(bool value) async {
     if (_askAutoResolutionEnabled == value) return;
@@ -451,7 +587,7 @@ class UiPrefs extends ChangeNotifier {
     );
   }
 
-  /// 项目排序（按电脑 sid 分桶；null=未自定义）。 ：
+  /// 项目排序（按电脑 sid 分桶；null=未自定义）。
   /// 返回不可变视图（对齐同文件 homeCollapsedGroups 惯例，防内部列表
   /// 被调用方原地变更绕过持久化）。
   List<String>? projectOrder(String deviceSid) {

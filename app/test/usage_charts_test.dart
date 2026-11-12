@@ -99,7 +99,7 @@ void main() {
       );
     });
 
-    // 深色模式批1 对抗审查路 回归靶：labelStyle/gridColor 随主题
+    // 深色模式批1 回归靶：labelStyle/gridColor 随主题
     // 变化（数据不变）必须重绘，否则深浅切换图表标签残留旧主题色。
     test('颜色参数变化（labelStyle/gridColor/主题切换）：重绘', () {
       final a = LineChartPainter(

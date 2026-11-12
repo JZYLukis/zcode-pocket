@@ -860,7 +860,7 @@ void main() {
     );
   });
 
-  // 2026-11-08 对抗审查批 #8（中）：结果未知确权两分支——accepted 后
+  // 2026-11-08 accepted 后
   // 原文仍留输入框/草稿（再点即重发已送达消息）；failed 后正文不在框、
   // 盘上仍 in-flight。
   testWidgets('确权 accepted：清空输入框并按恢复 revision 删草稿', (tester) async {

@@ -44,6 +44,30 @@ void main() {
     );
   });
 
+  test('应用内更新安装链路三件套', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    final permissions = _usesPermissions(manifest);
+    expect(
+      permissions.contains('android.permission.REQUEST_INSTALL_PACKAGES'),
+      isTrue,
+      reason: '应用内更新调起安装器必需（仅用户点「立即更新」时触发授权流程）',
+    );
+    final provider = _nodeBlock(manifest, 'provider');
+    expect(provider, isNotNull, reason: 'manifest 缺 FileProvider 节点');
+    expect(
+      provider!.contains('androidx.core.content.FileProvider'),
+      isTrue,
+      reason: 'openApk 调起安装器需要 content:// URI 授权读取',
+    );
+    expect(
+      File('android/app/src/main/res/xml/update_file_paths.xml')
+          .existsSync(),
+      isTrue,
+      reason: 'FileProvider paths 配置缺失',
+    );
+  });
+
   test('前台服务类型必须为 specialUse（Android 14+ dataSync 6h 硬限）', () {
     final manifest = File('android/app/src/main/AndroidManifest.xml')
         .readAsStringSync();

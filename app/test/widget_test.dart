@@ -10,6 +10,11 @@ void main() {
   testWidgets('无档案时进入配对页', (tester) async {
     // 测试环境 secure storage 不可用（read 挂起），注入已就绪的空档案状态
     final app = AppState()..loaded = true;
+    // 对抗修复 ① 配套：gate 门闩在测试环境（asserts 态）等注入。
+    app.uiPrefs.debugMarkLoadedForTest();
+    // 应用锁 gate 门闩（对抗修复 ①）依赖 uiPrefs.isLoaded——测试
+    // 环境 secure storage read 挂起，注入内存态就绪。
+    app.uiPrefs.debugMarkLoadedForTest();
     await tester.pumpWidget(ZcodeCompanionApp(app: app));
     await tester.pump();
     expect(find.byType(PairingPage), findsOneWidget);

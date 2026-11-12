@@ -128,8 +128,7 @@ class MarkdownView extends StatelessWidget {
     MarkdownStyleSheet base,
   ) =>
       base.copyWith(
-// 排版密度对齐官方（2026-10-22 对抗审查收敛项：正文 1.6 无字距
-        // vs 官方 leading-[1.75] tracking-wide，message.tsx:1368）。
+// 排版密度对齐官方。
         p: TextStyle(
           fontSize: AppType.uiBase,
           color: context.colors.foreground,

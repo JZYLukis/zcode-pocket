@@ -120,7 +120,7 @@ void main() {
     await registry.demote();
     final sub = _Sub('s-demote');
     current.gates.single.complete(sub);
-    // 对抗审查 ：迟到订阅必须以错误收场，不得静默返回死订阅。
+    // 迟到订阅必须以错误收场，不得静默返回死订阅。
     await expectLater(pending, throwsStateError);
     expect(registry.subscriptionOf('s-demote'), isNull);
     expect(sub.disposeCalls, 1);
@@ -201,7 +201,7 @@ void main() {
     expect(registry.conversationStates, isEmpty);
   });
 
-  test('demote 的 flush 窗口内新发起的注册不残留（对抗审查 M2）', () async {
+  test('demote 的 flush 窗口内新发起的注册不残留', () async {
     final dir = await Directory.systemTemp.createTemp('conversation-registry-window');
     addTearDown(() => dir.delete(recursive: true));
     final store = _GatedWriteStore(dir);

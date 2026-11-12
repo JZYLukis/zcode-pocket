@@ -89,7 +89,7 @@ void main() {
     test('官方词表', () {
       expect(toolStatusLabel('pending', turnRunning: true), '等待中');
       expect(toolStatusLabel('running', turnRunning: true), '执行中');
-      // 对抗审查 4-3'：参数流式写入中=「等待中」（官方 toolCallRowAdapter
+      // -3'：参数流式写入中=「等待中」（官方 toolCallRowAdapter
       // pending 词表），仅真正执行才是「执行中」。
       expect(toolStatusLabel('inputStreaming', turnRunning: true), '等待中');
       expect(toolStatusLabel('pendingApproval', turnRunning: true), '等待确认');
