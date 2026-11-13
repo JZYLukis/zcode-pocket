@@ -29,7 +29,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "Verifying release: $TAG"
-          gh release download "$TAG" --dir assets --clobber
+          # 无 checkout 步骤——gh 需显式仓库上下文（否则尝试 git 解析
+          # 报 not a git repository，首跑实证）。
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir assets --clobber
           ls -la assets/
 
       - name: Set up JDK
