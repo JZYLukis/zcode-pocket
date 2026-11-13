@@ -42,6 +42,9 @@ jobs:
 
       - name: Verify APK signatures (official fingerprint)
         run: |
+          # ubuntu runner 自带 Android build-tools（apksigner）但不在
+          # PATH——二跑实证 command not found 后指纹恒空误报。
+          export PATH="$PATH:$(echo "$ANDROID_HOME/build-tools"/*)"
           EXPECTED="2e079b31d61d3f6fbbc5aa4fc9ed0cb0d2787b4de7e558345b630a59c546b681"
           fail=0
           for apk in assets/*.apk; do
