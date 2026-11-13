@@ -282,7 +282,7 @@ class NotifyCoordinator {
     if (events.isEmpty && old == now) return;
     _lastLiveAt[deviceSid] = nowMs();
     // 合并进基线（保留其余任务的基线）。verifying 记账随写回保留
-    // （批尾A 级修正：now 来自 si 行 seen 恒 false，裸写回会
+    // （批尾对抗审查 A 级修正：now 来自 si 行 seen 恒 false，裸写回会
     // 在 verifying→active 迁移时摧毁去重标记→迭代循环每轮重发）。
     final next = Map<String, PhaseSnapshot>.of(baselines);
     next[entry.sessionId] = carryGoalVerifyingSeen(old, now);

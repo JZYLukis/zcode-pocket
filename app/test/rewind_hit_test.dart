@@ -71,7 +71,7 @@ void main() {
     for (var i = 0; i < 15; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    final key = const ValueKey('file-summary-rewind-1');
+    final key = const ValueKey('早前批次');
     expect(find.byKey(key), findsOneWidget);
     final size = tester.getSize(find.byKey(key));
     expect(size.width, 44);

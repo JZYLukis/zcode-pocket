@@ -35,7 +35,7 @@ class SystemAsr {
   /// 测试环境（无原生 handler）安全回落 false。
   static bool get available => _availableCache ?? false;
 
-  /// 消费点兜底重探：main 只在启动时探一次，
+  /// 消费点兜底重探（2026-11-08 对抗审查）：main 只在启动时探一次，
   /// 开机瞬间识别服务未就绪（PlatformException 不落缓存）会让语音入口
   /// 本会话永久隐藏。UI 求值发现缓存为空时调用本方法按节流重探；成功后
   /// `available` 立即可读（下一次页面重建即显示入口）。

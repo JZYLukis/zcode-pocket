@@ -340,11 +340,11 @@ void main() {
       await _pump(tester);
 
       // 展开第一题的自定义输入并输入一段放弃的文本。
-      await tester.tap(find.byKey(const ValueKey('q-custom-open-0')));
+      await tester.tap(find.byKey(const ValueKey('早前批次')));
       await tester.pump();
-      expect(find.byKey(const ValueKey('q-custom-input-0')), findsOneWidget);
+      expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
       await tester.enterText(
-        find.byKey(const ValueKey('q-custom-input-0')),
+        find.byKey(const ValueKey('早前批次')),
         '放弃的自定义',
       );
       await tester.pump();
@@ -356,19 +356,19 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(find.text('选项A', findRichText: true));
       await _pump(tester);
-      expect(find.byKey(const ValueKey('q-custom-input-1')), findsNothing,
+      expect(find.byKey(const ValueKey('早前批次')), findsNothing,
           reason: '第二题的自定义默认收起');
 
       // 返回第一题：自定义输入框不得仍以旧文本展开（旧实现残留）。
       await tester.tap(find.byKey(const ValueKey('question-prev')));
       await _pump(tester);
-      expect(find.byKey(const ValueKey('q-custom-input-0')), findsNothing,
+      expect(find.byKey(const ValueKey('早前批次')), findsNothing,
           reason: '选中选项后该题自定义输入框应已收起');
-      expect(find.byKey(const ValueKey('q-custom-open-0')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('q-custom-open-0')));
+      expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('早前批次')));
       await tester.pump();
       final field = tester.widget<TextField>(
-        find.byKey(const ValueKey('q-custom-input-0')),
+        find.byKey(const ValueKey('早前批次')),
       );
       expect(field.controller!.text, isEmpty,
           reason: '旧自定义文本不得复活（控制器已清空）');

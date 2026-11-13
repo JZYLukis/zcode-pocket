@@ -180,7 +180,7 @@ class AssistantText extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: ConstrainedBox(
           // 640 对齐官方 max-w 量级；折叠屏展开态按屏宽 94% 收口，
-          // 避免宽屏正文被 640 卡住右侧空一截（#27）。
+          // 避免宽屏正文被 640 卡住右侧空一截（对抗审查 C#27）。
           constraints: BoxConstraints(
             maxWidth: MediaQuery.sizeOf(context).width * 0.94 > 640
                 ? 640
@@ -336,7 +336,7 @@ class TimelineMarkerDivider extends StatelessWidget {
 class TurnTailActions extends StatefulWidget {
   final Map<String, dynamic> row;
 
-  /// 轮尾复制内容（官方=整轮全部 text 段 join("\n\n")；
+  /// 轮尾复制内容（对抗审查 ：官方=整轮全部 text 段 join("\n\n")；
   /// 缺省回落本行 text）。
   final String? copyText;
 
@@ -363,11 +363,11 @@ class TurnTailActionsState extends State<TurnTailActions> {
   /// 乐观反馈覆盖值（null=跟随行数据 row.feedback）。
   String? _override;
 
-  /// 权威行值同步锚：行数据推送更新 feedback 字段后
+  /// 权威行值同步锚（对抗审查）：行数据推送更新 feedback 字段后
   /// override 不得永久遮蔽——官方 useEffect([feedback]) 同步本地态。
   String? _syncedRowFeedback;
 
-  /// 分支在途防抖：连点=两条 forkAssistant=服务端两个
+  /// 分支在途防抖（对抗审查）：连点=两条 forkAssistant=服务端两个
   /// 子会话+路由叠栈。
   bool _forking = false;
 
@@ -462,7 +462,7 @@ class TurnTailActionsState extends State<TurnTailActions> {
         return;
       }
       // sessionId 嵌套在 ack.result 下（command.ts:392-401/450-463，官方
-      // 消费 ack.result.sessionId——此前读顶层恒为空，
+      // 消费 ack.result.sessionId——对抗审查 ：此前读顶层恒为空，
       // 分支永远打不开子会话还提示成功）。
       final result = res is Map ? res['result'] : null;
       final sid = result is Map ? '${result['sessionId'] ?? ''}' : '';
@@ -741,7 +741,7 @@ class UserBubble extends StatelessWidget {
                           decoration: BoxDecoration(
                             // R 轮审美（2026-10-17 用户反馈"自己发的信息
                             // 不明显"）：品牌色 6% 浅底保辨识（surface 与
-                            // 背景几乎同色）。描边收敛 2026-10-22：
+                            // 背景几乎同色）。描边对抗审查收敛 2026-10-22：
                             // 38% 是加竖条锚点之前的历史浓度，官方仅
                             // border(10%)——竖条在，描边降 15% 不丢辨识。
                             // 批4 拍板 a（2026-10-23 用户）：深色气泡改亮
@@ -790,7 +790,7 @@ class UserBubble extends StatelessWidget {
   }
 }
 
-/// 用户长消息折叠（a-3，2026-10-22；官方
+/// 用户长消息折叠（对抗审查 1a-3，2026-10-22；官方
 /// ConversationUserInputBody:7-25 120px+渐隐+悬浮展开钮的手机化）：
 /// 阈值 180dp（官方 120px≈桌面 5 行；手机行高更小，约 11 行起折——
 /// 照搬 120dp 会把正常两三句追问也折了）；展开钮 ≥44px 触控（官方

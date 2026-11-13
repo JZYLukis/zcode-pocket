@@ -1,4 +1,4 @@
-// 应用锁：纯逻辑（autoLock 判定/PIN hash/爆破冷却/mode
+// 应用锁（早前批次）：纯逻辑（autoLock 判定/PIN hash/爆破冷却/mode
 // 解析）+ 锁遮罩旅程（PIN 模式解锁/系统模式通道）+ 设置页三态切换。
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
@@ -152,7 +152,7 @@ void main() {
     });
   });
 
-  test('：回前台合成 hidden 不得重置计时（真实序列 30/60/300 档生效）', () {
+  test('①H2：回前台合成 hidden 不得重置计时（真实序列 30/60/300 档生效）', () {
     final c = AppLockController();
     var now = DateTime(2026, 11, 12, 10);
     c.now = () => now;
@@ -178,7 +178,7 @@ void main() {
     c.dispose();
   });
 
-  test('：系统验证成功后紧随的 resumed 不得再锁（抑制标记）', () async {
+  test('①H3：系统验证成功后紧随的 resumed 不得再锁（抑制标记）', () async {
     final c = AppLockController();
     var now = DateTime(2026, 11, 12, 10);
     c.now = () => now;
@@ -204,7 +204,7 @@ void main() {
     c.dispose();
   });
 
-  test('：mode=pin 而材料缺失 → 降级 none 且置 pinMaterialMissing（不软锁死）', () {
+  test('①H4：mode=pin 而材料缺失 → 降级 none 且置 pinMaterialMissing（不软锁死）', () {
     final c = AppLockController();
     c.loadFromPrefs(
       mode: AppLockMode.pin,
@@ -274,7 +274,7 @@ void main() {
       expect(find.text('GATE-CHILD'), findsOneWidget);
     });
 
-    testWidgets('：冷启动真实时序——prefs 未就绪不渲染内容，load 完成后锁屏出现', (tester) async {
+    testWidgets('①H1：冷启动真实时序——prefs 未就绪不渲染内容，load 完成后锁屏出现', (tester) async {
     // 关键差异：先 pump（此时 prefs.load 尚未完成=真实冷启动首帧），
     // 再补 load—— 修复前 gate 一次性闩锁把默认 none 当配置。
     final storage = _MemStorage();

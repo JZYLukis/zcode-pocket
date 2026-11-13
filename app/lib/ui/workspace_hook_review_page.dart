@@ -1,4 +1,4 @@
-// E 批（2026-11-08 拍板③）+ 返工（同日五路审查）：
+// E 批（2026-11-08 拍板③）+ 对抗审查返工（同日五路审查）：
 // ①选择=纯本地（toggleWorkspaceHookReviewItem 是写配置+作废审核代的
 // 命令，不是选择态同步——误用会导致信任所选必被 superseded 拒绝，已撤）；
 // ②respond 须查 ACK status（业务拒绝 status:'failed'+reasonCode 不是
@@ -72,7 +72,7 @@ class _WorkspaceHookReviewPageState extends State<WorkspaceHookReviewPage> {
 
   void _toggle(String itemId, bool value) {
     // 纯本地选择——toggleWorkspaceHookReviewItem 是写配置+作废
-    // 审核代的命令（高①），服务端无选择态字段，绝不在此发。
+    // 审核代的命令（对抗审查高①），服务端无选择态字段，绝不在此发。
     setState(() {
       value ? _selected.add(itemId) : _selected.remove(itemId);
     });
@@ -88,7 +88,7 @@ class _WorkspaceHookReviewPageState extends State<WorkspaceHookReviewPage> {
         _selected.toList(),
       );
       if (!mounted) return;
-      // （中②）：业务拒绝=ACK status:'failed'+reasonCode，
+      // （对抗审查中②）：业务拒绝=ACK status:'failed'+reasonCode，
       // 不是通道异常——官方判 accepted∈{accepted,duplicate,noop}。
       final status = '${res?['status'] ?? 'accepted'}';
       if (status != 'accepted' &&
@@ -114,7 +114,7 @@ class _WorkspaceHookReviewPageState extends State<WorkspaceHookReviewPage> {
   @override
   Widget build(BuildContext context) {
     final summary = (widget.interaction['summary'] as Map?)?.cast<String, dynamic>() ?? const {};
-    // ：官方禁该类交互带 autoResolution（snapshot.ts
+    // （对抗审查）：官方禁该类交互带 autoResolution（snapshot.ts
     // :339-345），deadlineAt 在 payload 顶层（workspace-hook-review.ts:93）。
     final deadline = (widget.interaction['deadlineAt'] as num?)?.toInt();
     return Scaffold(

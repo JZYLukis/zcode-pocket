@@ -93,7 +93,7 @@ SendQueueEntry _entry(String id, {String? commandId}) =>
     SendQueueEntry(id: id, text: 'text-$id', queuedAt: 1, commandId: commandId);
 
 class _Harness {
-  // （双盲乙）：默认 20ms 真时钟档在全量负载下与断言赛跑
+  // 对抗审查 M3（双盲乙）：默认 20ms 真时钟档在全量负载下与断言赛跑
   // （乙实测 5 轮全量红 1 次）。默认拉长到不可能触发的档位，重试路径
   // 由测试显式 drain() 驱动；真实 15s 定时器接线由页面级
   // send_queue_test「15s 兜底重试」用例覆盖。

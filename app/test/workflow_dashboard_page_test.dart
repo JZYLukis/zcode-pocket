@@ -1,4 +1,4 @@
-// 看板数据页真旅程：ui-coverage 声称
+// 看板数据页真旅程（2026-11-08 对抗审查高·覆盖）：ui-coverage 声称
 // render 面已覆盖，实际此前零断言（账实不符）。本组覆盖四渲染器
 //（chart 断点/table/metrics/board 含「其他」列）+ hasMore 自动排空 +
 // 空态 + 错误态重试 + 翻页失败保留已渲染条目（页脚行内错误/停止）。
@@ -325,7 +325,7 @@ void main() {
         reason: '停止=放弃续页，按钮一并收起');
   });
 
-  // 视觉补跑必修（Visual A）：5 列形态 375dp 下
+  // 视觉补跑必修（早前批次，Visual A）：5 列形态 375dp 下
   // 右缘硬切、第 2 列起不可见且零提示。红=修复前无 Scrollbar、
   // columnSpacing=56/horizontalMargin=24（桌面默认）、单元格无封顶。
   testWidgets('视觉：表格横向溢出有滚动条+间距收窄+单元格封顶', (tester) async {
@@ -379,7 +379,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // b 体量态：35 行 table 单页必须整页有界
+  // b 体量态（早前批次）：35 行 table 单页必须整页有界
   // 滚动可达末行——防「5 行夹具全绿、35 行真机溢出/不可达」类
   // （bgworks 51 条同型）。
   testWidgets('体量：35 行表格有界滚动可达末行', (tester) async {

@@ -62,7 +62,7 @@ class _ProfilesSheetState extends State<_ProfilesSheet> {
             if (p is AccountV2Profile && p.accountId != null) p.accountId!,
         };
         setState(() {
-          // multi-account-ux-1 批1（2026-11-04 拍板）：徽标始终显示所属
+          // 早前批次 批1（2026-11-04 拍板）：徽标始终显示所属
           // 账号（不再只在多账号时显示），备注名优先。
           _accountLabels = {
             for (final a in accounts) a.id: a.displayName,

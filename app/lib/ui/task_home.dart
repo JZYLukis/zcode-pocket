@@ -295,7 +295,7 @@ const kTaskHomeRecentGroupPrefix = 'recent:';
 const kTaskHomeRecentFullBuckets = {'今天', '昨天'};
 
 /// 组渐进披露默认可见条数（优化批 #13）。返回 -1=默认全展（最近视图
-/// 近两日档）；项目组=3（用户 2026-10-27 拍板 3–5 档）；最近视图
+/// 近两日档）；项目组=3（设计定稿 3–5 档）；最近视图
 /// 本周/以前档=5。
 int taskHomeGroupDefaultVisible(String groupKey) {
   if (groupKey.startsWith(kTaskHomeRecentGroupPrefix)) {

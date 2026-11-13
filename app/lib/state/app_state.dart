@@ -186,7 +186,8 @@ class AppState extends ChangeNotifier {
   Future<void> retryActiveProfileWithNewAccount() =>
       _deviceRegistry.retryActiveProfileWithNewAccount();
 
-  /// 删除账号的完整编排（真机反馈②；2026-11-03 /// 调序）：**先删凭据再拆栈**——拆栈链上任一步抛异常都不该留下
+  /// 删除账号的完整编排（真机反馈②；2026-11-03 对抗审查
+  /// 调序）：**先删凭据再拆栈**——拆栈链上任一步抛异常都不该留下
   /// "账号已不在但凭据还在"的中间态；拆栈内部逐栈 try/catch（单栈
   /// 失败不阻断其余），并同步清该账号名下设备的缓存/草稿/排队数据
   /// （防下一账号连同一台电脑先闪上一账号的任务缓存）+ 活跃指针/
@@ -602,7 +603,7 @@ class AppState extends ChangeNotifier {
         }),
       );
     }
-    // 批3（multi-account-ux-1）：通知来自另一台电脑时短暂提示「已切换
+    // 批3（早前批次）：通知来自另一台电脑时短暂提示「已切换
     // 到 {电脑名}」——隐式 activate 不能让用户以为还在这台电脑上。
     final prevSid = activeProfile?.deviceSid;
     if (reachable && prevSid != null && prevSid != deviceSid) {
@@ -621,7 +622,7 @@ class AppState extends ChangeNotifier {
     // 是否定位到产生该通知的消息（atMs>0 才提示；无时间戳的老 payload
     // 维持「仅打开会话」）。
     // atMs<=0（老 payload）=清残留——旧值若不清会被下一次通知
-    // 误配对（中·陈旧 atMs 跨会话误弹）；有值时记归属 taskId。
+    // 误配对（对抗审查中·陈旧 atMs 跨会话误弹）；有值时记归属 taskId。
     // 状态层批：目标电脑不可达（档案已删/失效）时同样清位——不能把
     // 深链提示留给之后打开的任意会话（失败收口）。
     if (atMs > 0 && reachable) {
@@ -656,7 +657,7 @@ class AppState extends ChangeNotifier {
 
   /// 两步式深链的目标时刻（通知产生时间）：会话页消费后清空——页面
   /// 据此弹「定位到相关消息？」浮层并滚动。
-  /// （中·陈旧残留）：配对目标 taskId——捕获方与消费方都
+  /// （对抗审查中·陈旧残留）：配对目标 taskId——捕获方与消费方都
   /// 校验归属，防旧通知残留值被下一次 atMs==0 通知误配对给错会话。
   int? pendingDeepLinkAt;
 
@@ -703,7 +704,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 活跃电脑所属账号的显示名（multi-account-ux-1 批1）：备注名优先，
+  /// 活跃电脑所属账号的显示名（早前批次 批1）：备注名优先，
   /// 未设置回退短码；凭据已删→"账号已删除"；无账号维度→null（顶栏
   /// 只显示电脑名）。异步从 AccountStore 取，缓存于 [_accountLabelCache]。
   String? get activeAccountLabel => _accountLabelCache;
@@ -762,7 +763,7 @@ class AppState extends ChangeNotifier {
   /// ——用户看得见界面，通知是噪音（台账记 viewing 留证据）。
   String? viewingSessionId;
 
-  /// 应用锁控制器：独立生命周期观察者（不走本类的
+  /// 应用锁控制器（早前批次）：独立生命周期观察者（不走本类的
   /// onAppPaused/onAppResumed——两者各有提前 return 分支）。attach 由
   /// app 层 initState 负责；loadFromPrefs 由 AppLockGate 首帧/设置页调用。
   final appLock = AppLockController();
@@ -772,7 +773,7 @@ class AppState extends ChangeNotifier {
   bool _appInBackground = false;
 
   bool isTaskBeingViewed(String taskId) =>
-      // 锁定态不算"在看"——否则锁屏上点通知会替用户清
+      // 对抗审查 ①：锁定态不算"在看"——否则锁屏上点通知会替用户清
       // 未读+上报查看态+吞掉后续通知。
       !_appInBackground && !appLock.locked && viewingSessionId == taskId;
 
@@ -1427,7 +1428,7 @@ class AppState extends ChangeNotifier {
     String interactionId,
   ) async {
     final conv = _conv;
-    // （·并发#3）：静默 return null 会被调用方当成功——
+    // （对抗审查·并发#3）：静默 return null 会被调用方当成功——
     // _snoozed 永久锁死而服务端从未收到（交互照旧自动结束）。
     if (conv == null) throw StateError('no active computer');
     return conv.snoozeInteractionAutoResolution(sessionId, interactionId);
@@ -1475,7 +1476,7 @@ class AppState extends ChangeNotifier {
 
   // ------------------------------------- diff / 行级操作 / 附件（波次 3b）
 
-  /// 工作流族只读查询（workflow-runs-1；详见 transport 层注释）。
+  /// 工作流族只读查询（早前批次；详见 transport 层注释）。
   Future<dynamic> workflowRuns(String sessionId, {int? limit}) async {
     final conv = _conv;
     if (conv == null) throw StateError('no active computer');
@@ -1784,14 +1785,14 @@ class AppState extends ChangeNotifier {
     // 输入草稿不依赖 90 秒断连定时器；审批保活档也必须立即落盘。
     unawaited(draftStore?.flush());
     unawaited(sendQueue?.flush());
-    // 电量档位表（battery-heartbeat-2 → 优化批 #16/#17）：
+    // 电量档位表（早前批次 → 优化批 #16/#17）：
     // - 审批提醒开（保活分支）：30s 慢档心跳 + 驻留会话明细订阅
     //   （优化批 #16：保活连接下桌面活跃会话持续推流式帧是后台耗电
     //   主因，真机 660mAh/h 实证；si+tasks-index 保留=通知数据源）。
     // - 审批提醒关（90s 断连倒计时窗口）：完全静默——不发心跳、不看
     //   门狗（优化批 #17：服务器 120s 静默容忍已实证
     //   tools/relay-v2-probe.mjs --heartbeat，窗口结束连接本就拆除；
-    //   此前 30s 慢档是 battery-heartbeat-2 的过渡档）。
+    // 此前 30s 慢档是 早前批次 的过渡档）。
     final keepAlive = uiPrefs.alertsEnabled && _fgRunning;
     for (final stack in _stacks.values) {
       if (keepAlive) {
@@ -1852,7 +1853,7 @@ class AppState extends ChangeNotifier {
   void onAppResumed() {
     _appInBackground = false;
     _lifecycleGen++;
-    // r6：回前台重拉底部安全区——任务栏开关后
+    // r6（早前批次）：回前台重拉底部安全区——任务栏开关后
     // 回 app 的值跟随（listener 推送+首帧重试之外的第三重保险）。
     unawaited(refreshSystemInset());
     _bgDisconnectTimer?.cancel();

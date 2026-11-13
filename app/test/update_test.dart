@@ -1,4 +1,4 @@
-// 应用内更新：版本比较/ABI 选择/digest 解析/
+// 应用内更新（早前批次）：版本比较/ABI 选择/digest 解析/
 // markdown 剥离纯函数 + HttpServer mock 的下载（Range 续传/镜像兜底/
 // SHA256 校验拒篡改）。
 import 'dart:async';
@@ -33,9 +33,9 @@ void main() {
 
   group('ABI 与 digest', () {
     final assets = [
-      UpdateAsset('zcode-pocket-1.0.5-arm64-v8a.apk', 'u1', 'a' * 64),
-      UpdateAsset('zcode-pocket-1.0.5-armeabi-v7a.apk', 'u2', 'b' * 64),
-      UpdateAsset('zcode-pocket-1.0.5-x86_64.apk', 'u3', 'c' * 64),
+      UpdateAsset('早前批次.0.5-arm64-v8a.apk', 'u1', 'a' * 64),
+      UpdateAsset('早前批次.0.5-armeabi-v7a.apk', 'u2', 'b' * 64),
+      UpdateAsset('早前批次.0.5-x86_64.apk', 'u3', 'c' * 64),
     ];
     test('按设备 ABI 选择资产（含别名归一）', () {
       expect(pickAssetForAbi(assets, 'arm64-v8a')?.name,
@@ -82,7 +82,7 @@ void main() {
         'body': '## 说明\\n- 修复',
         'assets': [
           {
-            'name': 'zcode-pocket-1.0.5-arm64-v8a.apk',
+            'name': '早前批次.0.5-arm64-v8a.apk',
             'browser_download_url': 'https://example.com/a.apk',
             'digest': 'sha256:${'a' * 64}',
           },
@@ -199,7 +199,7 @@ void main() {
       expect(await f.length(), payload.length);
     });
 
-    test('：416=本地已完整——isRangeSatisfied 可判（重试不再死循环）', () async {
+    test('②M3：416=本地已完整——isRangeSatisfied 可判（重试不再死循环）', () async {
       server.listen((req) async {
         req.response.statusCode = 416;
         await req.response.close();
@@ -217,7 +217,7 @@ void main() {
       expect(await f.exists(), isTrue, reason: '416 不删本地文件（待校验）');
     });
 
-    test('：超大小上限即停并删文件', () async {
+    test('②M5：超大小上限即停并删文件', () async {
       final chunk = List<int>.filled(64 * 1024, 5);
       server.listen((req) async {
         // 无 Content-Length 也持续输出（模拟异常大流）。

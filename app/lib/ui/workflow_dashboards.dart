@@ -124,7 +124,7 @@ DashboardSpec? parseDashboardSpec(String kind, Object? raw) {
             ];
       if (ys.isEmpty) return null;
       final type = _str(spec['type']);
-      // known-gap：官方 ArtifactChartSpec 还有
+      // known-gap（2026-11-08 对抗审查注记）：官方 ArtifactChartSpec 还有
       // scale（linear|log 对数轴）与 baseline（参考线字段）——手机版未
       // 实现，解析时忽略（恒线性轴、无参考线）；账本由协调员登记。
       return DashboardSpec(
@@ -183,7 +183,7 @@ class ArtifactDataItem {
   final int sequence;
   final Map<String, dynamic>? item;
 
-  /// （声明 key 但该条缺值时官方用
+  /// （对抗审查高①）：行身份兜底——声明 key 但该条缺值时官方用
   /// `siteId@ordinal` 做唯一 id 逐条追加（apply.ts:288-298），我们把
   /// 缺值折叠成 '' 会整组互撞覆盖（数据丢失）。
   final String siteId;
@@ -195,7 +195,7 @@ class ArtifactDataItem {
   String get fallbackId => '$siteId@$ordinal';
 }
 
-/// （中·数字精度）：行 key 用原样字符串（官方
+/// （对抗审查中·数字精度）：行 key 用原样字符串（官方
 /// formatArtifactValue=String 原样）——toFixed(2) 会把 1.234 与 1.23
 /// 两个不同 key 错误合并成同一行。
 String _cellKey(Object? v) {
@@ -342,7 +342,7 @@ class _WorkflowDashboardPageState extends State<WorkflowDashboardPage> {
   void initState() {
     super.initState();
     _spec = parseDashboardSpec(_kind, widget.artifact['spec']);
-    // （·渲染中）：initState 阶段生命周期 created，同步
+    // （对抗审查·渲染中）：initState 阶段生命周期 created，同步
     // AppStateScope.of 必抛 FlutterError（debug 实锤）——延到首帧后
     //（workflow_runs_page:58 同款纪律）。
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -701,7 +701,7 @@ class _TableViewState extends State<_TableView> {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: context.colors.borderFaint),
       ),
-      // 视觉补跑必修（Visual A 复签终版）：5 列
+      // 视觉补跑必修（早前批次，Visual A 复签终版）：5 列
       // 形态右缘硬切零提示。第一轮只加底部 Scrollbar——A 复签实锤
       // thumb 落在全表底部（34 行≈1630dp 折叠线外），正视区仍零提示；
       // 且内容收缩后卡片右侧留 85dp 空白带。终版=①minWidth 填满卡片
@@ -859,7 +859,7 @@ class _ChartView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // （高②）：只取「x 有值的条目」同步构建 x 与序列——
+    // （对抗审查高②）：只取「x 有值的条目」同步构建 x 与序列——
     // 旧实现 x 过滤 null 但序列按全量 items 建，任一条目缺 x 即整体
     // 错位。序列键=官方 y0..yN 序号（displayLabel 做键会在同标签时
     // 覆盖丢序列，apply.ts:178-190）。
@@ -941,7 +941,7 @@ class _ChartView extends StatelessWidget {
               chartType: allNumeric ? spec.chartType : 'bar',
               gridColor: context.colors.borderFaint,
               lineColor: context.colors.foregroundSubtlest,
-              // 视觉补跑必修（Visual A）：官方
+              // 视觉补跑必修（早前批次，Visual A）：官方
               // ArtifactChartView 有 XAxis/YAxis+悬浮 tooltip，手机无
               // hover——无刻度=真人只能读形状读不出任何数值。补=左缘
               // y 刻度（网格线对位）+首末 x 标签。
@@ -1193,7 +1193,7 @@ class _BoardView extends StatelessWidget {
       if (!cards.containsKey(key)) order.add(key);
       cards[key] = (title: title, status: status, detail: detail);
     }
-    // （·board 中三条，官方 apply.ts:358-375）：列=spec 列
+    // （对抗审查·board 中三条，官方 apply.ts:358-375）：列=spec 列
     // 原序 + 未列入的 status 统一落末尾单一「其他」列（不再各造列）；
     // status 缺失/空的卡同样落「其他」不被丢弃。
     final specCols = [...spec.boardColumns];

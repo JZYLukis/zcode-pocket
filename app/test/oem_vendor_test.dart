@@ -1,6 +1,6 @@
-// 厂商档位规范化与引导文案选择。
+// 早前批次：厂商档位规范化与引导文案选择。
 // 华为档文案逐字钉死（主设备零回归）；vivo 是首个真实目标机（用户
-// vivo 档旅程单独锁。
+// 新增 vivo X Fold 6 装机），vivo 档旅程单独锁。
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zcode_pocket/core/oem_vendor.dart';

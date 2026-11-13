@@ -23,7 +23,7 @@ import 'fake_relay_v2.dart';
 ///   但桥未建）此前无任何自动补开——用户必须手点工作区自救；修复后
 ///   paired 时自动重放原打开意图（含 project/task intent）。
 /// - 状态详情真话：computeStatusDetail 对 reconnecting/connecting/
-///   error 档此前返回空串 → 横幅渲染"连接恢复中…"空括号。
+///   error 档此前返回空串 → 横幅渲染"连接恢复中…（）"空括号。
 /// - pause/resume 竞态：resume 落在 suspend 的 await 窗口内时按
 ///   suspended（_client==null）误判而只 poke，栈被留在悬挂态无人恢复。
 const _timing = RelayV2Timing(
@@ -290,7 +290,7 @@ void main() {
       expect(opens.single['project'], isA<Map<dynamic, dynamic>>());
     });
 
-    test('redrive 不劫持已恢复的工作区（review-fix-1 A5：触发时复查桥状态）', () async {
+    test('redrive 不劫持已恢复的工作区（早前批次 A5：触发时复查桥状态）', () async {
       unawaited(stack.switchToProject(_p2));
       // 用户两连发（opens 1-2）+ 首次重驱动重放自身也是两连发（opens 3-4）
       // ——等重放完全落地（opening 回落=finally 已排定 3s 档下一次）再设闸。
@@ -380,7 +380,7 @@ void main() {
         stack.computeStatusDetail(),
         anyOf('连接已断开，自动重连中', '正在建立连接'),
         reason: '非 paired 档详情必须非空——修复前 computeStatusDetail 对 '
-            'reconnecting/connecting/error 返回空串，横幅渲染""',
+            'reconnecting/connecting/error 返回空串，横幅渲染"（）"',
       );
       stack.dispose();
       await client.dispose();

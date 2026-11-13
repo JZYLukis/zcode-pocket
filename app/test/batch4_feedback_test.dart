@@ -199,7 +199,7 @@ void main() {
     expect(bars, isNotEmpty, reason: '流式思考条应存在扫光摘要');
     expect(bars.first.maxLines, 2,
         reason: '批4 反馈②：摘要一行信息量不足，折叠态最多两行');
-    //  批声称回填但从未落库，调用点
+    // 对抗审查 （2026-10-24 补—— 批声称回填但从未落库，调用点
     // 曾两次丢失）：minLines:2 必须在位（定高两行防 1↔2 行切换跳动）。
     expect(bars.first.minLines, 2,
         reason: '流式期定高两行占位——此断言丢失曾是「还跳」实锤根因');

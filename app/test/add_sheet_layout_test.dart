@@ -43,8 +43,10 @@ Future<void> _sheetEntriesVisible(WidgetTester tester, double w) async {
   ]) {
     expect(f, findsOneWidget);
   }
-  // entry-polish-1：查看型入口已移出面板。
+  // 早前批次：查看型入口已移出面板；「收集产物」随 downloads-
+  // hub-1 迁至产物下载页（顶栏入口），不再占面板位。
   expect(find.byKey(const ValueKey('add-usage')), findsNothing);
+  expect(find.byKey(const ValueKey('add-collect-artifacts')), findsNothing);
 
   // 核心断言：每个入口都完整落在屏内（右缘不再截断）。
   for (final f in [
@@ -73,7 +75,8 @@ void main() {
 
   testWidgets('360dp 屏 5 个入口全部完整可见，无溢出', (tester) async {
     await _sheetEntriesVisible(tester, 360);
-    // Wrap 布置（5 项=3+2 两行）——360 档形态锁。
+    // Wrap 布置（5 项=3+2 两行；收集产物已迁产物下载页）——
+    // 360 档形态锁。
     final wrap = tester.renderObject<RenderWrap>(find.byType(Wrap).first);
     expect(wrap.computeMinIntrinsicWidth(300), lessThanOrEqualTo(360));
   });

@@ -1,4 +1,4 @@
-// 配对页安全与取消语义回归：
+// 配对页安全与取消语义回归（2026-11-08 对抗审查批）：
 // ①改绑确认取消不得被调用方当成功 pop/recreate（两页同一根因）；
 // ②V1 链接非官方域必须显式确认，官方域直连；
 // ③配对目标账号按显式 accountId 传递，不落 lastUsed。
@@ -190,7 +190,7 @@ void main() {
         ],
       ),
     );
-    await tester.tap(find.byKey(const ValueKey('device-card-dev-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -201,7 +201,7 @@ void main() {
     }
     expect(find.byType(DeviceListPage), findsOneWidget,
         reason: '修复前：取消被当成功，设备列表被 pop 关掉');
-    expect(find.byKey(const ValueKey('device-card-dev-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
     expect(app.profileCalls.single['forceRebind'], isFalse);
   });
 

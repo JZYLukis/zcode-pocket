@@ -1,4 +1,4 @@
-// 应用锁状态层。
+// 应用锁状态层（早前批次）。
 //
 // 设计拍板（用户 2026-11-12）：全部用户可选——方式三态（关/系统锁屏
 // 凭证/自建 PIN）、自动锁定时机（冷启动必锁恒成立，后台超过可配时长
@@ -102,7 +102,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
   bool _secureFlagPref = true;
   bool _locked = false;
   DateTime? _backgroundedAt;
-  // 系统凭证验证 Activity 返回时 resumed 不得把刚完成的
+  // 对抗审查 ①：系统凭证验证 Activity 返回时 resumed 不得把刚完成的
   // 解锁再锁回去（验证页停留超阈值/立即档必现死循环）——一次性抑制。
   bool _suppressNextResumeLock = false;
   final PinAttemptLimiter _pinLimiter = PinAttemptLimiter();
@@ -120,7 +120,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
   final ValueNotifier<bool> pinMaterialMissing = ValueNotifier(false);
 
   /// 系统凭证验证不可用（设备锁被移除等）——锁屏给"去系统设置配锁"
-  /// 出口。
+  /// 出口（①，防无提示死锁）。
   final ValueNotifier<bool> systemUnlockUnavailable = ValueNotifier(false);
 
   void loadFromPrefs({
@@ -131,7 +131,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
     String? pinSalt,
     String? pinHash,
   }) {
-    //  软锁死：mode=pin 而盐/哈希缺失（部分写失败/迁移丢键
+    // 对抗审查 ① 软锁死：mode=pin 而盐/哈希缺失（部分写失败/迁移丢键
     // 可达）→ 永远"PIN 不正确"且无恢复入口。降级为关（没有 secret 可
     // 保护，不构成安全降级），由 gate/设置页提示重设。
     if (mode == AppLockMode.pin &&
@@ -172,7 +172,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.hidden:
-        // 回前台序列也含合成 hidden（paused→hidden→…
+        // 对抗审查 ①：回前台序列也含合成 hidden（paused→hidden→…
         // →hidden→inactive→resumed）——仅在"尚无后台时刻"时写入，
         // 不得把回前台的 hidden 当作刚退后台重置计时（否则定时档全失效）。
         _backgroundedAt ??= now();
@@ -204,7 +204,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final ok = await _channel.invokeMethod<bool>('requestSystemUnlock');
       if (ok != true) {
-        // 设备锁被移除后 intent 为 null——不给提示会像
+        // 对抗审查 ①：设备锁被移除后 intent 为 null——不给提示会像
         // 按钮坏了一样，且设置页不可达=死锁。返回可区分错误给 UI。
         systemUnlockUnavailable.value = true;
         return false;
@@ -212,7 +212,7 @@ class AppLockController extends ChangeNotifier with WidgetsBindingObserver {
       systemUnlockUnavailable.value = false;
       if (ok == true) {
         _setLocked(false);
-        // /④：系统验证页是 opaque Activity——本应用必然
+        // 对抗审查 ①/④：系统验证页是 opaque Activity——本应用必然
         // 走过 paused；onActivityResult 先于 onResume 送达，若不清后台
         // 时刻/不抑制，紧随的 resumed 会按已过阈值立刻再锁（死循环）。
         _backgroundedAt = null;

@@ -282,7 +282,7 @@ testWidgets('C：粒度三档在场；每周档点选出周明细（合计+计�
   // 维度行（按模型着色）在周档隐藏。
   expect(find.byKey(const ValueKey('heat-mode-model')), findsNothing);
 
-  await tester.tap(find.byKey(const ValueKey('heat-week-cell-1')));
+  await tester.tap(find.byKey(const ValueKey('早前批次')));
   await tester.pump();
   expect(find.byKey(const ValueKey('heat-week-detail')), findsOneWidget);
   expect(find.textContaining('本周'), findsOneWidget);
@@ -296,7 +296,7 @@ testWidgets('C：累计档=逐周滚动求和（末周=全部之和）', (tester
   await tester.pump();
   await tester.tap(find.byKey(const ValueKey('heat-gran-cumulative')));
   await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('heat-week-cell-1')));
+  await tester.tap(find.byKey(const ValueKey('早前批次')));
   await tester.pump();
   expect(find.textContaining('累计（截至本周）'), findsOneWidget);
   // 两周各 7000 → 末周累计 14000。
@@ -387,7 +387,7 @@ testWidgets('切范围复位选中：resetToken 变化清空周/日选中（同�
   await tester.pump();
   await tester.tap(find.byKey(const ValueKey('heat-gran-weekly')));
   await tester.pump();
-  await tester.tap(find.byKey(const ValueKey('heat-week-cell-1')));
+  await tester.tap(find.byKey(const ValueKey('早前批次')));
   await tester.pump();
   expect(find.byKey(const ValueKey('heat-week-detail')), findsOneWidget,
       reason: '前置：第 1 周选中明细在场');

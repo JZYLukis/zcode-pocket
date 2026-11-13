@@ -150,7 +150,7 @@ class _SubagentListSheetState extends State<_SubagentListSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.65,
       ),
-      // （·渲染低）：Flexible 只放松了列表，外层 Column 仍
+      // （对抗审查·渲染低）：Flexible 只放松了列表，外层 Column 仍
       // max 尺寸撑满 0.65 屏——mainAxisSize.min 让短内容自然收高。
       child: Column(
         mainAxisSize: MainAxisSize.min,

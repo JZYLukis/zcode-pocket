@@ -91,7 +91,7 @@ Map<String, dynamic> _task(
       'workspacePath': dir ?? r'D:\示例工作区\default',
     };
 
-/// fold-dual-pane-2（2026-10-29）：测试默认画布 800×600≥600dp 会走双栏
+/// 早前批次（2026-10-29）：测试默认画布 800×600≥600dp 会走双栏
 /// 紧凑行；本文件用例对象=窄屏卡片路径（紧凑行归 dual_pane_test）。
 Future<void> _narrow(WidgetTester tester) async {
   await tester.binding.setSurfaceSize(const Size(420, 900));
@@ -117,7 +117,7 @@ void main() {
 
   testWidgets('B：项目视图归「任务」组；无目录副标题，保留相对时间', (tester) async {
     await _narrow(tester);
-    // 固定时钟（低⑮）：此前依赖墙钟，「刚刚」在分钟边界会
+    // 固定时钟（对抗审查低⑮）：此前依赖墙钟，「刚刚」在分钟边界会
     // 变成「1 分钟前」随机红。
     final now = DateTime(2026, 11, 8, 12);
     final app = _FakeAppState();
@@ -164,7 +164,7 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.pump();
 
-    await tester.tap(find.byKey(const ValueKey('cross-task-card-t-101')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     await tester.pump();
 
     expect(app.openedTasks, hasLength(1));

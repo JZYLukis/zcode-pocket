@@ -855,7 +855,7 @@ class WorkspaceController {
     _siRetryTimer = null;
     siDormant = false;
     await _conversationRegistry.close(awaitWrites: awaitCacheWrites);
-    // si dispose / detach 的 await 窗口内新发起的会话注册
+    // 对抗审查 M2：si dispose / detach 的 await 窗口内新发起的会话注册
     // 会捕获已递增的 epoch 且 transport 仍是旧 conv（isStale 恒假）→
     // 挂上即将 dispose 的桥。会话注册一关闭就先断 transport 引用，窗口
     // 内的新注册直接走"no active workspace"失败。

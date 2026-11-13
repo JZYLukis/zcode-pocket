@@ -11,6 +11,7 @@ import '../core/usage_format.dart';
 import '../core/usage_timezone.dart';
 import '../state/app_state.dart';
 import '../state/app_state_scope.dart';
+import 'conversation_page.dart' show inferEntPlanKind;
 import '../transport/channel_client.dart';
 import '../transport/companion_client.dart';
 import 'coding_plan_reset.dart';
@@ -85,7 +86,10 @@ class _UsagePageState extends State<UsagePage>
   bool _familyFallbackTried = false;
 
   /// 套餐来源（2026-10-27 用户其他需求④）：个人套餐 / Start Plan。
+  /// issue #13（首份外部用户报告）：初始档不再硬编码——首载时从活跃
+  /// 会话推导（inferEntPlanKind 同源），纯 Start Plan 账号首进即落对档。
   String _planKind = 'individual-coding-plan';
+  bool _planKindSeeded = false;
 
   /// （2026-10-24 修复批）stale-while-revalidate：已有数据时切档/
   /// 刷新不整页转圈——保留旧值渲染，列表顶部细进度条示刷新中；
@@ -299,6 +303,18 @@ class _UsagePageState extends State<UsagePage>
   /// bigmodel；entitlement 不可用时再回退尝试另一家族。
   void _deriveFamily() {
     final app = AppStateScope.of(context);
+    // issue #13：同时推导套餐档（provider 含 start-plan 即 Start Plan
+    /// 账号）——仅首载 seed，用户手动切换后不再覆盖。
+    if (!_planKindSeeded) {
+      final providers = <String>[];
+      for (final state in app.conversationStates.values) {
+        final cfg = state.snapshot?['config'];
+        final provider = cfg is Map ? '${cfg['provider'] ?? ''}' : '';
+        if (provider.isNotEmpty) providers.add(provider);
+      }
+      _planKind = inferEntPlanKind(allProviders: providers);
+      _planKindSeeded = true;
+    }
     for (final state in app.conversationStates.values) {
       final cfg = state.snapshot?['config'];
       final provider = cfg is Map ? '${cfg['provider'] ?? ''}' : '';
@@ -925,28 +941,55 @@ class _UsagePageState extends State<UsagePage>
       );
     }
     if (_cpError != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                // 去掉 translate:false——五条 reason
-                // 人话均已入词典（超时分支赋值处已预译为纯英文，tr 对无
-                // CJK 串原样返回，不受影响）。
-                _cpError!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppType.uiCaption,
-                  color: context.colors.foregroundSubtle,
-                ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: _loadPlan, child: const Text('重试')),
-            ],
+      // issue #13：错误态保留档位切换行——纯 Start Plan 账号默认档
+      // 查询必失败，切换入口被吞=死锁（报告实证）。切档即按新档重查。
+      return ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.all(16),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Wrap(
+              spacing: 8,
+              children: [
+                for (final entry in const [
+                  ('individual-coding-plan', '个人套餐'),
+                  ('start-plan', 'Start Plan'),
+                ])
+                  ChoiceChip(
+                    key: ValueKey('plan-kind-error-${entry.$1}'),
+                    label: Text(entry.$2),
+                    selected: _planKind == entry.$1,
+                    onSelected: (_) => _selectPlanKind(entry.$1),
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
+            ),
           ),
-        ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    // 去掉 translate:false——五条 reason
+                    // 人话均已入词典（超时分支赋值处已预译为纯英文，tr 对无
+                    // CJK 串原样返回，不受影响）。
+                    _cpError!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: AppType.uiCaption,
+                      color: context.colors.foregroundSubtle,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton(onPressed: _loadPlan, child: const Text('重试')),
+                ],
+              ),
+            ),
+          ),
+        ],
       );
     }
     return RefreshIndicator(
@@ -2425,7 +2468,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
     Map<String, dynamic>? selDay;
     if (_sel != null) {
       final (w, d) = _sel!;
-      // 双侧越界守卫：档间切换周数缩档（已缓存档的
+      // 双侧越界守卫（对抗审查）：档间切换周数缩档（已缓存档的
       // State 存活、_sel 残留），week 侧此前无守卫——weeks[w] 直接
       // RangeError 崩溃（release 同崩）。
       final days = w < weeks.length ? weeks[w]['days'] : null;
@@ -2519,7 +2562,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                       if (_gran != _HeatGran.daily)
                         for (var wi = 0; wi < weeks.length; wi++)
                           Padding(
-                            // （daily 子项宽
+                            // （对抗审查·渲染中）：补 gap——daily 子项宽
                             // hitWidth+gap，周档漏 gap 会右空 132dp（53 周）。
                             padding: EdgeInsets.only(right: gap),
                             child: Builder(builder: (_) {
@@ -2613,7 +2656,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                                             : emptyCell;
                                       }
                                       final selected = _sel == (wi, d);
-                                      // 命中盒外扩：视觉格子
+                                      // 命中盒外扩（对抗审查）：视觉格子
                                       // 11px 低于 44 触控纪律——命中区扩大到
                                       // 22×22（含邻缝），视觉尺寸不变。
                                       return GestureDetector(
@@ -2814,7 +2857,7 @@ class _UsageHeatmapViewState extends State<UsageHeatmapView> {
                   for (final e in mTotals.entries)
                     (name: e.key, tokens: e.value),
                 ]..sort((a, b) => b.tokens.compareTo(a.tokens));
-                // （·口径混用）：总额=累计、轮次/工具/模型行=当周
+                // （对抗审查·口径混用）：总额=累计、轮次/工具/模型行=当周
                 // ——两组口径并存须显式标注，标题已带「累计（截至本周）」，
                 // 计数行前缀「本周」消歧。
                 final label = _gran == _HeatGran.cumulative ? '累计（截至本周）' : '本周';

@@ -21,6 +21,8 @@ import 'dart:ui' as ui;
 import 'package:zcode_pocket/ui/attachment_annotate_page.dart';
 import 'package:zcode_pocket/ui/attachments_compose.dart';
 import 'package:zcode_pocket/ui/conversation_page.dart';
+import 'package:zcode_pocket/ui/workflow_runs_page.dart'
+    show kCollectArtifactsPrompt;
 
 class _MemoryDraftStore extends DraftStore {
   _MemoryDraftStore([Map<String, ComposerDraft>? initial])
@@ -488,7 +490,7 @@ void main() {
     expect(_input(tester), '带附件');
 
     await tester.tap(
-      find.byKey(const ValueKey('pending-attachment-remove-restored-1-1')),
+      find.byKey(const ValueKey('早前批次')),
     );
     await _pump(tester);
     await tester.tap(find.byKey(const ValueKey('send-button')));
@@ -809,7 +811,7 @@ void main() {
     await _pump(tester);
     // 取回字节后入口出现（恢复图无字节时不出现）。
     final entry = find.byKey(
-      const ValueKey('pending-attachment-annotate-restored-1-0'),
+      const ValueKey('早前批次'),
     );
     expect(entry, findsOneWidget);
 
@@ -860,7 +862,7 @@ void main() {
     );
   });
 
-  // 2026-11-08 accepted 后
+  // 2026-11-08 对抗审查批 #8（中）：结果未知确权两分支——accepted 后
   // 原文仍留输入框/草稿（再点即重发已送达消息）；failed 后正文不在框、
   // 盘上仍 in-flight。
   testWidgets('确权 accepted：清空输入框并按恢复 revision 删草稿', (tester) async {
@@ -974,6 +976,42 @@ void main() {
     expect(saved?.text, '取消的消息');
     expect(saved?.submissionInFlight, isFalse,
         reason: '取消后草稿不标 in-flight');
+  });
+
+  testWidgets('收集产物：预设提示词弹层可编辑后作为消息发送（早前批次）',
+      (tester) async {
+    final store = _MemoryDraftStore();
+    final app = _DraftApp(store);
+    await tester.pumpWidget(_host(app, 's1'));
+    await _pump(tester);
+    // 早前批次：入口迁至顶栏下载图标 → 产物下载页。
+    await tester.tap(find.byKey(const ValueKey('downloads-entry')));
+    await _pump(tester);
+    await tester.tap(find.byKey(const ValueKey('hub-collect-button')));
+    await _pump(tester);
+    // 预填=定稿提示词（工作流搬运配方）。
+    expect(find.textContaining('把本回合生成的文件发布为工作流产物'),
+        findsOneWidget);
+    // 可编辑：指定具体文件。
+    await tester.enterText(
+      find.byKey(const ValueKey('collect-artifacts-input')),
+      kCollectArtifactsPrompt.replaceAll(
+          '发布这些文件本身', '发布 report.pdf 这些文件本身'),
+    );
+    await tester.tap(find.byKey(const ValueKey('collect-artifacts-send')));
+    await _pump(tester, 12);
+    expect(app.sendTexts, isNotEmpty, reason: '发送键把弹层文本作为消息发出');
+    expect(app.sendTexts.last, startsWith('把本回合生成的文件'));
+    expect(app.sendTexts.last, contains('report.pdf'));
+
+    // 取消不发。
+    await tester.tap(find.byKey(const ValueKey('hub-collect-button')));
+    await _pump(tester);
+    await tester.tap(find.text('取消'));
+    await _pump(tester, 4);
+    final sent = app.sendTexts.length;
+    expect(find.byKey(const ValueKey('collect-artifacts-input')), findsNothing);
+    expect(app.sendTexts.length, sent, reason: '取消不再发第二条');
   });
 }
 

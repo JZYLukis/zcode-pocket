@@ -19,7 +19,7 @@ class ContextDetailsCard extends StatelessWidget {
   final Future<void> Function(String resetType)? onUseReset;
   final List<Map>? cachedBreakdown;
 
-  /// 压缩上下文动作（compact-command-1：官方 contextUsage 压缩按钮
+  /// 压缩上下文动作（早前批次：官方 contextUsage 压缩按钮
   /// 对位——空载荷 compact 命令）；null=不显示。
   final VoidCallback? onCompact;
   const ContextDetailsCard({
@@ -178,7 +178,7 @@ class ContextDetailsCard extends StatelessWidget {
                 ),
               ),
             ),
-            // 压缩上下文动作（compact-command-1：官方 contextUsage 压缩
+            // 压缩上下文动作（早前批次：官方 contextUsage 压缩
             // 按钮对位；进度反馈=时间线「正在压缩上下文」标记行）。
             if (onCompact != null) ...[
               const SizedBox(height: 4),

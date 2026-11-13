@@ -252,7 +252,7 @@ class DeviceStackRegistry {
     String? accountId,
     bool forceRebind = false,
   }) async {
-    // multi-account-ux-1 批2（2026-11-04 拍板）：同一台电脑改绑到另一个
+    // 早前批次 批2（2026-11-04 拍板）：同一台电脑改绑到另一个
     // 账号属破坏性操作（旧账号的连接将失效）——已绑定且账号将变时抛
     // [AccountRebindRequired] 由调用方弹确认，确认后 forceRebind 重调。
     final probeSid = params.deviceSid?.trim() ?? '';
@@ -473,7 +473,7 @@ class DeviceStackRegistry {
           _onLog('stack resume error (contained): $e');
         }),
       );
-      // 遗留核实修（2026-11-07）：keepAlive 后台全栈退订
+      // 对抗审查遗留核实修（2026-11-07）：keepAlive 后台全栈退订
       // tasks-index、回前台只恢复活跃栈——此后切到「保活中的另一栈」
       // 走本分支 pokeOrResume→poke（连接在、不重开工作区），该栈
       // tasks-index 永不补订→首页停更。就地补订（幂等：已订阅 no-op；
@@ -520,7 +520,7 @@ class DeviceStackRegistry {
 
   /// 按账号拆除其名下全部栈（真机反馈②：设置删除账号只清凭据，
   /// 旧账号的连接栈带着内存里的 JWT 继续活——僵尸连接让"删号后重登"
-  /// 状态错乱。2026-11-03 两轮补全收尾：同步摘表先行（消灭
+  /// 状态错乱。2026-11-03 两轮对抗审查补全收尾：同步摘表先行（消灭
   /// dispose await 窗口内新栈入表又被 removeWhere 误删的竞态）、失败
   /// 记录/设备缓存数据同步清（防下一账号连同一台电脑先闪上一账号的
   /// 诊断与任务缓存=跨账号数据残留）、活跃指针与持久 activeDeviceSid
@@ -542,7 +542,7 @@ class DeviceStackRegistry {
         (p.accountId == accountId ||
             (p.accountId == null && lastUsed == accountId));
     // 同步快照+摘表先行：await disposeStack 期间 activate() 新建的栈
-    // 不应被后续 removeWhere 误删。
+    // 不应被后续 removeWhere 误删（对抗审查）。
     final doomed = <String, ComputerStack>{};
     for (final entry in List.of(_stacks.entries)) {
       if (matches(entry.value.profile)) {
@@ -745,7 +745,7 @@ class DeviceStackRegistry {
   }
 }
 
-/// 换账号重扫同一台电脑时的确认需求（multi-account-ux-1 批2）。
+/// 换账号重扫同一台电脑时的确认需求（早前批次 批2）。
 /// 调用方捕获后弹「该电脑当前绑定 {旧账号}，改为 {新账号}？」；确认后
 /// 以 `addV2Profile(..., forceRebind: true)` 重调完成改绑。
 class AccountRebindRequired implements Exception {

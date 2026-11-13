@@ -1718,7 +1718,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
       await _transport.session.waitHealthy(
         timeout: const Duration(seconds: 45),
       );
-      // disposed 闸门：抖动期 resubscribe 在途（waitHealthy
+      // disposed 闸门（对抗审查）：抖动期 resubscribe 在途（waitHealthy
       // 45s+subscribe 120s）恰逢用户切工作区/退后台 dispose——继续跑会在
       // 已 dispose 的订阅上重挂帧监听器、置新 _subscriptionId（永不退订，
       // 桌面端泄漏）并经 _onStarted 武装一个无人取消的看门狗定时器。
@@ -1813,7 +1813,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     _resubscribe();
   }
 
-  /// resubscribe 互斥：桥恢复通知/看门狗升级/3s 重试三源
+  /// resubscribe 互斥（对抗审查）：桥恢复通知/看门狗升级/3s 重试三源
   /// 并发触发时，两个实例各自 _start 会产生双帧监听器（前者泄漏）+同
   /// ownershipKey 双订阅（服务端驱逐竞态，本项目 //notOwned 同源）。
   bool _resubscribing = false;
@@ -1832,7 +1832,7 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
     try {
       await _transport.handshake();
     } catch (e) {
-      // 桥 degraded 窗口内握手会 30s 超时抛错（此前裸抛
+      // 桥 degraded 窗口内握手会 30s 超时抛错（对抗审查 ：此前裸抛
       // 且不挂 3s 重试——unawaited 调用点无人 catch，恢复只能靠下一次
       // 桥恢复事件）。纳入统一 3s 重试链。
       _transport._log('[$_logTag] resubscribe handshake failed: $e');
@@ -3607,7 +3607,7 @@ class ConversationState extends ChangeNotifier {
     }
   }
 
-  /// （高③）：快照 workflowRuns 投影（官方 snapshot.ts:527
+  /// （对抗审查高③）：快照 workflowRuns 投影（官方 snapshot.ts:527
   /// ——工具卡→run 的联接权威源；run.toolCallId 是关联键）。
   List<Map<String, dynamic>> get workflowRunsList {
     final w = snapshot?['workflowRuns'];

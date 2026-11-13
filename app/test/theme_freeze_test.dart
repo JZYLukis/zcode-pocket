@@ -70,7 +70,7 @@ void main() {
         .map(hex)
         .toList();
     expect(series, [
-      // 官方 zai-light usage-chart-1..6（2026-10-26 对齐轮重冻结——
+      // 官方 zai-light 早前批次..6（2026-10-26 对齐轮重冻结——
       // 原 5 色系 tailwind-600 自选非官方，盘点 audit §六.3 实证）。
       hex(const Color(0xFF0B7FFF)),
       hex(const Color(0xFF1E8A3E)),

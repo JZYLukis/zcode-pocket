@@ -69,7 +69,7 @@ void main() {
       expect(createSessionProjectId({'projectId': 42}), isNull);
     });
 
-    test('回落（B1）：tab 桥落在项目根（suspend 恢复路径）→ 携带',
+    test('回落（对抗审查 B1）：tab 桥落在项目根（suspend 恢复路径）→ 携带',
         () {
       final projects = [
         {
@@ -196,7 +196,7 @@ void main() {
       expect(views[0].text, '');
     });
 
-    test('CRLF 尾 \\r 剥除（B4：等宽下占一格宽的豆腐块）', () {
+    test('CRLF 尾 \\r 剥除（对抗审查 B4：等宽下占一格宽的豆腐块）', () {
       final views = highlightDiffLines(
         ['+a\r', '-b\r'],
         'dart',
@@ -206,7 +206,7 @@ void main() {
       expect(views[1].text, 'b');
     });
 
-    test('超尺寸护栏（B1）：>120k 官方同款 cap → 回落纯文本', () {
+    test('超尺寸护栏（对抗审查 B1）：>120k 官方同款 cap → 回落纯文本', () {
       final long = List.generate(15000, (i) => '+final v$i = $i;').join('\n');
       expect(
         highlightCode(long, 'dart', brightness: Brightness.light),

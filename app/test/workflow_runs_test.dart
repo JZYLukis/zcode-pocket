@@ -14,7 +14,7 @@ import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/conversation_page.dart';
 import 'package:zcode_pocket/ui/workflow_runs_page.dart';
 
-/// 工作流 run 查询族 + 闲时任务卡（workflow-runs-1，2026-10-30 用户拍板
+/// 工作流 run 查询族 + 闲时任务卡（早前批次，2026-10-30 用户拍板
 /// 「更新工作流及闲时执行部分」）：官方 v4 只读族（workflowRuns/Events/
 /// Artifacts/ArtifactRead）+ OffPeakCreate 工具行卡片（官方
 /// offpeak-create.tsx 输出解析语义对位）。
@@ -232,7 +232,7 @@ void main() {
     expect(offPeakCreateSummary(const {}), isNull);
   });
 
-  testWidgets('review-fix-1 销账：目录空态呈现（empty-error 账实一致）', (tester) async {
+  testWidgets('早前批次 销账：目录空态呈现（empty-error 账实一致）', (tester) async {
     final app = _WfApp(
       runsResult: const {'runs': []},
       detailResult: const {'events': [], 'artifacts': []},
@@ -244,7 +244,7 @@ void main() {
         reason: '空态文案（此前 ui-coverage 声称覆盖但零断言）');
   });
 
-  testWidgets('review-fix-1 销账：目录加载失败可重试（empty-error 账实一致）', (tester) async {
+  testWidgets('早前批次 销账：目录加载失败可重试（empty-error 账实一致）', (tester) async {
     final app = _WfApp(
       runsResult: const {'runs': []},
       detailResult: const {'events': [], 'artifacts': []},
@@ -260,10 +260,37 @@ void main() {
 
   testWidgets('旅程：闲时任务卡渲染 + 加号面板工作流入口', (tester) async {
     final app = _WfApp(
-      runsResult: const {'runs': []},
+      // 对抗审查 B-/C- 修正（2026-11-14）：RPC 查询 schema 没有
+      // artifacts 字段（transport.ts .strict()）——夹具按真实形态
+      // 「query 行无 artifacts」，计数来自投影联接（下方 seedProjection）。
+      runsResult: const {
+        'runs': [
+          {
+            'runId': 'run-abc123def456',
+            'toolCallId': 'tc-abc',
+            'label': '每日简报',
+            'status': 'completed',
+            'updatedAt': 1,
+            'resumable': false,
+          },
+        ],
+      },
       detailResult: const {},
       artifactText: 'x',
     );
+    // 投影带 artifacts（快照投影 schema 有该字段——官方权威源）。
+    app.seedProjection(const [
+      {
+        'runId': 'run-abc123def456',
+        'toolCallId': 'tc-abc',
+        'status': 'completed',
+        'lastEventSequence': 100,
+        'artifacts': [
+          {'id': 'report.md', 'kind': 'text'},
+          {'id': 'stats', 'kind': 'chart'},
+        ],
+      },
+    ]);
     // 会话行里放一个 OffPeakCreate 工具行（输出=JSON 串）。
     await _pump(
       tester,
@@ -297,7 +324,8 @@ void main() {
     expect(find.textContaining('已加入闲时队列（第 3 位）'), findsOneWidget);
     expect(find.textContaining('运行在当前会话'), findsOneWidget);
 
-    // 入口在任务菜单（entry-polish-1 方案 A：加号面板回归纯"添加"）。
+    // 入口在顶栏一级（早前批次，2026-11-14 用户拍板：下载图标
+    // 直达产物下载页——指引+收集产物+运行列表同页）。
     await _pump(
       tester,
       _host(
@@ -305,20 +333,41 @@ void main() {
         const ConversationPage(sessionId: 's1', title: '工作流测试'),
       ),
     );
+    await tester.tap(find.byKey(const ValueKey('downloads-entry')));
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.byType(WorkflowRunsPage), findsOneWidget,
+        reason: '顶栏下载图标直达产物下载页');
+    expect(find.text('产物下载'), findsWidgets, reason: 'hub 形态标题');
+    expect(find.byKey(const ValueKey('hub-collect-button')), findsOneWidget,
+        reason: '收集产物入口在场');
+    expect(find.textContaining('如何下载会话中的文件'), findsOneWidget,
+        reason: '下载指引进场');
+    // 演示模式批：行内产物计数（投影自带元数据；0/缺席不显示）。
+    expect(find.textContaining('产物（2）'), findsOneWidget,
+        reason: '有产物的 run 行显示计数');
+    await tester.pageBack();
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    // ⋮ 菜单槽位撤销。
     await tester.tap(find.byKey(const ValueKey('task-menu')));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.text('工作流运行'), findsOneWidget);
-    // 面板不再有查看型入口（工作流/用量详情都不在加号面板）。
+    expect(find.text('工作流运行'), findsNothing);
     await tester.tapAt(const Offset(200, 40)); // 关菜单
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
+    // 面板不再有收集产物（已迁产物下载页）与查看型入口。
     await tester.tap(find.byKey(const ValueKey('add-trigger')));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
+    expect(find.byKey(const ValueKey('add-collect-artifacts')), findsNothing);
+    expect(find.text('收集产物'), findsNothing);
     expect(find.text('工作流运行'), findsNothing);
     expect(find.text('用量详情'), findsNothing);
   });
@@ -405,10 +454,10 @@ void main() {
     // （视觉走查）：产物卡此前零间距叠放+行高 39.7——两张卡
     // 像一整块且低于 44 触控/可读下限。修=相邻 6dp 间距+行高 ≥44。
     final cardA = tester.getRect(
-      find.byKey(const ValueKey('workflow-artifact-art-1')),
+      find.byKey(const ValueKey('早前批次')),
     );
     final cardB = tester.getRect(
-      find.byKey(const ValueKey('workflow-artifact-art-2')),
+      find.byKey(const ValueKey('早前批次')),
     );
     expect(cardB.top - cardA.bottom, greaterThanOrEqualTo(6),
         reason: '相邻产物卡垂直间距 ≥6dp（修复前=0）');
@@ -417,14 +466,14 @@ void main() {
     expect(cardB.height, greaterThanOrEqualTo(44));
 
     // 点产物 → 分块读取 → 文本预览页。
-    await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.textContaining('今日完成 3 项工作'), findsOneWidget);
   });
 
-  // 视觉补跑必修（Visual B 审查实测 87dp 死区）：
+  // 视觉补跑必修（早前批次，Visual B 审查实测 87dp 死区）：
   // run 行状态/时间必须贴卡片右缘——旧实现 Expanded+Flexible 双分，
   // 状态只画半行宽的一小段、剩余空间全落行尾（时间不靠右+长标题提前
   // 省略）。红=修复前 card.right - time.right ≈ 99dp（87 死区+12 内边距）。

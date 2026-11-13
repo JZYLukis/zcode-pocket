@@ -169,11 +169,11 @@ class _DeviceListPageState extends State<DeviceListPage> {
     }
   }
 
-  /// multi-account-ux-1 批2：同一台电脑改绑账号需显式确认（破坏性——
+  /// 早前批次 批2：同一台电脑改绑账号需显式确认（破坏性——
   /// 旧账号的连接将失效）。确认后 forceRebind 重调完成改绑。
   ///
   /// 返回 true=档案已添加/已改绑，false=用户取消改绑（调用方不得
-  /// 当成功 pop 整页——2026-11-08 此前返回 void，取消后
+  /// 当成功 pop 整页——2026-11-08 对抗审查：此前返回 void，取消后
   /// `_connect` 仍走成功分支把设备列表页关掉）。
   Future<bool> _addProfileResolvingRebind(CompanionV2Params params) async {
     final app = AppStateScope.of(context);
@@ -331,7 +331,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
       appBar: AppBar(
         backgroundColor: context.colors.background,
         surfaceTintColor: Colors.transparent,
-        // multi-account-ux-1 批1（2026-11-04 拍板）：显式标注「以哪个
+        // 早前批次 批1（2026-11-04 拍板）：显式标注「以哪个
         // 账号拉取」——accountId 为空=最近使用账号（历史行为）。
         // 显示名异步解析（备注名优先），解析前不占位。
         title: Row(

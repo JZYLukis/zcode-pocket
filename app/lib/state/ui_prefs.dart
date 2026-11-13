@@ -31,7 +31,7 @@ class UiPrefs extends ChangeNotifier {
   static const _keyLocalePreference = 'ui.localePreference';
   static const _keyCodeHighlight = 'ui.codeHighlight';
 
-  /// multi-account-ux-1 批4（2026-11-04 拍板）：首页显示其他电脑任务
+  /// 早前批次 批4（2026-11-04 拍板）：首页显示其他电脑任务
   /// （缓存快照）——默认关。实现纯读 LocalCacheStore，不建连接不订阅。
   static const _keyShowOtherComputers = 'ui.showOtherComputers';
 
@@ -57,11 +57,11 @@ class UiPrefs extends ChangeNotifier {
   /// 不再打扰）。
   static const _keyFabMenuHintShown = 'ui.fabMenuHintShown';
 
-  /// 宽屏双栏左栏收起态（vivo X Fold 6 真机
+  /// 早前批次：宽屏双栏左栏收起态（vivo X Fold 6 真机
   /// 反馈「左栏没有展开收起选项」）——收起后右栏全宽，顶栏同位钮切换。
   static const _keyDualPaneCollapsed = 'ui.dualPaneCollapsed';
 
-  /// 应用锁：方式三态/自动锁定秒数（0=立即）/锁定期
+  /// 应用锁（早前批次）：方式三态/自动锁定秒数（0=立即）/锁定期
   /// FLAG_SECURE 防缩略图泄露/PIN 盐+哈希（不存明文）。
   static const _keyAppLockMode = 'ui.appLockMode';
   static const _keyAppLockAutoLockSeconds = 'ui.appLockAutoLockSeconds';
@@ -69,7 +69,7 @@ class UiPrefs extends ChangeNotifier {
   static const _keyAppLockPinSalt = 'ui.appLockPinSalt';
   static const _keyAppLockPinHash = 'ui.appLockPinHash';
 
-  /// 应用内更新：开关（默认开）+上次自动检查时刻
+  /// 应用内更新（早前批次）：开关（默认开）+上次自动检查时刻
   /// （epoch 毫秒；24h 节流静默检查）。
   static const _keyUpdateInAppEnabled = 'ui.updateInAppEnabled';
   static const _keyUpdateLastCheckAt = 'ui.updateLastCheckAt';
@@ -176,7 +176,7 @@ class UiPrefs extends ChangeNotifier {
       // （历史注释：曾为 16 键串行 await；现 28 键并行读）（每键一次平台
       // 通道+Keystore 解密往返）阻塞启动链——Future.wait 并行读（键间
       // 无顺序依赖），解码与默认值语义不变。
-      // 任一键读取异常不得让全部偏好回默认（应用锁静默
+      // 对抗审查 ①M2：任一键读取异常不得让全部偏好回默认（应用锁静默
       // 关闭的 fail-open 面）——逐键捕获为 null（null=默认值语义不变）。
       final readFutures = <Future<String?>>[
         _storage.read(key: _keyShowToolCalls), // 0
@@ -408,7 +408,7 @@ class UiPrefs extends ChangeNotifier {
   Set<String> get homeCollapsedGroups =>
       Set.unmodifiable(_homeCollapsedGroups);
 
-  /// 双栏左栏收起态（本机界面偏好，跨会话记忆）。
+  /// 早前批次：双栏左栏收起态（本机界面偏好，跨会话记忆）。
   bool get dualPaneCollapsed => _dualPaneCollapsed;
 
   Future<void> setDualPaneCollapsed(bool value) async {
@@ -418,7 +418,7 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyDualPaneCollapsed, value ? 'true' : 'false');
   }
 
-  // ---- 应用锁----
+  // ---- 应用锁（早前批次）----
   String get appLockModeRaw => _appLockMode;
   int get appLockAutoLockSeconds => _appLockAutoLockSeconds;
   bool get appLockSecureFlag => _appLockSecureFlag;
@@ -455,10 +455,10 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyAppLockPinHash, hashHex);
   }
 
-  // ---- 应用内更新----
+  // ---- 应用内更新（早前批次）----
   bool get updateInAppEnabled => _updateInAppEnabled;
 
-  /// load 是否已完成（AppLockGate 装载门闩——未完成时
+  /// 对抗审查 ①：load 是否已完成（AppLockGate 装载门闩——未完成时
   /// 不得把内存默认值当配置消费）。
   bool get isLoaded => _loadedFlag;
 
@@ -587,7 +587,7 @@ class UiPrefs extends ChangeNotifier {
     );
   }
 
-  /// 项目排序（按电脑 sid 分桶；null=未自定义）。
+  /// 项目排序（按电脑 sid 分桶；null=未自定义）。 ：
   /// 返回不可变视图（对齐同文件 homeCollapsedGroups 惯例，防内部列表
   /// 被调用方原地变更绕过持久化）。
   List<String>? projectOrder(String deviceSid) {

@@ -121,7 +121,7 @@ void main() {
   // 通道调用须在绑定初始化之后（冒烟实证：runApp 前裸调 invokeMethod
   // 抛 Binding has not yet been initialized，探测失效）。
   WidgetsFlutterBinding.ensureInitialized();
-  // 底部安全区原生直推（vivo MediaQuery 透传
+  // 早前批次 r3：底部安全区原生直推（vivo MediaQuery 透传
   // 断裂的终局方案，详见 core/system_inset.dart 头注）。
   initSystemInsetBridge();
   _installForensicProbes();

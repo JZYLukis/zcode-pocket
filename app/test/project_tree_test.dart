@@ -482,13 +482,13 @@ void main() {
 
       final openFuture = client.openBridge(
         'identity://conv',
-        taskId: 'sess-task-1',
+        taskId: '早前批次',
         taskHostId: 'local',
       );
       final frame = await device.waitFor('data', const Duration(seconds: 3));
       final payload = (frame!['payload'] as Map).cast<String, dynamic>();
       expect(payload['zcode_type'], 'workspace-bridge-open');
-      expect(payload['taskId'], 'sess-task-1');
+      expect(payload['taskId'], '早前批次');
       expect(payload['taskHostId'], 'local');
       expect(payload.containsKey('project'), isFalse);
       device.sendPayload({
@@ -500,16 +500,16 @@ void main() {
           'kind': 'local',
           'workspaceKey': r'C:\users\zcode\conversations',
           'workspacePath': r'C:\users\zcode\conversations',
-          'initialTaskId': 'sess-task-1',
+          'initialTaskId': '早前批次',
         },
       });
       final session = await openFuture;
       expect(session.taskIntent, {
-        'taskId': 'sess-task-1',
+        'taskId': '早前批次',
         'taskHostId': 'local',
       });
       expect(session.projectIntent, isNull);
-      expect(session.initialTaskId, 'sess-task-1');
+      expect(session.initialTaskId, '早前批次');
       session.dispose();
     });
   });

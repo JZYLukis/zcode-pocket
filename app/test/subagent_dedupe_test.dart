@@ -109,7 +109,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('合并卡下钻：无 summary 时页面标题带子代理类型（ 锁）',
+  testWidgets('合并卡下钻：无 summary 时页面标题带子代理类型（对抗审查 H1 锁）',
       (tester) async {
     tester.view.physicalSize = const Size(375, 806);
     tester.view.devicePixelRatio = 1.0;

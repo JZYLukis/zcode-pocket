@@ -445,7 +445,7 @@ void main() {
       );
     });
 
-    testWidgets('重放钉 commandId：重试用同一 ID（review-fix-1 双发红线）', (tester) async {
+    testWidgets('重放钉 commandId：重试用同一 ID（早前批次 双发红线）', (tester) async {
       final store = _MemorySendQueueStore({});
       final app = _QueueApp(store);
       await tester.pumpWidget(_host(app, sessionId: 's1'));
@@ -723,7 +723,7 @@ void main() {
     });
   });
 
-  // 2026-11-08 批 #1（高）：队列重放发送前把队列正文按
+  // 2026-11-08 对抗审查批 #1（高）：队列重放发送前把队列正文按
   // submissionInFlight 落成输入框草稿，失败分支又在纠正性 save 之前
   // return——队列正文永久污染草稿（重启后误显「结果未知」+可重发）。
   group('review-fix #1：队列重放失败不污染草稿', () {

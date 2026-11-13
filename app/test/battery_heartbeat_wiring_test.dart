@@ -5,14 +5,14 @@ import 'package:zcode_pocket/state/computer_stack.dart';
 import 'package:zcode_pocket/transport/z_transport.dart';
 
 /// 电量专项接线回归：
-/// - battery-heartbeat-2（2026-10-29）：退后台放宽心跳覆盖全部分支；
+/// - 早前批次（2026-10-29）：退后台放宽心跳覆盖全部分支；
 /// - 优化批 #16/#17（2026-10-31）：退后台档位表重排——
 ///   ①审批提醒开（保活分支）：30s 慢档心跳 + 驻留会话明细订阅
 ///     （suspendConversationSubscriptions——桌面活跃会话持续推流式帧
 /// 是保活档后台耗电主因，真机 660mAh/h 实证，
 ///     2026-10-30 节）；
 ///   ②审批提醒关（90s 断连倒计时窗口）：完全静默（setRelaySilent——
-///     不发心跳不看门狗，服务器 120s 静默容忍已实证；battery-heartbeat-2
+/// 不发心跳不看门狗，服务器 120s 静默容忍已实证；早前批次
 ///     的 30s 慢档是该窗口的过渡档）。
 /// 档位本身的切换行为在 relay_v2_test「后台自适应心跳」「完全静默档」
 /// 用例覆盖；本文件锁 AppState→ComputerStack 接线。
@@ -70,7 +70,7 @@ void main() {
     expect(
       stack.heartbeatTiers,
       isEmpty,
-      reason: '优化批 #17：该窗口不再切 30s 慢档（battery-heartbeat-2 过渡档退役）',
+      reason: '优化批 #17：该窗口不再切 30s 慢档（早前批次 过渡档退役）',
     );
     expect(
       stack.suspendConversationCalls,

@@ -1,5 +1,6 @@
 package dev.zcodeapp.zcode_companion
 
+import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -51,7 +52,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // 不 setIntent 会导致系统重建（字体缩放等未覆盖
+        // 对抗审查 ④M2：不 setIntent 会导致系统重建（字体缩放等未覆盖
         // configChanges 的变更）时 getIntent() 仍是旧 intent——过期的
         // 配对/快捷动作被重放。setIntent + readExtras 后即清 extras。
         setIntent(intent)
@@ -99,17 +100,17 @@ class MainActivity : FlutterActivity() {
             relayV2Origin = null
             accountJwt = null
         }
-        // ：读完即清——防 Activity/引擎重建路径重放过期 extras
+        // ④M2：读完即清——防 Activity/引擎重建路径重放过期 extras
         // （recreate 路径手动 removeExtra 的既有防线推广到全部路径）。
         intent.removeExtra("pairing_url")
         intent.removeExtra("pairing_name")
         intent.removeExtra("shortcut_action")
     }
 
-    // 应用锁：系统锁屏凭证验证的 onActivityResult 转发
+    // 应用锁（早前批次）：系统锁屏凭证验证的 onActivityResult 转发
     // （AppLockPlugin.requestSystemUnlock 的 pending result 在此收尾）。
     override fun onDestroy() {
-        // 释放通道插件持有的 Activity 强引用与挂起 result
+        // 对抗审查 ④M3：释放通道插件持有的 Activity 强引用与挂起 result
         // （进程因 FGS 常驻时静态单例的泄漏面）。
         AppLockPlugin.release()
         super.onDestroy()
@@ -122,7 +123,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // 底部安全区直推：
+        // 底部安全区直推（早前批次 r3，vivo 任务栏遮挡终局）：
         // vivo 展开态任务栏在 rootWindowInsets 正常上报（169px）但 Flutter
         // 的 MediaQuery.viewPadding 拿 0（透传断裂，探针/截图双证）——原生
         // 监听 insets 变化把 bottom（systemBars∪navBars∪cutout 最大值，
@@ -139,7 +140,7 @@ class MainActivity : FlutterActivity() {
         // 系统语音识别通道（2026-10-28 语音泛用批）：标准 SpeechRecognizer
         // 无界面流式接线（companion/sys_asr）。
         SystemAsrPlugin.bind(flutterEngine, this)
-        // 应用锁通道：系统锁屏凭证验证 + FLAG_SECURE 联动。
+        // 应用锁通道（早前批次）：系统锁屏凭证验证 + FLAG_SECURE 联动。
         AppLockPlugin.bind(flutterEngine, this)
         readExtras(intent)
         // companion/test 通道（名字沿用历史测试缝）：现承载
@@ -220,7 +221,7 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
-        // 本机应用版本（parity-fix-1）：关于页显示自身 versionName
+        // 本机应用版本（早前批次）：关于页显示自身 versionName
         // （release 含 HEAD 指纹）；零第三方依赖，走包管理器。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/appinfo")
             .setMethodCallHandler { call, result ->
@@ -279,7 +280,7 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
-        // 应用内更新通道：ABI/安装能力/安装器调起/
+        // 应用内更新通道（早前批次）：ABI/安装能力/安装器调起/
         // 官方签名比对（自行构建包跨签名覆盖必失败→提示走手动更新）/
         // 网络类型（移动数据先问流量）。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/update")
@@ -319,7 +320,7 @@ class MainActivity : FlutterActivity() {
                     "officialSignatureMatches" -> {
                         result.success(officialSignatureMatches())
                     }
-                    // 安装前校验 APK 文件本身的包名与官方签名
+                    // 对抗审查 ②：安装前校验 APK 文件本身的包名与官方签名
                     // 指纹（SHA 只锚到 API 响应，这里锚到官方签名）。
                     "verifyApk" -> {
                         val path = call.argument<String>("path")
@@ -352,6 +353,42 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     else -> result.notImplemented()
+                }
+            }
+        // 产物分享（早前批次）：ACTION_SEND + FileProvider 只读
+        // 授权。目标 App 由用户在系统分享面板里选（保存到文件/发送），
+        // 本应用只产出 cache 下的临时文件——不申请任何存储权限。
+        // clipData 一并授权：部分目标 App 只认 clip 授权（已知兼容坑，
+        // FLAG_GRANT 单独给不覆盖所有接收方）。
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/share")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "shareFile") {
+                    val path = call.argument<String>("path")
+                    if (path == null) {
+                        result.success(false)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        val file = File(path)
+                        val uri = FileProvider.getUriForFile(
+                            this, "$packageName.fileprovider", file,
+                        )
+                        val mime = android.webkit.MimeTypeMap.getSingleton()
+                            .getMimeTypeFromExtension(file.extension.lowercase())
+                            ?: "application/octet-stream"
+                        val intent = Intent(Intent.ACTION_SEND)
+                            .setType(mime)
+                            .putExtra(Intent.EXTRA_STREAM, uri)
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        intent.clipData = ClipData.newRawUri(file.name, uri)
+                        startActivity(Intent.createChooser(intent, file.name))
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.i("share", "shareFile failed: $e")
+                        result.success(false)
+                    }
+                } else {
+                    result.notImplemented()
                 }
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/notify")
@@ -392,11 +429,11 @@ class MainActivity : FlutterActivity() {
                     // 丢失（候选 06 真机实证：钮位✓遮挡仍在=恒 0）。
                     "currentSystemInset" ->
                         result.success(bottomSystemInsetDp(window.decorView.rootWindowInsets))
-                    // 厂商原始串回传：Dart 侧规范化
+                    // 厂商原始串回传（早前批次）：Dart 侧规范化
                     // 出档位并切换引导文案（oem_vendor.dart）——原生只透传，
                     // 保持两端唯一真值在 Dart（可测）。
                     "manufacturer" -> result.success(Build.MANUFACTURER ?: "")
-                    // 引导页三层兜底（phase3-notify-design，
+                    // 引导页三层兜底（phase3-notify-design，早前批次
                     // 起按厂商出候选）：①本厂商已知组件名直跳 → ②应用详情页
                     // → ③图文指引
                     "openStartupManage" -> {
@@ -522,7 +559,7 @@ class MainActivity : FlutterActivity() {
         return maxOf(sb.bottom, nb.bottom, cut.bottom) / resources.displayMetrics.density
     }
 
-    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层；
+    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层；早前批次
     /// 起按 Build.MANUFACTURER 选表——其他厂商的包必不在本机，跨厂商尝试
     /// 无意义；未知厂商（三星等无此类页面的品牌）返回空表直接走详情页兜底）。
     /// 组件名随系统版本漂移，故每厂按新旧顺序多给几个。

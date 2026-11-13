@@ -93,7 +93,7 @@ class _MultiAccountApp extends AppState {
   Future<void> seed() async {
     await accountStore.save(jwt: _jwt('acc-a'), provider: 'bigmodel');
     await accountStore.save(jwt: _jwt('acc-b'), provider: 'zai');
-    // multi-account-ux-1 批2：添加不再自动切当前——显式设为当前（复现
+    // 早前批次 批2：添加不再自动切当前——显式设为当前（复现
     // 「后登录的账号成为当前」的现实路径：用户在账号管理点「设为当前」）。
     await accountStore.setLastUsed('acc-b');
     final ps = store;
@@ -135,7 +135,7 @@ void main() {
     // 两个账号各一行；acc-b（后保存）=当前。
     expect(find.byKey(const ValueKey('account-acc-a')), findsOneWidget);
     expect(find.byKey(const ValueKey('account-acc-b')), findsOneWidget);
-    // multi-account-ux-1 批1：副标题改为「当前账号 [· N 台电脑][· 连接中]」
+    // 早前批次 批1：副标题改为「当前账号 [· N 台电脑][· 连接中]」
     // ——内部 id 不再直出（短标签/备注名才是用户可读标识）。
     expect(find.text('当前账号 · 1 台电脑'), findsOneWidget,
         reason: '当前账号行显示名下电脑数（批1 关联可见性）');

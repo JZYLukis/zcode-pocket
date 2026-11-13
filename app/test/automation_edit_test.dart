@@ -201,7 +201,7 @@ void main() {
     expect(args!['automationId'], 'a1');
     expect(args['title'], '每日巡检（改）');
     expect(args['prompt'], '跑一遍构建');
-    // 高③修复：只改标题（未动调度）→ 调度字段不下发（防
+    // 对抗审查高③修复：只改标题（未动调度）→ 调度字段不下发（防
     // 有损投影覆写原 rule）。cron/scheduleRule/scheduleEditedByUser
     // 均缺省。
     expect(args.containsKey('cronExpr'), isFalse,
@@ -254,7 +254,7 @@ void main() {
   });
 
   // （2026-11-07 用户批）：weekly 档周几选择器——此前只回填旧值无 UI
-  // 可改（「周几选择器」遗留实际未修完）。红=旧代码无 chip 可点。
+  // 可改（对抗审查「周几选择器」遗留实际未修完）。红=旧代码无 chip 可点。
   testWidgets('每周档：周几选择器可改 → weekdays 随 scheduleRule 下发', (
     tester,
   ) async {
@@ -293,8 +293,8 @@ void main() {
     }
     // 每周档选中 + 七只周几 chip 在场（旧代码：无选择器=找不到）。
     expect(find.byKey(const ValueKey('automation-sched-weekly')), findsOneWidget);
-    expect(find.byKey(const ValueKey('automation-sched-weekday-0')), findsOneWidget);
-    expect(find.byKey(const ValueKey('automation-sched-weekday-5')), findsOneWidget);
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
     // （视觉走查）：Wrap 在 375dp 下折成 5+2 两行——
     // 修=Row+7×Expanded 等分单行。红=第 6/7 只 y 中心下移一行。
     final weekdayCenters = <Offset>[];
@@ -326,7 +326,7 @@ void main() {
     }
     // 旧值回填：周一(1)/周三(3)选中态（checkmark 无、蓝底判断走 selected
     // chip 的 label 色——直接改选最稳：补选周五(5)）。
-    await tester.tap(find.byKey(const ValueKey('automation-sched-weekday-5')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 3; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -501,7 +501,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 高②：官方 automationCronValidation.ts:52-56 对任意 unit 都
+  // 对抗审查高②：官方 automationCronValidation.ts:52-56 对任意 unit 都
   // 要求 hour/minute 整数——minute/hourly 档漏带必被服务端拒（红=旧
   // _buildScheduleRule 只回 unit/interval）。
   testWidgets('每 N 分钟档：scheduleRule 补 hour/minute（否则服务端必拒）', (

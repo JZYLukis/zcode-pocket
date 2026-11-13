@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show utf8;
 
 import 'package:flutter/material.dart' hide Text;
 import 'package:webview_flutter/webview_flutter.dart';
@@ -6,8 +7,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../core/localized_text.dart';
 import '../core/theme.dart';
 import '../state/app_state_scope.dart';
+import 'share_flow.dart' show shareBytesAsFile;
 
-/// 生成文件预览·网页档（file-preview-1，2026-10-29 用户拍板「只做 html
+/// 生成文件预览·网页档（早前批次，2026-10-29 用户拍板「只做 html
 /// 的部分」）：官方协议无任意文件字节读取通道（zcode-protocol-v4
 /// V4_METHODS 全量核实；官方 web 远程同样抑制 html 预览卡，见
 /// assistantPreviewCards.ts:311「Web 远控没有本地端口转发或 HTML 运行
@@ -20,6 +22,49 @@ import '../state/app_state_scope.dart';
 final _htmlExtRe = RegExp(r'\.(html?|xhtml)$', caseSensitive: false);
 
 bool isRenderableHtmlPath(String path) => _htmlExtRe.hasMatch(path.trim());
+
+/// 新建文本文件预览的扩展名白名单（早前批次）：纯
+/// 文本/数据/代码。html 家族走 [isRenderableHtmlPath]（渲染页）；其余
+/// 扩展名（含二进制与无扩展名）不进文本预览——fileChanges 只送文本
+/// 行，二进制本来也到不了这里，白名单是双保险。
+const _textPreviewExts = <String>{
+  'txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'jsonl', 'ndjson',
+  'xml', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'properties',
+  'env', 'log', 'svg',
+  'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'py', 'rb', 'go', 'rs',
+  'java', 'kt', 'kts', 'swift', 'c', 'h', 'cpp', 'hpp', 'cc', 'hh',
+  'cs', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'dart', 'vue',
+  'svelte', 'sql', 'graphql', 'proto', 'lock',
+};
+
+bool isPreviewableTextPath(String path) {
+  final name = path.trim().split(RegExp(r'[\\/]')).last;
+  final dot = name.lastIndexOf('.');
+  if (dot < 0 || dot + 1 >= name.length) return false;
+  return _textPreviewExts.contains(name.substring(dot + 1).toLowerCase());
+}
+
+/// 预览钳制上限：超上限截断显示且**不给分享**——会话文件无回源通道
+/// （与工作流产物不同），分享半份内容会冒充完整文件。
+const kConversationTextPreviewMaxBytes = 512 * 1024;
+
+/// 钳制纯函数：按 UTF-8 字节预算截断（rune 边界，不劈代理对）。
+({String text, bool truncated}) clampConversationTextPreview(
+  String full,
+  int maxBytes,
+) {
+  final bytes = utf8.encode(full);
+  if (bytes.length <= maxBytes) return (text: full, truncated: false);
+  var used = 0;
+  final buf = StringBuffer();
+  for (final r in full.runes) {
+    final w = r <= 0x7F ? 1 : (r <= 0x7FF ? 2 : (r <= 0xFFFF ? 3 : 4));
+    if (used + w > maxBytes) break;
+    buf.writeCharCode(r);
+    used += w;
+  }
+  return (text: buf.toString(), truncated: true);
+}
 
 /// 把 fileChanges 的只读 hunk 拼成「新建文件全文」：仅当全部行都是新增
 /// 行（本轮新建/整文件重写）时成立；出现删除行（编辑）或无行 → null
@@ -306,6 +351,15 @@ class HtmlPreviewPage extends StatefulWidget {
   final String title;
   final String htmlContent;
 
+  /// 截断标记（对抗审查 A-M3/B-，2026-11-14）：产物 html 超 8 块
+  ///（4MiB）截断时为 true——半份 html 不是完整文件，分享入口隐藏
+  ///（文本页/二进制页同规则；工作区新建 html 恒 false）。
+  final bool truncated;
+
+  /// 分享落盘文件名（与显示标题解耦：截断标题含「内容过长已截断」
+  /// 标记不该进文件名）。缺省=title。
+  final String? fileName;
+
   /// 测试缝：无 WebView 平台通道的环境（widget 测试）禁用控制器创建。
   @visibleForTesting
   static bool debugDisableWebView = false;
@@ -314,6 +368,8 @@ class HtmlPreviewPage extends StatefulWidget {
     super.key,
     required this.title,
     required this.htmlContent,
+    this.truncated = false,
+    this.fileName,
   });
 
   @override
@@ -367,6 +423,21 @@ class _HtmlPreviewPageState extends State<HtmlPreviewPage> {
         backgroundColor: context.colors.background,
         surfaceTintColor: Colors.transparent,
         title: Text(widget.title, translate: false, maxLines: 1, overflow: TextOverflow.ellipsis),
+        // 分享（早前批次）：html 全文已在内存（新建文件 diff=全量
+        // 行才进本页），直落盘走系统分享面板。截断不给（A-M3/B-）。
+        actions: [
+          if (!widget.truncated)
+            IconButton(
+              key: const ValueKey('html-preview-share'),
+              icon: const Icon(Icons.ios_share, size: 20),
+              tooltip: tr('分享'),
+              onPressed: () => shareBytesAsFile(
+                context,
+                widget.fileName ?? widget.title,
+                utf8.encode(widget.htmlContent),
+              ),
+            ),
+        ],
       ),
       body: controller == null
           ? Center(
@@ -405,6 +476,66 @@ class _HtmlPreviewPageState extends State<HtmlPreviewPage> {
                   ),
               ],
             ),
+    );
+  }
+}
+
+/// 新建文本文件预览页（早前批次）：与 html 预览同一
+/// 前提——新建文件的 diff=全量行，全文已随 fileChanges 到达（协议边界
+/// 内唯一可带走的会话文件形态，二进制无字节通道见）。
+/// 等宽只读 + 分享（[content] 为未钳制全文；超上限截断显示且不给分享
+/// ——会话文件无回源通道，半份内容不冒充完整文件）。
+class TextFilePreviewPage extends StatelessWidget {
+  final String title;
+  final String fileName;
+  final String content;
+
+  const TextFilePreviewPage({
+    super.key,
+    required this.title,
+    required this.fileName,
+    required this.content,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = clampConversationTextPreview(
+      content,
+      kConversationTextPreviewMaxBytes,
+    );
+    return Scaffold(
+      backgroundColor: context.colors.background,
+      appBar: AppBar(
+        backgroundColor: context.colors.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          clamped.truncated ? '$title（${tr('内容过长已截断')}）' : title,
+          translate: false,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          if (!clamped.truncated)
+            IconButton(
+              key: const ValueKey('conversation-text-share'),
+              icon: const Icon(Icons.ios_share, size: 20),
+              tooltip: tr('分享'),
+              onPressed: () =>
+                  shareBytesAsFile(context, fileName, utf8.encode(content)),
+            ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: SelectableText(
+          clamped.text,
+          style: const TextStyle(
+            fontSize: AppType.uiCaption,
+            fontFamily: 'monospace',
+            height: 1.5,
+          ),
+        ),
+      ),
     );
   }
 }

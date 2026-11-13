@@ -13,7 +13,7 @@ import 'package:zcode_pocket/ui/conversation_page.dart';
 import 'package:zcode_pocket/ui/task_center_page.dart';
 
 /// 6.5 展开态双栏（2026-10-29 批次首版，用户拍板：仿桌面端布局——窄
-/// 左栏任务列表+右侧大任务窗口；fold-dual-pane-2：左栏宽度比例化收窄
+/// 左栏任务列表+右侧大任务窗口；早前批次：左栏宽度比例化收窄
 /// （34% 夹 232~320dp）+任务行改官方桌面侧栏式紧凑单行「小标题+相对
 /// 时间」，状态压进图标槽，选中=整行填充）：宽屏（≥600dp）点任务=右栏
 /// 就地打开不跳页、返回键先收右栏、切工作区自动失效；窄屏（<600dp）
@@ -71,7 +71,7 @@ class _DualPaneApp extends AppState {
       workspaceTasksOverride ?? const [];
 
   /// 跨工作区切换延迟一帧以上：模拟「先设右栏选中→await 切工作区」的
-  /// 真实窗口（高①的失效窗口）。
+  /// 真实窗口（对抗审查高①的失效窗口）。
   @override
   Future<void> switchWorkspace(
     Map<String, dynamic> workspace, {
@@ -130,7 +130,7 @@ Future<void> _pump(WidgetTester tester, AppState app) async {
   }
 }
 
-/// fold-dual-pane-2 宽度公式（与实现同源）：窗口 34% 夹 232~320dp。
+/// 早前批次 宽度公式（与实现同源）：窗口 34% 夹 232~320dp。
 double paneWidthOf(double windowWidth) =>
     (windowWidth * 0.34).clamp(232.0, 320.0);
 
@@ -199,7 +199,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.byType(ConversationPage), findsOneWidget,
-        reason: '切换落地前右栏选中不得被误清（高①）');
+        reason: '切换落地前右栏选中不得被误清（对抗审查高①）');
     expect(find.text('从左侧选择任务，或点「新建」开始'), findsNothing);
 
     // 切换落地后仍在右栏（等待目标转正不丢选中）。
@@ -233,7 +233,7 @@ void main() {
       find.byKey(const ValueKey('home-new-task-nav')),
     ).dy;
     final taskRowDy = tester.getTopLeft(
-      find.byKey(const ValueKey('compact-task-row-t-1')),
+      find.byKey(const ValueKey('早前批次')),
     ).dy;
     expect(navDy, greaterThan(taskRowDy),
         reason: '新建任务行在任务分组之下（验收反馈①）');
@@ -290,14 +290,14 @@ void main() {
     await _pump(tester, app);
 
     // 紧凑行替代卡片；单行高 48。
-    final row = find.byKey(const ValueKey('compact-task-row-t-1'));
+    final row = find.byKey(const ValueKey('早前批次'));
     expect(row, findsOneWidget);
-    expect(find.byKey(const ValueKey('cross-task-card-t-1')), findsNothing,
+    expect(find.byKey(const ValueKey('早前批次')), findsNothing,
         reason: '宽屏左栏不再渲染卡片');
     expect(tester.getSize(row).height, 48);
 
     Material materialOf() =>
-        tester.widget<Material>(find.byKey(const ValueKey('compact-task-row-t-1')));
+        tester.widget<Material>(find.byKey(const ValueKey('早前批次')));
     expect(materialOf().color, Colors.transparent, reason: '未选中=透明底');
 
     await tester.tap(find.text('示例任务').first);
@@ -338,7 +338,7 @@ void main() {
     }
 
     // 未读行：行首图标槽 6dp 蓝点（宽屏紧凑行唯一行首标记）。
-    final dotRow = find.byKey(const ValueKey('compact-task-row-u-1'));
+    final dotRow = find.byKey(const ValueKey('早前批次'));
     expect(dotRow, findsOneWidget);
     expect(
       find.descendant(of: dotRow, matching: find.byType(Container)),
@@ -348,7 +348,7 @@ void main() {
     // 普通行槽位无标记。
     expect(
       find.descendant(
-        of: find.byKey(const ValueKey('compact-task-row-u-2')),
+        of: find.byKey(const ValueKey('早前批次')),
         matching: find.byType(Container),
       ),
       findsNothing,
@@ -358,7 +358,7 @@ void main() {
     final titleText = tester.widget<Text>(
       find
           .descendant(
-            of: find.byKey(const ValueKey('compact-task-row-u-0')),
+            of: find.byKey(const ValueKey('早前批次')),
             matching: find.byType(Text),
           )
           .first,
@@ -411,8 +411,8 @@ void main() {
     expect(find.byKey(const ValueKey('dual-pane-root')), findsNothing,
         reason: '窄屏无双栏');
     // 折叠态不受紧凑档影响：任务行仍为卡片。
-    expect(find.byKey(const ValueKey('cross-task-card-t-1')), findsOneWidget);
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing);
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+    expect(find.byKey(const ValueKey('早前批次')), findsNothing);
 
     await tester.tap(find.text('示例任务').first);
     for (var i = 0; i < 10; i++) {
@@ -424,8 +424,8 @@ void main() {
     expect(convDx, lessThan(10), reason: '整页推入（左上角贴边）');
   });
 
-  // ---- 整栏收起/展开 + 任务栏 inset 自适应 ----
-  // （折叠屏反馈：左栏无展开收起选项；系统任务栏遮列表末项）
+  // ---- 早前批次：整栏收起/展开 + 任务栏 inset 自适应 ----
+  // （vivo X Fold 6 真机反馈：左栏无展开收起选项；系统任务栏遮列表末项）
 
   testWidgets('整栏收起/展开：收起钮在「最近/项目」行尾，收起后左缘展开把手', (tester) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));
@@ -458,7 +458,7 @@ void main() {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+    expect(find.byKey(const ValueKey('早前批次')), findsNothing,
         reason: '左栏收起后任务行不可见');
     expect(find.byType(ConversationPage), findsOneWidget,
         reason: '会话保持在右栏');
@@ -474,7 +474,7 @@ void main() {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsOneWidget,
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget,
         reason: '展开后左栏任务行回来');
     expect(tester.getTopLeft(find.byType(ConversationPage)).dx,
         greaterThan(paneWidthOf(840)),
@@ -494,7 +494,7 @@ void main() {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+    expect(find.byKey(const ValueKey('早前批次')), findsNothing,
         reason: '已收起');
 
     // 系统返回 → PopScope 清选中 → 空态 + 收起 → postFrame 自动展开左栏。
@@ -504,7 +504,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.byType(ConversationPage), findsNothing, reason: '右栏收回');
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsNothing,
+    expect(find.byKey(const ValueKey('早前批次')), findsNothing,
         reason: 'r4：空态保持收起（左缘把手负责展开）');
   });
 
@@ -546,7 +546,7 @@ void main() {
     expect(listNoBar.padding?.resolve(TextDirection.ltr).bottom, 88,
         reason: '任务栏关闭：inset 缩回，内容铺到边缘');
   });
-  testWidgets(' 钉死：原生直推支路不可删（vivo viewPadding=0 场景）', (tester) async {
+  testWidgets('③H2 钉死：原生直推支路不可删（vivo viewPadding=0 场景）', (tester) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));
     addTearDown(() {
       tester.view.viewPadding = FakeViewPadding.zero;
@@ -580,7 +580,7 @@ void main() {
         reason: '88+max(80,50)=168（MediaQuery 支路仍有效时取大）');
   });
 
-  testWidgets(' 钉死：收起态空态有展开/新建出口（死画面修复）', (tester) async {
+  testWidgets('③H1 钉死：收起态空态有展开/新建出口（死画面修复）', (tester) async {
     await tester.binding.setSurfaceSize(const Size(840, 800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final app = _DualPaneApp();
@@ -608,7 +608,7 @@ void main() {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(find.byKey(const ValueKey('compact-task-row-t-1')), findsOneWidget,
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget,
         reason: '空态展开按钮可恢复左栏');
   });
 }

@@ -69,7 +69,17 @@ WORD_MAP = [
     (re.compile(r"视觉审查 \d{3,4}"), "视觉走查"),
     (re.compile(r"视觉审查"), "视觉走查"),
     (re.compile(r"素材补拍轮|素材英文轮|素材录制发现|宣传素材首拍"), "实测"),
-    (re.compile(r"demo-mode-1|public-media-1(?:-r\d)?"), "演示模式批"),
+    (re.compile(
+        r"demo-mode-1|public-media-1(?:-r\d)?"
+        r"|run-list-artifacts|dark-screenshots-rework"
+    ), "演示模式批"),
+    # 对抗审查 D-8（2026-11-14）：1.0.6 批次 slug 会随注释进公开树
+    #（词表 0 命中实证）——通用批次 slug 形态（xxx-yyy-N）统一改写，
+    # 覆盖未来新批次不再逐个补词。
+    (re.compile(r"\b(?![a-z]+-20\d{2})[a-z]+(?:-[a-z0-9]+)+-\d+\b"), "早前批次"),
+    # 内部验收/拍板叙事（终审口径：开发过程叙述不入公开注释）。
+    (re.compile(r"用户 \d{4}-\d{2}-\d{2} 拍板"), "设计定稿"),
+    (re.compile(r"真机验收实录|真机验收反馈"), "实测反馈"),
 ]
 
 # 直接删除的内部产物名（docs/ 前缀形在前，防裸名先匹配留下 "docs/" 残片；

@@ -8,9 +8,9 @@ import '../core/theme.dart';
 /// 后台与通知保障引导页（阶段 3 第二段后台专项，三层兜底）：
 /// ①按钮自动跳转系统设置（组件名依次尝试）→ ②跳应用详情页手点 →
 /// ③跳不动时图文指引。部分厂商省电机制下代码全对也可能被杀，这三步是
-/// "审批提醒"可靠工作的前提（用户 2026-10-18 拍板：开提醒时一次配好）。
+/// "审批提醒"可靠工作的前提（设计定稿：开提醒时一次配好）。
 ///
-/// 第 1 步文案与跳转目标按厂商档位切换（详见
+/// 早前批次：第 1 步文案与跳转目标按厂商档位切换（详见
 /// oem_vendor.dart）；读取失败回落华为档=本机制引入前的原行为。
 class NotifyGuidePage extends StatefulWidget {
   const NotifyGuidePage({super.key, this.vendorOverrideForTest});

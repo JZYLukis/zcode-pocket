@@ -169,7 +169,7 @@ void main() {
     h.registry.dispose();
   });
 
-  // 遗留核实修（2026-11-07）：keepAlive 后台全栈退订
+  // 对抗审查遗留核实修（2026-11-07）：keepAlive 后台全栈退订
   // tasks-index、回前台只恢复活跃栈——切回保活中的另一栈（连接在、
   // pokeOrResume→poke 不重开工作区）必须就地补订，否则首页停更。
   test('activate 复用栈时补订 tasks-index（保活切换停更修复）', () async {

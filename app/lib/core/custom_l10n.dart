@@ -101,10 +101,10 @@ const _customEn = <String, String>{
   '重试': 'Retry',
   '已完成': 'Completed',
   '定时任务': 'Scheduled tasks',
-  // 宽屏顶栏左栏收起/展开钮 tooltip。
+  // 早前批次：宽屏顶栏左栏收起/展开钮 tooltip。
 
 
-  // 应用内更新。
+  // 应用内更新（早前批次）。
   '软件更新': 'Software update',
   '检查新版本并应用内下载安装（需安装权限）': 'Check for updates and download in-app (install permission required)',
   '应用内更新': 'In-app updates',
@@ -126,16 +126,22 @@ const _customEn = <String, String>{
   '正在下载更新': 'Downloading update',
   '准备中…': 'Preparing…',
   '下载失败': 'Download failed',
-  // '重试': 'Retry',
-  // '取消': 'Cancel',
-  // '关闭': 'Close',
+  // dup-skipped '重试': 'Retry',
+  // dup-skipped '取消': 'Cancel',
+  // dup-skipped '关闭': 'Close',
   '应用内更新已关闭，请到 GitHub Releases 手动下载': 'In-app updates are off. Please download manually from GitHub Releases',
+  // 产物分享（早前批次）：产物行/预览页入口+进度弹窗。
+  '分享': 'Share',
+  '正在获取产物…': 'Fetching artifact…',
+  '产物过大（超过 150MB），无法分享': 'Artifact too large (over 150 MB) to share',
+  '下载产物失败：': 'Failed to fetch artifact: ',
+  '分享失败': 'Share failed',
   'PIN 码': 'PIN',
   '应用锁数据缺失，已停用；请到设置中重新开启': 'App lock data missing; lock disabled. Re-enable it in Settings',
   '设备未设置系统屏幕锁，无法验证；请先在系统设置中配置锁屏': 'No system screen lock is set, verification unavailable. Configure a screen lock in system settings first',
   '打开系统安全设置': 'Open system security settings',
   '任务列表已收起': 'Task list collapsed',
-  // 应用锁：设置页+锁屏。
+  // 应用锁（早前批次）：设置页+锁屏。
   '应用锁': 'App lock',
   '冷启动与后台锁定需验证（系统锁屏 / PIN 码）': 'Verify on cold start and after backgrounding (system lock / PIN)',
   '应用已锁定': 'App locked',
@@ -333,7 +339,7 @@ const _customEn = <String, String>{
   '部分手机的省电机制会在后台清理应用——代码全部正确，通知仍可能收不到。开启「审批提醒」前，请把下面几步一次配好（全程只需配置一次）。': 'Battery management on some devices can kill background apps. Even if the code is correct, notifications may still be missed. Before enabling approval reminders, complete these steps once.',
   '启动管理三开关': 'Three background launch switches',
   '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关。': 'Settings → Apps → App launch → ZCode Pocket → choose Manual management, then enable Auto-launch, Secondary launch, and Background activity.',
-  // 引导页第 1 步按厂商档位出文案（华为档零变化，
+  // 早前批次：引导页第 1 步按厂商档位出文案（华为档零变化，
   // 其余为新增档；华为/荣耀两条 footnote 与「跳转失败」是存量串本批
   // 补译——此前英文界面点跳转按钮会冒中文）。
   '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关（老系统在 手机管家 内）。':
@@ -439,8 +445,26 @@ const _customEn = <String, String>{
   '没有子智能体\n点右下角「新建」创建':
       'No subagents yet\nTap New at the bottom right to create one',
   '插件': 'Plugin',
-  // workflow-runs-1（2026-10-30）：工作流 run 页 + 闲时任务卡
+  // 早前批次（2026-10-30）：工作流 run 页 + 闲时任务卡
   '工作流运行': 'Workflow runs',
+  // 早前批次（2026-11-13）：收集产物弹层与顶栏入口。
+  '收集产物': 'Collect artifacts',
+  '发送': 'Send',
+  // 对抗审查修复批（2026-11-14）：分享/下载/枢纽反馈。
+  '产物内容不完整，已丢弃': 'Artifact content incomplete; discarded',
+  '未能发送（会话正忙或发送失败），请稍后再试':
+      'Could not send (conversation busy or send failed); try again shortly',
+  '内容过大，仅加载了部分': 'Content too large; only part was loaded',
+  // 早前批次（2026-11-14）：产物下载页。
+  '产物下载': 'Downloads',
+  '如何下载会话中的文件': 'How to download files from this chat',
+  '会话生成的文件（含图片 / PDF / 表格）需先发布为工作流产物才能下载：点「收集产物」让智能体整理本回合文件；已发布的产物在下方运行里点开，行尾即可分享保存。':
+      "Files generated in this chat (images / PDFs / spreadsheets included) must be published as workflow artifacts before downloading: tap 'Collect artifacts' to have the agent gather this turn's files; published artifacts appear in the runs below — open one and tap Share to save.",
+  '已发送收集指令，产物就绪后会出现在下方':
+      'Collect request sent — artifacts will appear below when ready',
+  // 早前批次（2026-11-14）：二进制产物不支持预览页。
+  '该格式暂不支持预览，可点右上角分享保存到手机':
+      'This format cannot be previewed. Tap Share at the top right to save it',
   '本会话没有工作流运行': 'No workflow runs in this conversation',
   '该运行没有事件与产物记录': 'No events or artifacts for this run',
   '（已截断）': ' (truncated)',
@@ -912,14 +936,14 @@ const _customEn = <String, String>{
   '定位': 'Jump',
   '该消息在更早的历史中，请上滑加载':
       'That message is in earlier history — scroll up to load more',
-  // multi-account-ux-1 批1（2026-11-04 拍板）：账号关联可见性。
+  // 早前批次 批1（2026-11-04 拍板）：账号关联可见性。
   '重命名账号': 'Rename account',
   '如「公司订阅」「个人号」（仅本机保存）':
       'e.g. "Work subscription", "Personal" (saved on this device only)',
   '跟随当前账号': 'Follows current account',
   '账号已删除': 'Account deleted',
   '当前账号': 'Current account',
-  // multi-account-ux-1 批4：多电脑任务聚合。
+  // 早前批次 批4：多电脑任务聚合。
   '首页显示其他电脑任务': "Show other computers' tasks on home",
   '来自本地缓存快照（可能过期，会标注缓存时间）；不额外连接电脑':
       'From local cache snapshots (may be stale; cached time shown). No extra connections',
@@ -931,7 +955,7 @@ const _customEn = <String, String>{
   // usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
   '网络连接不可用，请检查网络': 'Network unavailable. Check your connection',
   '数据为空，请稍后重试': 'No data yet. Try again later',
-  // multi-account-ux-1 批2（2026-11-04 拍板）：添加账号语义收敛。
+  // 早前批次 批2（2026-11-04 拍板）：添加账号语义收敛。
   '账号已添加，当前账号未变': 'Account added. Current account unchanged.',
   '改绑这台电脑的账号？': 'Change the account bound to this computer?',
   '改绑': 'Change',
@@ -939,7 +963,7 @@ const _customEn = <String, String>{
   '」，将改为「': '” and will change to “',
   '」。改绑后旧账号在此电脑上的连接会失效，需要用旧账号时可再改绑回来。':
       '”. The old account’s connection on this computer will stop working. You can switch back later.',
-  // fullsweep-1108（14 路后全修批）：各修复面新增文案。
+  // fullsweep-1108（14 路对抗审查后全修批）：各修复面新增文案。
   '该电脑已在另一台设备上打开': 'This computer is already open on another device',
   '打开工作区超时，请稍后重试':
       'Opening the workspace timed out. Please try again later.',
@@ -997,11 +1021,11 @@ const _customEn = <String, String>{
 };
 
 final _customPatterns = <_L10nPattern>[
-  // multi-account-ux-1 批4：其他电脑聚合区。
+  // 早前批次 批4：其他电脑聚合区。
   _L10nPattern(RegExp(r'^其他电脑（(\d+)）$'), 'Other computers ({count})', {'count': 1}),
   _L10nPattern(RegExp(r'^缓存于 ([\s\S]+)$'), 'Cached {time}', {'time': 1}),
 
-  // multi-account-ux-1 批1：账号管理副标题（拼接串，count=1 单数）。
+  // 早前批次 批1：账号管理副标题（拼接串，count=1 单数）。
   _L10nPattern(RegExp(r'^([\s\S]+) · 1 台电脑 · 连接中$'),
       '{account} · 1 computer · Connected', {'account': 1}),
   _L10nPattern(RegExp(r'^([\s\S]+) · (\d+) 台电脑 · 连接中$'),
@@ -1011,7 +1035,7 @@ final _customPatterns = <_L10nPattern>[
   _L10nPattern(RegExp(r'^([\s\S]+) · (\d+) 台电脑$'),
       '{account} · {count} computers', {'account': 1, 'count': 2}),
 
-  // multi-account-ux-1 批1：设备列表「以 {账号} 拉取」chip。
+  // 早前批次 批1：设备列表「以 {账号} 拉取」chip。
   _L10nPattern(RegExp(r'^以 ([\s\S]+) 拉取$'), 'Fetch with {account}', {'account': 1}),
 
   // 插值成串的泄漏——tr() 只做精确匹配+regex，带
@@ -1438,7 +1462,7 @@ final _customPatterns = <_L10nPattern>[
     {'reason': 1},
   ),
   _L10nPattern(RegExp(r'^后台工作 · (\d+)$'), 'Background work · {n}', {'n': 1}),
-  // 状态托盘（status-tray-1109）：词在 _zhEnWords，此为组合串。
+  // 状态托盘（早前批次）：词在 _zhEnWords，此为组合串。
   _L10nPattern(RegExp(r'^排队 (\d+) 条$'), 'Queued {n} entries', {'n': 1}),
   _L10nPattern(RegExp(r'^(\d+) 分钟内$'), 'within {n} min', {'n': 1}),
   _L10nPattern(

@@ -173,16 +173,16 @@ void main() {
   test('WebView 返回值解码：含引号值（user_info JSON 文本）整串读回', () {
     // Android 原样返回的编码形态：{"id":"u-1"} 存进 localStorage 后经
     // getItem 读回，内层引号全部带 \" 转义。
-    const encoded = '"{\\"id\\":\\"u-bigmodel-1\\",\\"username\\":\\"zhang\\"}"';
+    const encoded = '"{\\"id\\":\\"早前批次\\",\\"username\\":\\"zhang\\"}"';
     expect(
       decodeWebViewJsStringResult(encoded),
-      '{"id":"u-bigmodel-1","username":"zhang"}',
+      '{"id":"早前批次","username":"zhang"}',
       reason: '修复前（手工剥首尾引号）得到 {\\\"id\\\":...}——反斜杠在 JSON '
           '串外非法，下游 jsonDecode 必败',
     );
     // 读回值可直接被身份收割解析。
     final identity = jsonDecode(decodeWebViewJsStringResult(encoded) ?? '');
-    expect((identity as Map)['id'], 'u-bigmodel-1');
+    expect((identity as Map)['id'], '早前批次');
   });
 
   test('WebView 返回值解码：JWT/无引号兜底/null 边界', () {

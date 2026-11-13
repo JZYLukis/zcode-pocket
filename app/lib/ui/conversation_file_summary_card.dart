@@ -255,13 +255,13 @@ class FileSummaryCardState extends State<FileSummaryCard> {
     final add = intOrZero(fc['additions']);
     final del = intOrZero(fc['deletions']);
     final reverted = '${fc['state'] ?? 'active'}' == 'reverted';
-    // 官方
+    // 对抗审查 3b-6（C 修复）：撤销按钮按协议能力位门控——官方
     // ConversationFileSummaryPanel.tsx:131-134 仅 header.actions.
     // canRewindFiles===true 且非已撤销才可撤；此前无门控点了才预检失败。
     final actions = widget.header?['actions'];
     final canRewind =
         !reverted && actions is Map && actions['canRewindFiles'] == true;
-    // files==0 但 subagents>0（只读不改文件的轮）仍渲染
+    // 对抗审查 ：files==0 但 subagents>0（只读不改文件的轮）仍渲染
     // ——「N 个子代理」胶囊不随文件数消失；两者皆 0 才收缩。
     if (files == 0 && widget.subagentCount == 0) {
       return const SizedBox.shrink();
@@ -443,7 +443,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
                             for (final item in _items)
                               InkWell(
                                 key: ValueKey('file-row-${item['path']}'),
-                                // a-6：点行落在该文件（此前打开整轮
+                                // 对抗审查 3a-6：点行落在该文件（此前打开整轮
                                 // 列表不定位，导航语义断裂）。
                                 onTap: () => _openViewer(item: item),
                                 child: Padding(
@@ -554,26 +554,37 @@ class FileSummaryCardState extends State<FileSummaryCard> {
     final sessionId = widget.sessionId;
     final target = _target;
     if (sessionId == null || target == null || !mounted) return;
-    // 生成文件预览·网页档（file-preview-1，用户拍板只做 html）：新建
-    // html 的全文随 fileChanges 到达——本地 WebView 渲染（纯原生数据，
-    // 零提示词零额度）；编辑过的 html 只送变更行，宁进 diff 也不渲染
-    // 半份内容。
+    // 生成文件预览·网页档（早前批次，用户拍板只做 html）+文本档
+    // （早前批次）：新建文件的全文随 fileChanges 到达
+    // ——html 走 WebView 渲染、白名单文本走等宽只读+分享（均为纯原生
+    // 数据，零提示词零额度）；编辑过的文件只送变更行，宁进 diff 也不
+    // 渲染半份内容。
     if (item != null && initialPath == null) {
       final path = '${item['path']}';
-      if (isRenderableHtmlPath(path)) {
-        final patches =
-            listOf(item['patches'])
-                ?.whereType<Map>()
-                .map((e) => e.cast<String, dynamic>())
-                .toList() ??
-            const <Map<String, dynamic>>[];
-        final full = assembleNewFileText(patches);
-        if (full != null) {
+      final patches =
+          listOf(item['patches'])
+              ?.whereType<Map>()
+              .map((e) => e.cast<String, dynamic>())
+              .toList() ??
+          const <Map<String, dynamic>>[];
+      final full = assembleNewFileText(patches);
+      if (full != null) {
+        final name = path.split(RegExp(r'[\\/]')).last;
+        if (isRenderableHtmlPath(path)) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => HtmlPreviewPage(
-                title: path.split(RegExp(r'[\\/]')).last,
-                htmlContent: full,
+              builder: (_) => HtmlPreviewPage(title: name, htmlContent: full),
+            ),
+          );
+          return;
+        }
+        if (isPreviewableTextPath(path)) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => TextFilePreviewPage(
+                title: name,
+                fileName: name,
+                content: full,
               ),
             ),
           );

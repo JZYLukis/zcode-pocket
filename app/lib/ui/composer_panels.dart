@@ -582,7 +582,7 @@ String modelIdOf(ConfigOptionValue v) {
 String providerGroupKey(ConfigOptionValue v) {
   final pid = v.modelProviderId ?? '';
   if (pid.isNotEmpty) return pid;
-  // 空 providerId 条目全
+  // 对抗审查中⑤：空串不回退（?? 只拦 null）——空 providerId 条目全
   // 并入同一组且不可选。改显式 isNotEmpty 判断。
   return v.value.contains('/')
       ? v.value.substring(0, v.value.indexOf('/'))
@@ -1188,7 +1188,7 @@ class _ModelListState extends State<_ModelList> {
     // 1.0.1 验收修复：选中组匹配——精确（provider+modelId）优先，
     // 失败降级到 modelId 模糊（真机 provider 形态可能与会话目录不同，
     // 精确匹配恒 miss → 全收起+选中不可见）。
-    // 高④：原模糊回退被 selectedIndex>=0 挡死（精确必中时
+    // 对抗审查高④：原模糊回退被 selectedIndex>=0 挡死（精确必中时
     // 不需要、selectedIndex==-1 时被门挡），真机 provider 不匹配的
     // 场景仍全收起。修：selectedIndex<0 且有 current 时走模糊匹配。
     final selectedGroup = ordered

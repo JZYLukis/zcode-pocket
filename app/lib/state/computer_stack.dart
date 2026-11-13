@@ -30,7 +30,7 @@ String? createSessionProjectId(Map<String, dynamic>? projectIntent) {
   return id is String && id.trim().isNotEmpty ? id : null;
 }
 
-/// 归属回落：suspend/重启恢复路径按 workspace-list 恢复
+/// 归属回落（对抗审查）：suspend/重启恢复路径按 workspace-list 恢复
 /// 开的是**tab 桥**（无 project intent）——若恢复键恰为某项目根，用户
 /// 在该项目下新建的归属会静默丢失（症状与本批修复的原始 bug 相同）。
 /// 仅"工作区键=rootPath 直配"时回落；任务归属/projectForWorkspaceKey
@@ -235,7 +235,7 @@ class ComputerStack extends ChangeNotifier {
         return '等待桌面端配对';
       case LinkPhase.connecting:
         // 真话区分（2026-10-26 断线批）：relay 已配上但桥未建≠连接
-        // 恢复中——此前空串让横幅渲染成"连接恢复中…"空括号。
+        // 恢复中——此前空串让横幅渲染成"连接恢复中…（）"空括号。
         if (client.relay.state == RelayState.paired && _bridge == null) {
           return '中继已连，正在恢复工作区';
         }
@@ -481,7 +481,7 @@ class ComputerStack extends ChangeNotifier {
     _client = client;
     _failureSub = client.relay.failures.listen((f) {
       // error 档人话（此前 computeStatusDetail 对 error 返回空串，
-      // 横幅渲染成"连接恢复中…"）。
+      // 横幅渲染成"连接恢复中…（）"）。
       _lastFailureMessage = f.message;
       onFailure(this, f);
       notifyListeners();
@@ -793,7 +793,7 @@ class ComputerStack extends ChangeNotifier {
     // host 端 reserveCreatedTask 按 params.projectId 写 tasks.project_id，
     // 缺省即落桌面「任务」默认区。取值规则见 createSessionProjectId；
     // 桥 intent 缺席时按项目根直配回落（rootMatchedProjectId——恢复路径
-    // 的 tab 桥场景，）。
+    // 的 tab 桥场景，对抗审查）。
     // 任务桥不回落（2026-10-24 真机实锤"选任务工作区新建却建到项目里"）：
     // 任务桥的 workspaceKey 可能恰为项目根（未归类任务跑在项目根目录，
     // 如临时性验证任务场景）——任务入口的语义是"跟随该任务目录"，

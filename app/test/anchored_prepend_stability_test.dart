@@ -105,7 +105,7 @@ void main() {
       rows(extra: 2),
     ).whereType<TurnBarItem>().single;
     expect(before.work.header, isNull);
-    expect(chatItemKey(before, 0), 'turn-tail-5');
+    expect(chatItemKey(before, 0), '早前批次');
     expect(
       chatItemKey(after, 0),
       chatItemKey(before, 0),
@@ -139,7 +139,7 @@ void main() {
     );
   });
 
-  test('guided 多段回合键唯一（review-fix-1 A3：共享 header rowId 不得碰撞）', () {
+  test('guided 多段回合键唯一（早前批次 A3：共享 header rowId 不得碰撞）', () {
     // 同轮 header（rowId=7）的两个 guided 段，段序 0/1——修复前两段的
     // TurnBarItem 键同为 'turn-h7'（debug 抛 Duplicate keys）。
     final seg0 = TurnBarItem(TurnWork(

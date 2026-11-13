@@ -201,6 +201,11 @@ class ConversationPage extends StatefulWidget {
   /// 仅浏览会话流。
   final bool readOnly;
 
+  /// 双栏右栏内嵌形态（早前批次 视觉走查 S1）：非路由无返回
+  /// 箭头——顶栏标题间距保持 16（推入态才收紧到 0）。用构造参数而非
+  /// Navigator.canPop 判定：后者随泵时序漂移，基线渲染不可复现。
+  final bool embedded;
+
   /// 空态欢迎屏问候语取值时刻（测试缝：游览基线需要确定性时段）。
   /// 默认运行时取 DateTime.now()——官方 ConversationDraftEmptyState
   /// 按本地小时分档并在档位边界自动换档；手机草稿页是短命页面，
@@ -216,6 +221,7 @@ class ConversationPage extends StatefulWidget {
     required this.sessionId,
     required this.title,
     this.readOnly = false,
+    this.embedded = false,
     this.greetingNow,
     this.subscribeTimeout,
     this.waitForWorkspace,
@@ -328,7 +334,7 @@ class _ConversationPageState extends State<ConversationPage> {
   );
   List<SendQueueEntry> get _queueEntries => _queue.entries;
 
-  /// 状态托盘展开态（status-tray-1109）：≥2 源合并时的折叠开关；
+  /// 状态托盘展开态（早前批次）：≥2 源合并时的折叠开关；
   /// 单源直通路径不读它。会话内保持。
   bool _statusTrayExpanded = false;
   bool _stickToBottom = true;
@@ -1169,7 +1175,7 @@ class _ConversationPageState extends State<ConversationPage> {
     });
   }
 
-  /// 批3（multi-account-ux-1）：本会话页所属电脑——切电脑后 push 进来
+  /// 批3（早前批次）：本会话页所属电脑——切电脑后 push 进来
   /// 的旧电脑会话必须自动退出（否则对旧栈订阅会失败且用户看到"假死"）。
   String? _ownerDeviceSid;
   bool _sidPopScheduled = false;
@@ -1235,7 +1241,7 @@ class _ConversationPageState extends State<ConversationPage> {
       ..start();
     // 1.0.1 真机验收⑤A：跨区 push-first——等待目标工作区就绪（键匹配
     // 且桥在场）再订阅；切换失败（workspaceError）/超时走错误态可重试。
-    // 高②：等待循环的 throw 原在 try 外（_subscribe 是
+    // 对抗审查高②：等待循环的 throw 原在 try 外（_subscribe 是
     // fire-and-forget，异常被 PlatformDispatcher 吞→页面永久转圈）。
     // 收进本 try-catch，走 _syncError 错误态+重试按钮。
     final waitKey = widget.waitForWorkspace;
@@ -1265,7 +1271,7 @@ class _ConversationPageState extends State<ConversationPage> {
         }
       } on Object catch (e) {
         if (!mounted) return;
-        // 遗留核实修（2026-11-07）：等待超时/切换失败时，首页
+        // 对抗审查遗留核实修（2026-11-07）：等待超时/切换失败时，首页
         // 仍挂着 keepHomePreview 保住的旧工作区列表——本页已判死，旧
         // 列表不能再以可用状态示人；与 task_center 失败路径同语义
         // （clearStaleHomePreview 幂等，双清无害）。
@@ -1353,7 +1359,7 @@ class _ConversationPageState extends State<ConversationPage> {
       // 验收 C（子代理下钻）：lineage-invalid=子会话工作目录≠父任务
       // 根目录（如 官方 app 源码 子目录），3.16.x CLI 订阅校验拒绝且重试必然
       // 循环失败——人话化；3.17 虽重写解析区，但严格 path 等价校验仍在，
-      // 官方 app 源码 子目录场景升级后仍可能被拒（D6b 源码复核）。
+      // 官方 app 源码 子目录场景升级后仍可能被拒（对抗审查 D6b 源码复核）。
       // 三轮审查 /：新增三类内部 StateError 的人话映射——不再把
       // 「Bad state:」英文前缀裸给用户，桥自建场景也不再误称"已切换"。
       final raw = '$e';
@@ -2186,7 +2192,7 @@ class _ConversationPageState extends State<ConversationPage> {
   }) async {
     final app = AppStateScope.of(context);
     if (text.trim().isEmpty || _sending) return false;
-    // 会话压缩（compact-command-1，用户反馈「手机发起压缩无任何提示」
+    // 会话压缩（早前批次，用户反馈「手机发起压缩无任何提示」
     // 根因：官方 compact 是专用命令信封，我们此前按纯文本发送=CLI 不
     // 执行。官方 compact 无参数——精确匹配 /compact 走命令通道；其余
     // 带参形态维持文本由 CLI 自行解释。维护命令不进离线队列。
@@ -2402,7 +2408,7 @@ class _ConversationPageState extends State<ConversationPage> {
         // 批⑦（2026-10-23）：mode=权限档、planEnabled=独立开关并行提交
         // （官方 composerSubmissionConfig.ts:35-37 同款；_pendingMode 不再
         // 承载 'plan'——计划从开关来，可为显式 false=关闭会话已开的计划）。
-        // （2026-10-24）：服务端 resolveExecutionState 对
+        // 对抗审查 （2026-10-24）：服务端 resolveExecutionState 对
         // "带 mode 无 planEnabled"的提交按 mode.success⇒false 收敛——
         // 本次提交带 mode 时必须成对冻结当前计划生效值（官方提交瞬间
         // 冻结同款），否则挂起回退场景下计划被静默关闭。
@@ -3214,13 +3220,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
     try {
       switch (action) {
-        case 'workflowRuns':
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => WorkflowRunsPage(sessionId: sessionId),
-            ),
-          );
-          return;
+        // workflowRuns 菜单槽位已撤销（早前批次：入口提升到顶栏）。
         case 'bgWorks':
           final sub = _sub;
           if (sub == null) return;
@@ -3345,7 +3345,7 @@ class _ConversationPageState extends State<ConversationPage> {
     return _thoughtNames[v] ?? v;
   }
 
-  /// 合并药丸标签（用户 2026-10-19 拍板，参考 Claude 系 App 连排格式）：
+  /// 合并药丸标签（设计定稿，参考 Claude 系 App 连排格式）：
   /// 模型与思考档本是一个提交单元（modelSelection），UI 合为一枚药丸
   /// 「模型 · 档」；点开同一面板选择。空档只显模型名，全空回退「模型」。
   // Paseo 参考（2026-10-23）：药丸两级文字——模型名（亮）+档位（暗）。
@@ -3576,8 +3576,8 @@ class _ConversationPageState extends State<ConversationPage> {
       );
 
   Future<void> _showAddSheet() async {
-    // entry-polish-1：面板回归纯"添加"语义 5 项（3+2 两行），撤
-    // workflow-runs-1 为 7 项溢出加的滚动限高。
+    // 早前批次：面板回归纯"添加"语义 5 项（早前批次 的
+    // 「收集产物」第 6 项已随 早前批次 迁至产物下载页顶栏入口）。
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -3669,6 +3669,7 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
     );
   }
+
 
   /// `$ 选择技能`：官方 skills.list（conversation.skills() 已备），
   /// 选中插入 `$name `（桌面 ChatPromptActionMenu 同语义）。
@@ -3888,7 +3889,7 @@ class _ConversationPageState extends State<ConversationPage> {
     }
     // 立即下发：先挂起显示（药丸即时反馈），accepted 后转本地已生效。
     setState(() => _pendingMode = picked);
-    // （2026-10-24）：switchCollaborationMode 无 planEnabled
+    // 对抗审查 （2026-10-24）：switchCollaborationMode 无 planEnabled
     // 字段，服务端 resolveExecutionState 对任何 success 态权限档都会把
     // planEnabled 置 false（execution-state.ts:12-23）——切档必然关计划
     // （协议无法成对携带，官方桌面靠"切档只改草稿、提交时成对冻结"避开
@@ -3979,7 +3980,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
     Future<void> run(Future<dynamic> Function() op) async {
       try {
-        // ack status 检查：sendCommand 对 rejected/stale
+        // ack status 检查（对抗审查）：sendCommand 对 rejected/stale
         // 耗尽只打日志正常返回——被拒不能当成功。
         final res = await op();
         if (res is Map && res['status'] is String) {
@@ -4399,13 +4400,31 @@ class _ConversationPageState extends State<ConversationPage> {
       appBar: AppBar(
         // V1 审美优化：顶栏高度全库统一 52（任务中心同款）。
         toolbarHeight: 52,
+        // 早前批次（设计定稿）：顶栏四图标后标题
+        // 空间收窄——返回箭头与标题的默认间距 16 收到 0（箭头按钮盒
+        // 内已有呼吸位），给标题让宽度。视觉走查 S1：双栏右栏为内嵌
+        // 非路由（无返回箭头），间距 0 会贴死 1px 分隔线——用
+        // [embedded] 构造参数区分（Navigator.canPop 随泵时序漂移，
+        // 基线不可复现，实测三连哈希各异）。
+        titleSpacing: widget.embedded ? 16 : 0,
+        // 真机反馈（2026-11-13 验收）：四图标 48dp 默认盒+20dp 图标占
+        // 192dp，标题/分支/项目副行几乎不可见——返回槽 56→48+图标全
+        // 紧凑档（18dp/40dp 盒，组宽 192→160），标题区实测 +32dp（非
+        // 嵌入 127→159 / 嵌入 111→143）。actionsPadding 4=四盒收窄后
+        // 保住字形右缘 ~17dp 呼吸位（视觉复核测算：不补则掉到 12.5）。
+        leadingWidth: 48,
+        actionsPadding: const EdgeInsets.only(right: 4),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 视觉走查观察项：四图标把标题预算压到 ~127dp（375dp 屏约
+            // 7 汉字），无 maxLines 时长标题换行会顶爆 52dp 顶栏——
+            // 与其他页 AppBar 标题统一钉单行省略。
             Text(
               _sessionTitle(),
               translate: false,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: AppType.uiBase),
             ),
@@ -4490,13 +4509,48 @@ class _ConversationPageState extends State<ConversationPage> {
         ),
         actions: [
           if (state != null && _sessionId != null)
+            // 工作流运行入口（早前批次，用户拍板从 ⋮ 提升到顶栏
+            // 一级：文件下载高频需求，回访旧产物要一步直达）。entry-
+            // polish-1 当初挪入菜单的「低频查看项」前提已被产物分享
+            // 使用形态推翻。
+            IconButton(
+              key: const ValueKey('downloads-entry'),
+              // 早前批次（用户拍板）：图标换下载语义，直达产物
+              // 下载页（指引+收集产物入口+运行列表同页——想下载的人
+              // 自然到达并得到提示）。角标（早前批次）：
+              // 运行中 run 计数（快照 workflowRuns 投影活数据）。
+              icon: _TopBarCountBadge(
+                badgeKey: const ValueKey('topbar-badge-workflow'),
+                count: state.workflowRunsList
+                    .where((r) => '${r['status']}' == 'running')
+                    .length,
+                icon: Icons.download_outlined,
+              ),
+              tooltip: tr('产物下载'),
+              style: _topBarActionStyle(),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WorkflowRunsPage(
+                    sessionId: _sessionId!,
+                    downloadsHub: true,
+                    // 对抗审查 B-/C-：readOnly 子代理下钻会话不接
+                    // 发送回调（hub 按钮禁用）。
+                    onCollectPrompt: widget.readOnly
+                        ? null
+                        : (prompt) => _sendText(prompt),
+                  ),
+                ),
+              ),
+            ),
+          if (state != null && _sessionId != null)
             IconButton(
               key: const ValueKey('conversation-search-entry'),
               icon: Icon(
                 Icons.search,
-                size: 20,
+                size: 18,
                 color: _searchOpen ? context.colors.accent : null,
               ),
+              style: _topBarActionStyle(),
               tooltip: tr('任务内查找'),
               onPressed: _openConversationSearch,
             ),
@@ -4505,8 +4559,19 @@ class _ConversationPageState extends State<ConversationPage> {
           if (state != null && _sessionId != null)
             IconButton(
               key: const ValueKey('subagents-entry'),
-              icon: const Icon(Icons.smart_toy_outlined, size: 20),
+              // 运行中高亮（真机反馈 2026-11-14「计数徽喧宾夺主，图标
+              // 本身发光/高亮」）：有运行中子代理=warning 色图标（与
+              // run 卡 spinner 同色系；search 激活变 accent 同款先例），
+              // 计数徽退役。
+              icon: Icon(
+                Icons.smart_toy_outlined,
+                size: 18,
+                color: countRunningSubagents(state.rows) > 0
+                    ? context.colors.warning
+                    : null,
+              ),
               tooltip: tr('子智能体'),
+              style: _topBarActionStyle(),
               onPressed: () => showSubagentListSheet(
                 context,
                 sessionId: _sessionId!,
@@ -4517,7 +4582,12 @@ class _ConversationPageState extends State<ConversationPage> {
           if (state != null && _sessionId != null)
             PopupMenuButton<String>(
               key: const ValueKey('task-menu'),
-              icon: const Icon(Icons.more_vert, size: 20),
+              icon: const Icon(Icons.more_vert, size: 18),
+              // 紧凑档（真机反馈 2026-11-13）：仅 padding 11 不够——内部
+              // IconButton 仍走 M3 默认 tapTargetSize=padded 撑回 48dp
+              // （视觉复核实测 168/40/40/44 不均），必须同挂 compact style。
+              padding: const EdgeInsets.all(11),
+              style: _topBarActionStyle(),
               onSelected: (v) => _onTaskMenu(v),
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'rename', child: Text('重命名')),
@@ -4527,13 +4597,9 @@ class _ConversationPageState extends State<ConversationPage> {
                 ),
                 const PopupMenuItem(value: 'unread', child: Text('标为未读')),
                 const PopupMenuItem(value: 'archive', child: Text('归档')),
-                // 工作流运行入口（entry-polish-1，用户拍板方案 A）：
-                // 低频查看型入口归任务菜单，加号面板回归纯"添加"语义。
-                const PopupMenuItem(
-                  value: 'workflowRuns',
-                  child: Text('工作流运行'),
-                ),
-                // 后台工作二级页入口（compactness-feedback-1109 反馈②）：
+                // 工作流运行入口已提升到顶栏一级（早前批次），
+                // 菜单槽位撤销。
+                // 后台工作二级页入口（早前批次 反馈②）：
                 // 完全撤出输入区一级空间——有后台工作才出现在菜单，带
                 // 计数；一级感知=任务卡后台小点（B 批既有）。
                 if ((_sub?.state.backgroundWorks ?? const []).isNotEmpty)
@@ -5138,8 +5204,8 @@ class _ConversationPageState extends State<ConversationPage> {
               onModeTap: () => _showModeSheet(effState),
             ),
 
-          // ── 状态托盘（status-tray-1109，用户拍板）：输入侧状态合并
-          // 治理——结果未知/暂存/排队 三源（compactness-feedback-1109
+          // ── 状态托盘（早前批次，用户拍板）：输入侧状态合并
+          // 治理——结果未知/暂存/排队 三源（早前批次
           // 反馈②：后台工作整类撤出输入区，归 ⋮ 二级页）。单源直通原
           // 条带（零回归），≥2 源合并成一行摘要（段点+计数），展开=
           // 限高 240 堆叠原条带（撤销/核对动作原样）。
@@ -5756,7 +5822,7 @@ class _ConversationPageState extends State<ConversationPage> {
               if (item is TurnBarItem && idx == lastTurnIdx) {
                 _lastTurnHeaderId = intOf(item.work.header?['rowId']);
               }
-              // 轮距（收敛项 2026-10-22 对位官方 56=pt-14）：
+              // 轮距（对抗审查收敛项 2026-10-22 对位官方 56=pt-14）：
               // 候选 15 验收 用户拍板紧凑优先——轮顶 56→28（手机档
               // 减半；轮内首条 20/条目间 16 不变）。官方节奏在手机长会话
               // 里观感过松（真机实测轮间 ≈84dp 起步）。
@@ -5881,4 +5947,50 @@ String inferEntPlanKind({
     if (p.contains('start-plan')) return 'start-plan';
   }
   return 'individual-coding-plan';
+}
+
+
+/// 顶栏动作按钮紧凑规格（真机反馈 2026-11-13 验收：四图标 48dp 默认
+/// 盒+默认 padding 的视觉空隙「占的空间较大」，标题/分支/项目几乎显
+/// 示不出）：图标 18dp、触盒 40dp（AppBar 动作紧凑档——M3 默认盒 48
+/// 是主要吃宽源，constraints 参数在 M3 不生效须 styleFrom+shrinkWrap，
+/// artifact 行同款教训）。
+ButtonStyle _topBarActionStyle() => IconButton.styleFrom(
+      minimumSize: const Size(40, 40),
+      padding: EdgeInsets.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+
+/// 顶栏运行中计数角标（早前批次）：count<=0=纯图标（零干
+/// 扰）；>0=warning 色小计数徽（运行中语义与 run 卡 spinner 同色系；
+/// M3 Badge 默认红是错误语义，不用）。>9 封顶「9+」。图标随紧凑档
+/// 18dp。
+class _TopBarCountBadge extends StatelessWidget {
+  final Key badgeKey;
+  final int count;
+  final IconData icon;
+
+  const _TopBarCountBadge({
+    required this.badgeKey,
+    required this.count,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (count <= 0) return Icon(icon, size: 18);
+    return Badge(
+      key: badgeKey,
+      backgroundColor: context.colors.warning,
+      label: Text(
+        count > 9 ? '9+' : '$count',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: context.colors.onBrand,
+        ),
+      ),
+      child: Icon(icon, size: 18),
+    );
+  }
 }

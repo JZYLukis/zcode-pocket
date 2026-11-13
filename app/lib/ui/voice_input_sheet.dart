@@ -47,7 +47,7 @@ bool get voiceRecognitionAvailable {
   if (SystemAsr.available) return true;
   // 缓存为空=启动探测尚未完成或开机瞬时失败（probe 失败不落缓存）。
   // 消费点按节流兜底重探，服务恢复后入口不会整会话隐藏（2026-11-08
-  // ；成功结果在下一次页面重建时可见）。
+  // 对抗审查；成功结果在下一次页面重建时可见）。
   SystemAsr.probeIfUnknown();
   return false;
 }
@@ -342,7 +342,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet> {
       _finalCompleter.complete(_partial);
     } else {
       // 零部分结果：不能只挂监听——completer 永不完成，按钮点了毫无
-      // 反馈且面板卡在拾音态。先取消引擎（隐私：
+      // 反馈且面板卡在拾音态（2026-11-08 对抗审查）。先取消引擎（隐私：
       // 不再等 native final），再以空稿收尾——_enterPreview 的空文本分支
       // 给出「没听到内容」失败态。
       _engineAlive();

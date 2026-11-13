@@ -140,7 +140,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const AppSectionHeader('功能'),
-            // multi-account-ux-1 批4（2026-11-04 拍板）：多电脑任务聚合
+            // 早前批次 批4（2026-11-04 拍板）：多电脑任务聚合
             // 开关（默认关）——纯读本地缓存快照，不建连接不订阅。
             SwitchListTile(
               key: const ValueKey('settings-show-other-computers'),
@@ -200,7 +200,7 @@ class SettingsPage extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const UsagePage())),
             ),
-            // 应用内更新：入口行（检查更新+开关收在
+            // 应用内更新（早前批次）：入口行（检查更新+开关收在
             // 二级动作——开关单独一行，避免一级页过长）。
             ListTile(
               leading: const Icon(Icons.system_update_outlined, size: 20),
@@ -229,7 +229,7 @@ class SettingsPage extends StatelessWidget {
               value: app.uiPrefs.updateInAppEnabled,
               onChanged: (v) => app.uiPrefs.setUpdateInAppEnabled(v),
             ),
-            // 应用锁：安全组（方式三态/自动锁定/防泄露）。
+            // 应用锁（早前批次）：安全组（方式三态/自动锁定/防泄露）。
             const AppSectionHeader('安全'),
             ListTile(
               leading: const Icon(Icons.lock_outline, size: 20),
@@ -271,7 +271,7 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-//三档段选器（收敛单源：语言/主题两份逐行
+//三档段选器（/ 收敛单源：语言/主题两份逐行
 /// 同构实现——触控规格/视觉调整需双改，历史上触控高 46→48 修正两处各
 /// 记一遍）。自绘 token 化（官方黑白骨架语言：选中=selected 底+
 /// foreground 字，未选=transparent 底+foregroundSubtle 字；48dp 触控高；

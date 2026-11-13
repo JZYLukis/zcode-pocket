@@ -29,7 +29,7 @@ class StoredAccount {
   final String id;
   final String provider;
 
-  /// 本地备注名（multi-account-ux-1 批1，2026-11-04 用户拍板）：如
+  /// 本地备注名（早前批次 批1，2026-11-04 用户拍板）：如
   /// 「公司订阅」/「个人号」——仅本机存储，不外发不上传。
   final String label;
 
@@ -189,7 +189,7 @@ class AccountStore {
 
   Future<bool> get hasAccount async => (await listAccounts()).isNotEmpty;
 
-  /// 最近保存/最近使用的账号（multi-account-ux-1 批2 配套）：批2 起
+  /// 最近保存/最近使用的账号（早前批次 批2 配套）：批2 起
   /// save 不再改 lastUsed，「换账号重连」「登录接回」无法再用 lastUsed
   /// 识别"刚登录的账号"——列表首项恰是最近 save/续期的账号（_saveRaw
   /// insert(0)）；空列表即无账号，返回 null（lastUsed 同为空，此前注释
@@ -251,7 +251,7 @@ class AccountStore {
   /// 变成删 A 换 B， 真机事故全链条根因——启发式已废除，同账号
   /// 重登靠 identity 同 id 天然去重）。
   /// [setActive]：是否把该账号设为「当前账号」。
-  /// - null（默认，multi-account-ux-1 批2 新语义）：**仅当当前还没有
+  /// - null（默认，早前批次 批2 新语义）：**仅当当前还没有
   ///   lastUsed**（首账号登录）才设——此后添加第二/第三个账号不再静默
   ///   抢走当前账号（旧行为是"加账号=换账号"错觉的主源）；
   /// - true：显式切换（内部/迁移用）；

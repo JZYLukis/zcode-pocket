@@ -115,7 +115,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // 中⑧①：创建等待（host RPC 最长 45s）必须有可取消进度 UI；
+  // 对抗审查中⑧①：创建等待（host RPC 最长 45s）必须有可取消进度 UI；
   // 取消=放弃等待但创建可能已提交——文案明说结果未知。红=旧实现
   // 零反馈不可中断。
   testWidgets('创建等待：进度对话框可取消（结果未知文案）+取消后不切换', (tester) async {

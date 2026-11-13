@@ -2,7 +2,7 @@ name: zcode_pocket
 description: "ZCode 桌面端的安卓原生客户端（连接官方 Web 远控通道）。"
 publish_to: 'none'
 
-version: 1.0.5+2026111301
+version: 1.0.6+2026111406
 
 environment:
   sdk: ^3.13.5

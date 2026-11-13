@@ -76,7 +76,7 @@ class InteractionBanner extends StatelessWidget {
     if (interactions.isEmpty || sessionId == null) {
       return const SizedBox.shrink();
     }
-    // （中③，官方 V4InteractionDialogs :120-131 对位）：
+    // （对抗审查中③，官方 V4InteractionDialogs :120-131 对位）：
     // 通用卡挑「首个 permission/userInput」（跳过 workspaceHookReview
     // ——官方禁通用 Dialog 渲染该类），Hook 审核独立入口卡恒渲染。
     // 修复：此前 first 是 hook 时整列 early-return 吞掉同屏提问/审批。

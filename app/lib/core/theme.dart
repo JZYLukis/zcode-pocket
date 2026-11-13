@@ -212,7 +212,7 @@ class AppChartPalette {
     required this.sourceColors,
   });
 
-  /// 用量图表 6 色（浅=官方 --color-usage-chart-1..6 浅色近似；深=官方
+  /// 用量图表 6 色（浅=官方 --早前批次..6 浅色近似；深=官方
   /// 深色 1..6：#4099FF/#46BF72/#7B5CE5/#FF5C5C/#FF8A30/#42C8C8）。
   final List<Color> series;
 
@@ -253,7 +253,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
   final AppGitColors git;
   final AppChartPalette charts;
 
-  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（ ：
+  /// 阴影档位由 colors.shadowXs/shadowMd 单源派生（对抗审查路C ：
   /// 原先 BoxShadow 字面量与 AppColors 双源同值独立维护，改一处漏一处
   /// 不会被测试抓——派生后只维护 colors 侧，两套测试各自锁值即闭环）。
   AppShadows get shadows => AppShadows(
@@ -350,7 +350,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     ),
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-light usage-chart-1..6（styles.css，2026-10-26
+        // 官方 zai-light 早前批次..6（styles.css，2026-10-26
         // 对齐轮替换——原 5 色系 tailwind-600 自选非官方）。
         Color(0xFF0B7FFF), // chart-1 蓝
         Color(0xFF1E8A3E), // chart-2 绿
@@ -474,7 +474,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     // 官方深色实为蓝阶——与浅色同型偏差，留痕）；来源 7 色=裁量提亮版。
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-dark usage-chart-1..6（前 5 色原已一致，补第 6 色）。
+        // 官方 zai-dark 早前批次..6（前 5 色原已一致，补第 6 色）。
         Color(0xFF4099FF), // chart-1
         Color(0xFF46BF72), // chart-2
         Color(0xFF7B5CE5), // chart-3
@@ -556,7 +556,7 @@ abstract final class AppType {
 abstract final class AppRadius {
   static const sm = 8.0; // 小控件
   static const bubble = 12.0; // 气泡（右上 2px 指向）
-  static const block = 12.0; // 代码块（官方 rounded-xl，）
+  static const block = 12.0; // 代码块（官方 rounded-xl，对抗审查 2026-10-22）
   static const bubbleTail = 2.0; // 气泡右上指向角（官方 rounded-tr-xs；批次 B 入单源）
   static const card = 16.0; // 输入卡/审批卡/弹窗
   static const glassChrome = 20.0; // 悬浮 chrome 容器（输入卡/悬浮胶囊）
@@ -625,7 +625,7 @@ ThemeData buildAppTheme([Brightness brightness = Brightness.light]) {
       surface: c.card,
       error: c.destructive,
       brightness: brightness,
-      // B （2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
+      // 对抗审查路B （2026-10-23）：M3 默认 surfaceContainer*/secondaryContainer
       // 等槽位带紫调（#2B2930/#4A4458 系），深色下大面积漏出（弹层/chip/
       // snackbar/未覆盖文字）——深色分支收口到官方灰阶；浅色侧 2026-11-07
       // 用户拍板同批收口到**智谱蓝图系**（「纯黑白过于冷淡」——原紫调

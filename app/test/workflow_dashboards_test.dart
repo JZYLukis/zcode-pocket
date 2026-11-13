@@ -8,7 +8,7 @@ import 'package:zcode_pocket/state/app_state.dart';
 import 'package:zcode_pocket/state/app_state_scope.dart';
 
 void main() {
-  group('视觉补跑必修（human-eye-retro-1109，Visual A）', () {
+  group('视觉补跑必修（早前批次，Visual A）', () {
     test('图表刻度标签：4 档网格线对位+顶格带单位', () {
       expect(chartTickLabels(0, 300, 'ms'), ['300ms', '200', '100', '0'],
           reason: '顶格=maxY 带单位，其余裸值（红=修复前图表零刻度零信息量）');
@@ -230,7 +230,7 @@ void main() {
     await tester.pump();
     expect(find.text('内容流水线'), findsOneWidget);
     expect(find.text('已完成'), findsOneWidget, reason: '状态词映射');
-    await tester.tap(find.byKey(const ValueKey('workflow-run-card-7')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     await tester.pump(const Duration(milliseconds: 400));
     expect(tester.takeException(), isNull);
   });

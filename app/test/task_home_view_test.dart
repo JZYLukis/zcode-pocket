@@ -160,7 +160,7 @@ Map<String, dynamic> _task(
           : r'D:\示例项目B',
 };
 
-/// fold-dual-pane-2（2026-10-29）：测试默认画布 800×600≥600dp 会走双栏
+/// 早前批次（2026-10-29）：测试默认画布 800×600≥600dp 会走双栏
 /// 紧凑行；本文件用例对象=窄屏卡片路径（紧凑行归 dual_pane_test）。
 Future<void> _narrow(WidgetTester tester) async {
   await tester.binding.setSurfaceSize(const Size(420, 900));

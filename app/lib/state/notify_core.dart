@@ -240,7 +240,7 @@ bool _isGoalSettled(String? status) =>
     status == 'verified' || status == 'notSatisfied' || status == 'failed';
 
 /// verifying 记账保留规则（diffSnapshots 聚合路径与协调器逐条
-/// upsert 写回共用——批尾A 级修正 2026-10-24：si 行构造的
+/// upsert 写回共用——批尾对抗审查 A 级修正 2026-10-24：si 行构造的
 /// 快照 goalVerifyingSeen 恒 false，逐条写回若不保留旧记账，
 /// verifying→active 的迁移 upsert 即摧毁去重标记，迭代循环每轮重发）。
 /// 规则：goal 落定重置（新一轮重新通知）；verifying 在场置真；其余

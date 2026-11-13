@@ -371,7 +371,7 @@ void main() {
                 ]},
           ]),
           activeProviderId: sp,
-          modelId: 'glm-4-7',
+          modelId: '早前批次',
         ),
         isNotNull,
       );

@@ -160,7 +160,7 @@ void main() {
     _expectNoMissing('DiffViewerPage');
   });
 
-  testWidgets('英文·NotifyGuidePage 无未翻译项（含  各档）',
+  testWidgets('英文·NotifyGuidePage 无未翻译项（含 早前批次 各档）',
       (tester) async {
     L10n.setTestLocale('en-US');
     L10n.collectMissing = true;

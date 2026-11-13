@@ -74,6 +74,54 @@ https://github.com/user-attachments/assets/4e81ba59-6d69-4316-a5fc-67955c261c47
 - About page: unofficial disclaimer, service-terms notice, privacy notes,
   project license and third-party notices (bundled offline)
 
+## Why a native app?
+
+ZCode already provides an official web remote control: nothing to install,
+always up to date, and entirely adequate for a quick check-in or light
+interaction. This app doesn't replace it — it uses the same official channel
+and account system — and fills gaps that a browser page leaves on a phone:
+
+- **The task can reach you when you are away from the desk.** With
+  "approval alerts" enabled, a foreground service keeps the connection to
+  the official channel and posts system notifications in the background:
+  waiting for approval / waiting for input, task completed / failed, goal
+  verification results, and an aggregated "completed N tasks while you were
+  away"; tapping one opens the task. Mobile browsers suspend or reclaim
+  background tabs; they cannot keep a connection alive or raise system
+  notifications the way a foreground service can. **The trade-off is
+  battery**: the switch is off by default; when off, the app disconnects
+  about 90 seconds after backgrounding and there are no live background
+  notifications.
+- **Interruptions are normal on a phone.** Drafts are saved locally per
+  computer / account / workspace / conversation and survive process death;
+  text messages typed while disconnected wait in a local queue and are sent
+  in order after reconnecting; connections self-heal and the app reattaches
+  when it returns to the foreground. This state lives on the device, not in
+  a page that must stay open.
+- **System-level entry points and capabilities.** Long-press the launcher
+  icon to jump to "New task" or the recent session; pair a computer by QR
+  code; annotate a screenshot before sending it; dictate with the system
+  speech recognizer; optionally lock the app with the device credential or
+  a separate PIN, verified on cold start and after auto-lock.
+- **Foldables and multiple computers.** Unfolded (≥600dp) shows a
+  persistent dual pane — task list on the left, conversation on the right;
+  folded stays single-pane. Multiple desktops connect in parallel with
+  isolated profiles, nicknames and read-only task snapshots of the others;
+  credentials are stored in the Android Keystore.
+- **Conversation interactions rebuilt for a phone.** Long conversations
+  load older history without jumping, in-conversation full-text search,
+  "back to the start of this turn", one-question-at-a-time prompt cards,
+  usage charts sized for phone widths, and plain-language error messages.
+
+**Stated plainly:** if you are at your desk most of the time and only glance
+at progress on your phone now and then, the official web remote is enough.
+The scenario this app is really for is narrow but real: **you are away from
+the desk, an agent is running a long task, and it needs a human decision.**
+The app also does not remove the protocol's own limits — no built-in preview
+for image/PDF attachments in conversations, one terminal per desktop,
+off-peak tasks not editable from the phone — see
+[Known limitations](#known-limitations).
+
 ## Requirements
 
 - Android 7.0+ (minSdk 24; arm64 / armv7 / x86_64, arm64 recommended)
@@ -86,8 +134,9 @@ desktop **3.16+**):
 
 | Desktop version | Status |
 |---|---|
-| 3.18.0 (not yet released by ZCode) | Assessed against official sources: zero breaking changes, no adaptation needed; on-device verification pending after release |
-| 3.17.x (current) | Verified on 3.17.1 on-device; 3.17.2 reviewed against official sources |
+| 3.18.2 | Assessed against the official installer package and sources: zero breaking changes, no adaptation needed; verified on device |
+| 3.18.0 – 3.18.1 | Assessed against official sources: zero breaking changes; 3.18.1 fixes website login failures in mainland China (benefits this app's login page) |
+| 3.17.x | Verified on 3.17.1 on-device; 3.17.2 reviewed against official sources |
 | 3.16 – 3.16.3 | Verified end-to-end (pairing, tasks, conversations) |
 | 3.15.x | Legacy QR pairing only (old channel; no longer exercised by the maintainer) |
 | 3.14 and earlier | Untested |

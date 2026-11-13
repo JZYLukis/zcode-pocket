@@ -1,4 +1,4 @@
-// 应用内更新——下载与校验。
+// 应用内更新——下载与校验（早前批次）。
 //
 // 流式下载（Range 断点续传）→ 完整文件流式 SHA-256 → 与官方 digest
 // 比对。校验是信任锚：直连或镜像下载的字节对不上官方哈希一律拒装。
@@ -14,7 +14,7 @@ String? debugMirrorPrefixOverride;
 
 const kDefaultMirrorPrefix = 'https://ghproxy.com/';
 
-/// 下载大小硬上限（防恶意/异常响应写满磁盘；官方包
+/// 对抗审查 ②：下载大小硬上限（防恶意/异常响应写满磁盘；官方包
 /// 现 ~35MB，上限留 4 倍余量）。
 const kMaxUpdateBytes = 150 * 1024 * 1024;
 
@@ -44,7 +44,7 @@ class UpdateDownload {
   /// 下载 [url]（直连失败自动改走镜像）到 [target]。
   /// onProgress(已收字节, 总字节|null)。支持从 [target] 已有字节续传
   /// （Range）——续传前提：服务器对 Range 返回 206；返回 200 则从头下。
-  /// 服务器 416=本地已有字节≥资源大小（此前直抛=完整
+  /// 对抗审查 ②M3：服务器 416=本地已有字节≥资源大小（此前直抛=完整
   /// 文件场景重试恒 416 死锁）。抛本异常由调用方把现有文件交校验。
   static bool isRangeSatisfied(Object e) =>
       e is UpdateDownloadException && e.reason == 'http-416';
@@ -106,7 +106,7 @@ class UpdateDownload {
     final res = await req.close().timeout(const Duration(seconds: 15));
     if (res.statusCode == 416) {
       res.drain<void>();
-      // ：本地已有 ≥ 资源大小（多半是上次下载完整但用户取消了安装）
+      // ②M3：本地已有 ≥ 资源大小（多半是上次下载完整但用户取消了安装）
       // ——映射为专用错误，调用方应把现有文件交 SHA 校验而非死循环重试。
       throw const UpdateDownloadException('http-416');
     }

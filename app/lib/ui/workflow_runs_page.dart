@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide Text;
+import '../core/artifact_share.dart' show kArtifactShareBlockBytes;
 import '../core/localized_text.dart';
 import '../core/theme.dart';
 import 'turn_model.dart' show toolInputArgs;
@@ -10,8 +12,10 @@ import '../state/app_state.dart';
 import '../state/app_state_scope.dart';
 import 'app_widgets.dart' show AppLoading;
 import 'file_preview.dart' show HtmlPreviewPage;
+import 'share_flow.dart'
+    show formatArtifactBytes, shareArtifactRemotely, shareBytesAsFile;
 
-/// 工作流 run 目录与详情（workflow-runs-1，2026-10-30 用户拍板「更新
+/// 工作流 run 目录与详情（早前批次，2026-10-30 用户拍板「更新
 /// 工作流及闲时执行部分」）：官方 v4 只读查询族——workflowRuns（run 摘
 /// 要，五态）/workflowRunEvents（journal 事件分页）/workflowRunArtifacts
 /// （产物清单）/workflowRunArtifactRead（内容产物字节 ≤512KiB 分块，形
@@ -23,6 +27,23 @@ import 'file_preview.dart' show HtmlPreviewPage;
 /// 本质不同。纯函数判定 + 首块字节嗅探双保险；上限 16MiB；解码降采样
 /// 2048px。SVG 不在 Flutter 原生支持集，走"不支持的格式"提示。
 const artifactImagePreviewMaxBytes = 16 * 1024 * 1024;
+
+/// 「收集产物」预设提示词（早前批次 定稿，2026-11-13 用户逐句
+/// 拍板）：工作流搬运配方——把会话生成的文件（含二进制）发布为产物，
+/// 手机端经产物分享链路带走（协议边界内唯一二进制可达路径）。
+/// 铁律来源：①cd 对齐工作流工作区+相对路径发布（真机实证：工作区
+/// 漂移=artifact.file 全部被拒）②无子代理/无校验/脚本免注释（token
+/// 大头：子代理=整轮模型调用×N、校验=多余的 world.run、注释=自然
+/// 语言全价计费）③只发布文件本身（防 agent 默认产报告——实证其脚本
+/// 自带 Finding 汇报结构）。中文撰写：GLM 分词器中文优先于英文，
+/// agent 侧指令不随界面语言切换。
+const kCollectArtifactsPrompt =
+    '把本回合生成的文件发布为工作流产物：cd 到文件所在目录（分散先 cp 集中）'
+    '→ 建极简工作流：无子代理、无校验、脚本免注释，用相对路径逐个 '
+    'artifact.file 发布这些文件本身；id 与 title 都用带后缀的完整文件名'
+    '（如 report.pdf），并显式传 contentType——手机下载的文件名取自 '
+    'title，无后缀的 xlsx/pptx/pdf 会打不开。不要附加报告或摘要类产物。'
+    '文件内容不动。';
 
 /// 分块读取一个内容产物（512KiB/块）。返回拼接字节与截断/超限标志。
 ///
@@ -165,7 +186,22 @@ Map<String, dynamic>? joinWorkflowRunProjection(
 /// 会话的 run 目录页。
 class WorkflowRunsPage extends StatefulWidget {
   final String sessionId;
-  const WorkflowRunsPage({super.key, required this.sessionId});
+
+  /// 产物下载枢纽（早前批次，用户拍板：顶栏工作流入口换成下载
+  /// 图标直达本页——指引+收集产物入口+运行列表同页，想下载的人自然
+  /// 到达并得到提示）。false=原「工作流运行」目录形态。
+  final bool downloadsHub;
+
+  /// 收集指令回发（把弹层文本作为消息发进会话；conversation 侧接线
+  /// _sendText 管线，离线自动入队）。仅 hub 模式使用。
+  final Future<bool> Function(String prompt)? onCollectPrompt;
+
+  const WorkflowRunsPage({
+    super.key,
+    required this.sessionId,
+    this.downloadsHub = false,
+    this.onCollectPrompt,
+  });
 
   @override
   State<WorkflowRunsPage> createState() => _WorkflowRunsPageState();
@@ -174,6 +210,16 @@ class WorkflowRunsPage extends StatefulWidget {
 class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
   List<Map<String, dynamic>> _runs = const [];
   bool _loading = true;
+  /// 收集指令发出后的延时重拉（B-/C-M3）——dispose 取消防泄漏。
+  final _collectReloadTimers = <Timer>[];
+
+  @override
+  void dispose() {
+    for (final t in _collectReloadTimers) {
+      t.cancel();
+    }
+    super.dispose();
+  }
   String? _error;
 
   @override
@@ -217,7 +263,12 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
     }
   }
 
-  /// 目录行补投影的最后事件序号（投影优先；投影缺席时保留原值）。
+  /// 目录行联接投影（投影优先；投影缺席时保留原值）。对抗审查
+  /// B-/C-（2026-11-14）：演示模式批 原实现读 RPC 行的
+  /// artifacts——RPC schema（transport.ts v4ConversationWorkflowRun
+  /// SummarySchema.strict）根本没有该字段，artifacts 只在快照投影里，
+  /// 生产环境计数恒 0、测试夹具自造字段掩盖（fullsweep 同型事故）。
+  /// 修=与 lastEventSequence 同源联接投影 artifacts。
   Map<String, dynamic> _withProjectedLastEvent(
     Map<String, dynamic> run,
     List<Map<String, dynamic>> projection,
@@ -227,20 +278,36 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
       runId: '${run['runId'] ?? ''}',
       toolCallId: '${run['toolCallId'] ?? ''}',
     );
-    final seq = (joined?['lastEventSequence'] as num?)?.toInt();
-    return seq == null ? run : {...run, 'lastEventSequence': seq};
+    if (joined == null) return run;
+    final seq = (joined['lastEventSequence'] as num?)?.toInt();
+    final arts = joined['artifacts'];
+    return {
+      ...run,
+      if (seq != null) 'lastEventSequence': seq,
+      // 投影 artifacts（List<Map>）；payload_guard：build 期禁裸强转。
+      if (arts is List)
+        'artifacts': [
+          for (final a in arts)
+            if (a is Map) a.cast<String, dynamic>(),
+        ],
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final hub = widget.downloadsHub;
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: AppBar(
         backgroundColor: context.colors.background,
         surfaceTintColor: Colors.transparent,
-        title: const Text('工作流运行'),
+        title: Text(hub ? tr('产物下载') : '工作流运行'),
       ),
-      body: _loading
+      body: Column(
+        children: [
+          if (hub) _hubHeader(context),
+          Expanded(
+            child: _loading
           ? const Center(child: AppLoading('正在加载…'))
           : _error != null
           ? Center(
@@ -260,13 +327,23 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
               ),
             )
           : _runs.isEmpty
-          ? Center(
-              child: Text(
-                '本会话没有工作流运行',
-                style: TextStyle(
-                  fontSize: AppType.uiCaption,
-                  color: context.colors.foregroundSubtle,
-                ),
+          // 对抗审查 B-/C-M3：空态也要能下拉刷新（收集产物的首次
+          // 使用主路径就是空列表）。
+          ? RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
+                children: [
+                  const SizedBox(height: 120),
+                  Center(
+                    child: Text(
+                      '本会话没有工作流运行',
+                      style: TextStyle(
+                        fontSize: AppType.uiCaption,
+                        color: context.colors.foregroundSubtle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             )
           : RefreshIndicator(
@@ -282,6 +359,15 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                     context,
                     '${run['status'] ?? ''}',
                   );
+                  // 产物计数（演示模式批，2026-11-14 用户拍板：
+                  // 清单应显示是否有产物及数量）：官方 workflowRuns 投影
+                  // 自带 artifacts 元数据（热态准；CLI 冷恢复后为空——
+                  // artifact-projection.ts:28 官方注释），故 N>0 才显示、
+                  // 0/缺席不显示（缺席=无产物或重启后未知，宁缺勿谎，
+                  // 详情页 workflowRunArtifacts 为权威）。
+                  // payload_guard：build 期禁裸强转（形态漂移不崩）。
+                  final artsList = run['artifacts'];
+                  final artifactCount = artsList is List ? artsList.length : 0;
                   final label =
                       '${run['label'] ?? ''}'.trim().isNotEmpty
                       ? '${run['label']}'
@@ -341,19 +427,57 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                                       ),
                                     )
                                   else
-                                    Text(
-                                      _shortRunId('${run['runId'] ?? ''}'),
+                                    Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          if (artifactCount > 0) ...[
+                                            WidgetSpan(
+                                              alignment: PlaceholderAlignment
+                                                  .middle,
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.folder_zip_outlined,
+                                                    size: 10,
+                                                    color: context
+                                                        .colors.foregroundSubtle,
+                                                  ),
+                                                  const SizedBox(width: 2),
+                                                  Text(
+                                                    // 复用既有 ^产物（N）$
+                                                    // 模式（EN 界面正确翻译）。
+                                                    tr('产物（$artifactCount）'),
+                                                    style: TextStyle(
+                                                      fontSize: AppType.uiXs,
+                                                      color: context.colors
+                                                          .foregroundSubtle,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                          TextSpan(
+                                            text: _shortRunId(
+                                              '${run['runId'] ?? ''}',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       style: TextStyle(
                                         fontSize: AppType.uiXs,
                                         fontFamily: 'monospace',
-                                        color: context.colors.foregroundSubtlest,
+                                        color:
+                                            context.colors.foregroundSubtlest,
                                       ),
                                     ),
                                 ],
                               ),
                             ),
                               const SizedBox(width: 8),
-                              // 视觉补跑必修（Visual B
+                              // 视觉补跑必修（早前批次，Visual B
                               // 像素实测）：原先 Flexible(状态) 与 Expanded(标题)
                               // 双分把行宽对半分——状态只画约 55dp、剩余约
                               // 87dp 全落行尾=右缘死区（时间不靠右、不同状态
@@ -396,6 +520,117 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                 },
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 产物下载页头（早前批次）：指引 + 收集产物入口。
+  Widget _hubHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.colors.card,
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.file_download_outlined,
+                  size: 16,
+                  color: context.colors.foregroundSubtle,
+                ),
+                const SizedBox(width: 6),
+                // 对抗审查 B-/：EN 长标题 320dp 溢出——Expanded
+                // 弹性+单行省略。
+                Expanded(
+                  child: Text(
+                    tr('如何下载会话中的文件'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: AppType.uiSm,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              tr('会话生成的文件（含图片 / PDF / 表格）需先发布为工作流产物才能下载：点「收集产物」让智能体整理本回合文件；已发布的产物在下方运行里点开，行尾即可分享保存。'),
+              style: TextStyle(
+                fontSize: AppType.uiCaption,
+                height: 1.5,
+                color: context.colors.foregroundSubtle,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const ValueKey('hub-collect-button'),
+                icon: const Icon(Icons.download, size: 18),
+                label: Text(tr('收集产物')),
+                // 对抗审查 B-/C-：readOnly 子代理下钻会话不可发送
+                //（onCollectPrompt=null→禁用；此前 null 只是 no-op 可点）。
+                onPressed: widget.onCollectPrompt == null
+                    ? null
+                    : () async {
+                        final onSend = widget.onCollectPrompt!;
+                        final ok = await showCollectArtifactsPrompt(
+                          context,
+                          onSend: onSend,
+                        );
+                        if (!mounted) return;
+                        if (!ok) {
+                          // 对抗审查 B-/C-M2：_sending 在飞/发送失败
+                          // 此前静默丢——给出明确反馈。
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                tr('未能发送（会话正忙或发送失败），请稍后再试'),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              tr('已发送收集指令，产物就绪后会出现在下方'),
+                            ),
+                          ),
+                        );
+                        // 对抗审查 B-/C-M3：发送后页面从不刷新——延时
+                        // 两次自动重拉覆盖 agent 编排-提交窗口。可取消
+                        // Timer（页面退出即弃——widget 测试 pending timer
+                        // 断言同样要求）。
+                        for (final t in _collectReloadTimers) {
+                          t.cancel();
+                        }
+                        _collectReloadTimers
+                          ..clear()
+                          ..addAll([
+                            Timer(const Duration(seconds: 3), () {
+                              if (mounted) _load();
+                            }),
+                            Timer(const Duration(seconds: 10), () {
+                              if (mounted) _load();
+                            }),
+                          ]);
+                      },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -670,6 +905,21 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
         );
         return;
       }
+      // 二进制产物（xlsx/pptx/pdf/zip 等，2026-11-14 验收：此前被当
+      // 文本渲染成满屏乱码、用户以为报错）→ 体面的不支持预览页（带
+      // 分享出口，bytes 完整在手）。
+      if (looksBinaryContent(bytes)) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BinaryArtifactPage(
+              title: name,
+              bytes: Uint8List.fromList(bytes),
+              truncated: truncated,
+            ),
+          ),
+        );
+        return;
+      }
       final text = utf8.decode(bytes, allowMalformed: true);
       if (text.isEmpty) {
         messenger.showSnackBar(
@@ -680,6 +930,10 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
       final displayName = truncated
           ? '$name（${tr('内容过长已截断')}）'
           : name;
+      // 截断标记透传 html 预览页（A-M3/B-：半份 html 不给分享）；
+      // 落盘文件名与显示标题解耦（截断标记不进文件名）。
+      // 早前批次：截断的预览不是完整文件——文本页分享入口仅在
+      // 未截断时给出（完整内容走产物行分享入口回源拉全量）。
       // html 嗅探正则锚定文首（此前 `|` 优先
       // 级让正文任意位置的 <html 字样也会误进 WebView）。
       if (RegExp(r'^\s*(<!doctype html|<html)', caseSensitive: false)
@@ -689,13 +943,20 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
             builder: (_) => HtmlPreviewPage(
               title: displayName,
               htmlContent: text,
+              truncated: truncated,
+              fileName: name,
             ),
           ),
         );
       } else {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => _ArtifactTextPage(title: displayName, content: text),
+            builder: (_) => _ArtifactTextPage(
+              title: displayName,
+              fileName: name,
+              content: text,
+              truncated: truncated,
+            ),
           ),
         );
       }
@@ -705,6 +966,32 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
       }
     } finally {
       if (mounted) setState(() => _artifactBusy = false);
+    }
+  }
+
+  /// 产物行「分享」（早前批次）：回源全量拉取（进度弹窗可取消）
+  /// → 系统分享面板（方案 A：私有目录+分享，零存储权限）。独立 busy
+  /// 防弹窗弹出前双击叠弹。
+  bool _shareBusy = false;
+  Future<void> _shareArtifact(Map<String, dynamic> artifact) async {
+    if (_shareBusy) return;
+    _shareBusy = true;
+    try {
+      final app = AppStateScope.of(context);
+      await shareArtifactRemotely(
+        context,
+        displayName: '${artifact['title'] ?? artifact['id']}',
+        read: (offset) => app.workflowRunArtifactRead(
+          widget.sessionId,
+          widget.runId,
+          '${artifact['id']}',
+          version: (artifact['version'] as num?)?.toInt() ?? 1,
+          offset: offset,
+          limit: kArtifactShareBlockBytes,
+        ),
+      );
+    } finally {
+      _shareBusy = false;
     }
   }
 
@@ -852,9 +1139,12 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
                             child: ConstrainedBox(
                               constraints: const BoxConstraints(minHeight: 44),
                               child: Padding(
+                                // 行垂直 padding 归零（视觉走查 artifact-
+                                // share-1：分享按钮 44dp 盒若叠加 10dp
+                                // padding 会把卡撑到 60dp、同列表行高不一；
+                                // 文本行由 minHeight 44 兜底居中，观感不变）。
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
-                                  vertical: 10,
                                 ),
                                 child: Row(
                                   children: [
@@ -876,6 +1166,27 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
                                         ),
                                       ),
                                     ),
+                                    // 分享入口（早前批次）：仅内容
+                                    // 产物——看板四类无内容字节可下。M3 默认
+                                    // 盒 40×40 须显式收缩到 44dp 且 shrinkWrap
+                                    // （constraints 参数在 M3 下不生效——
+                                    // 视觉走查像素实证）。
+                                    if (_artifactReadable(a))
+                                      IconButton(
+                                        key: ValueKey(
+                                          'workflow-artifact-share-${a['id']}',
+                                        ),
+                                        icon: const Icon(Icons.ios_share,
+                                            size: 18),
+                                        tooltip: tr('分享'),
+                                        style: IconButton.styleFrom(
+                                          minimumSize: const Size(44, 44),
+                                          padding: EdgeInsets.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        onPressed: () => _shareArtifact(a),
+                                      ),
                                     Text(
                                       '${a['kind']} · v${a['version'] ?? 1}',
                                       style: TextStyle(
@@ -909,11 +1220,20 @@ class _WorkflowRunDetailPageState extends State<WorkflowRunDetailPage> {
   }
 }
 
-/// 简单文本产物页（等宽只读）。
+/// 简单文本产物页（等宽只读）。[truncated]=内容超出 8 块预览上限被
+/// 截断——此时不给分享入口（半份内容不是完整文件，要分享走产物行
+/// 回源全量；早前批次）。
 class _ArtifactTextPage extends StatelessWidget {
   final String title;
+  final String fileName;
   final String content;
-  const _ArtifactTextPage({required this.title, required this.content});
+  final bool truncated;
+  const _ArtifactTextPage({
+    required this.title,
+    required this.fileName,
+    required this.content,
+    this.truncated = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -923,6 +1243,16 @@ class _ArtifactTextPage extends StatelessWidget {
         backgroundColor: context.colors.background,
         surfaceTintColor: Colors.transparent,
         title: Text(title, translate: false, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          if (!truncated)
+            IconButton(
+              key: const ValueKey('artifact-text-share'),
+              icon: const Icon(Icons.ios_share, size: 20),
+              tooltip: tr('分享'),
+              onPressed: () =>
+                  shareBytesAsFile(context, fileName, utf8.encode(content)),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12),
@@ -961,6 +1291,15 @@ class ArtifactImagePage extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        // 入口已限 16MiB 且超限被拦——bytes 即完整文件，直分享。
+        actions: [
+          IconButton(
+            key: const ValueKey('artifact-image-share'),
+            icon: const Icon(Icons.ios_share, size: 20),
+            tooltip: tr('分享'),
+            onPressed: () => shareBytesAsFile(context, title, bytes),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(height: 1, color: context.colors.border),
@@ -1120,7 +1459,7 @@ class OffPeakTaskCard extends StatelessWidget {
   }
 }
 
-/// A 批（拍板⑧）+ 返工（高③）：会话内工作流 run 卡。
+/// A 批（拍板⑧）+ 对抗审查返工（高③）：会话内工作流 run 卡。
 /// runId/status 权威源=快照 workflowRuns 投影按 toolCallId 联接（官方
 /// workflowRunCardJoin.ts:33-51——v4 工具行 output 只有散文，结构化
 /// 字段不在行上）；联接不上=只显示名称不可点（官方同款：编不过的
@@ -1245,6 +1584,175 @@ class WorkflowRunCard extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 「收集产物」弹层（早前批次 定稿；早前批次 迁至产物
+/// 下载页）：预设 [kCollectArtifactsPrompt] 预填、可编辑（补文件名/
+/// 删减指令）后交 [onSend] 发送（返回是否受理）。
+Future<bool> showCollectArtifactsPrompt(
+  BuildContext context, {
+  required Future<bool> Function(String text) onSend,
+}) async {
+  final result = await showDialog<String>(
+    context: context,
+    builder: (dctx) => const _CollectArtifactsDialog(),
+  );
+  if (result == null || result.trim().isEmpty) return false;
+  return onSend(result.trim());
+}
+
+/// controller 由 State 持有——外层 await 后 dispose 会撞弹窗退场动画
+///（widget 测试实证 used-after-disposed）。
+class _CollectArtifactsDialog extends StatefulWidget {
+  const _CollectArtifactsDialog();
+
+  @override
+  State<_CollectArtifactsDialog> createState() =>
+      _CollectArtifactsDialogState();
+}
+
+class _CollectArtifactsDialogState extends State<_CollectArtifactsDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: kCollectArtifactsPrompt);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr('收集产物')),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: TextField(
+          controller: _controller,
+          key: const ValueKey('collect-artifacts-input'),
+          maxLines: null,
+          minLines: 5,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(tr('取消')),
+        ),
+        FilledButton(
+          key: const ValueKey('collect-artifacts-send'),
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: Text(tr('发送')),
+        ),
+      ],
+    );
+  }
+}
+
+/// 二进制内容判定（2026-11-14 验收：xlsx/pptx/pdf 等此前被 utf8
+/// allowMalformed 解码成满屏乱码、用户以为报错）。判据从严：任一 NUL
+/// 字节或严格 UTF-8 解码失败即二进制——文本误判为二进制的代价=提示
+/// 页（还有分享出口），二进制误判为文本的代价=乱码页，后者更伤。
+bool looksBinaryContent(List<int> bytes) {
+  if (bytes.isEmpty) return false;
+  if (bytes.contains(0)) return true;
+  try {
+    utf8.decode(bytes, allowMalformed: false);
+    return false;
+  } catch (_) {
+    return true;
+  }
+}
+
+/// 二进制产物页（不支持预览的体面形态）：文件图标+文件名+大小+人话
+/// 提示+AppBar 分享（bytes 完整=可直分享；截断时不给——同文本页规则）。
+class BinaryArtifactPage extends StatelessWidget {
+  final String title;
+  final Uint8List bytes;
+  final bool truncated;
+
+  const BinaryArtifactPage({
+    super.key,
+    required this.title,
+    required this.bytes,
+    this.truncated = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.colors.background,
+      appBar: AppBar(
+        backgroundColor: context.colors.background,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          truncated ? '$title（${tr('内容过长已截断')}）' : title,
+          translate: false,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          if (!truncated)
+            IconButton(
+              key: const ValueKey('artifact-binary-share'),
+              icon: const Icon(Icons.ios_share, size: 20),
+              tooltip: tr('分享'),
+              onPressed: () => shareBytesAsFile(context, title, bytes),
+            ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.insert_drive_file_outlined,
+              size: 48,
+              color: context.colors.foregroundSubtle,
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                title,
+                translate: false,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: AppType.uiBase,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              formatArtifactBytes(bytes.length),
+              style: TextStyle(
+                fontSize: AppType.uiCaption,
+                color: context.colors.foregroundSubtle,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                // 对抗审查 B-M3：截断态没有分享钮，提示不得指向它。
+                truncated
+                    ? tr('内容过大，仅加载了部分')
+                    : tr('该格式暂不支持预览，可点右上角分享保存到手机'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppType.uiCaption,
+                  color: context.colors.foregroundSubtle,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

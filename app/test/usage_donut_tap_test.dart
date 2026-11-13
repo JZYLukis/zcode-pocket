@@ -149,7 +149,7 @@ void main() {
     await _tapAndSettle(
       tester,
       tester.getCenter(
-        find.byKey(const ValueKey('donut-legend-2-k3.1-pro')),
+        find.byKey(const ValueKey('早前批次-k3.1-pro')),
       ),
     );
     expect(find.textContaining('k3.1-pro ·'), findsOneWidget);

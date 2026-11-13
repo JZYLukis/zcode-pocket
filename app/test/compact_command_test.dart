@@ -10,7 +10,7 @@ import 'package:zcode_pocket/transport/conversation.dart';
 import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/conversation_page.dart';
 
-/// 会话压缩命令（compact-command-1，2026-10-30 用户反馈「手机端发起
+/// 会话压缩命令（早前批次，2026-10-30 用户反馈「手机端发起
 /// 上下文压缩没有任何 UI 提示」）：根因=官方 compact 是专用命令信封
 /// （command.ts:165-167，空载荷/FIFO/幂等），我们此前把 /compact 当纯
 /// 文本 sendText 发送=CLI 不执行压缩。锁：①/compact 精确拦截走 compact

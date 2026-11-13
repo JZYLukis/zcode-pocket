@@ -1,4 +1,4 @@
-// 应用内更新——流程编排与 UI。
+// 应用内更新——流程编排与 UI（早前批次）。
 // checkAndPrompt：统一入口（manual=true 跳过 24h 节流并给无更新反馈）。
 // 静默检查由 app 启动 30s 后触发（失败无感）。
 import 'dart:async';
@@ -60,7 +60,7 @@ Future<void> checkAndPrompt(BuildContext context, {bool manual = false}) async {
 }
 
 Future<String?> _currentVersionName() async {
-  // /②：版本号在 companion/appinfo 的 get（companion/update
+  // 对抗审查 ④/②：版本号在 companion/appinfo 的 get（companion/update
   // 无此方法——此前错调导致 MissingPluginException 被吞，永远"已是最新"）。
   try {
     final res = await const MethodChannel('companion/appinfo')
@@ -222,7 +222,7 @@ Future<void> _downloadAndInstall(
     if (context.mounted) _snack(context, tr('安装包校验失败（可能被篡改或下载不完整），已删除，请重试'));
     return;
   }
-  // SHA 只锚到 API 响应——安装前再用原生校验 APK 文件的
+  // 对抗审查 ②：SHA 只锚到 API 响应——安装前再用原生校验 APK 文件的
   // 包名与官方签名指纹（fail-closed），把信任锚提升到官方签名本身。
   try {
     final verified = await _invoke<bool>('verifyApk', {'path': file.path});
@@ -298,7 +298,7 @@ class _DownloadDialogState extends State<_DownloadDialog> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      // 系统返回键必须走取消（barrierDismissible 挡不住
+      // 对抗审查 ②M2：系统返回键必须走取消（barrierDismissible 挡不住
       // 返回键）——否则下载在后台继续、校验读到半截文件误报、甚至安装
       // 器仍然弹出。
       canPop: false,

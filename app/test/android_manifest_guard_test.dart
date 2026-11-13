@@ -44,7 +44,7 @@ void main() {
     );
   });
 
-  test('应用内更新安装链路三件套', () {
+  test('应用内更新安装链路三件套（早前批次）', () {
     final manifest = File('android/app/src/main/AndroidManifest.xml')
         .readAsStringSync();
     final permissions = _usesPermissions(manifest);
@@ -65,6 +65,16 @@ void main() {
           .existsSync(),
       isTrue,
       reason: 'FileProvider paths 配置缺失',
+    );
+    // 产物分享（早前批次）：分享文件只授权 cache/artifacts 子目录
+    // （原生 getUriForFile 要求该目录在 paths 里登记，缺失=调起分享即抛
+    // IllegalArgumentException 归 false）。
+    expect(
+      File('android/app/src/main/res/xml/update_file_paths.xml')
+          .readAsStringSync()
+          .contains('path="artifacts/"'),
+      isTrue,
+      reason: '产物分享的 FileProvider artifacts/ 子目录缺失',
     );
   });
 

@@ -1,4 +1,4 @@
-// /②：Dart 侧 invokeMethod 的方法名必须与原生 when 分支
+// 对抗审查 ④/②：Dart 侧 invokeMethod 的方法名必须与原生 when 分支
 // 一一对应——通道名/方法名错配在运行时表现为 MissingPluginException 被
 // catch 吞掉（应用内更新"永远已是最新"事故）。本测试静态解析两侧源码
 // 做契约断言（android_manifest_guard 同族静态守卫先例）。
@@ -46,13 +46,24 @@ void main() {
     expect(
       updateFlow.contains("invokeMethod<Map<dynamic, dynamic>>('get')"),
       isTrue,
-      reason: '版本号必须走 appinfo.get（修复点）',
+      reason: '版本号必须走 appinfo.get（对抗审查修复点）',
     );
     expect(
       updateFlow.contains("'appVersion'"),
       isFalse,
       reason: 'companion/update 无 appVersion 方法——不得回退错误调用',
     );
+  });
+
+  test('artifact_share 的 shareFile 调用有原生分支（早前批次）', () {
+    final shareSrc = File('lib/core/artifact_share.dart').readAsStringSync();
+    expect(shareSrc.contains('companion/share'), isTrue,
+        reason: '解析失败会让本守卫失效');
+    // Kotlin companion/share 的 shareFile 分支。
+    final shareBlock = _channelBlock(mainActivity, 'companion/share');
+    expect(shareBlock, isNotNull, reason: 'companion/share 通道缺失');
+    expect(shareBlock!.contains('"shareFile"'), isTrue,
+        reason: 'shareFile 方法在 companion/share 无分支');
   });
 
   test('app_lock/system_inset 的通道调用也有原生分支', () {

@@ -9,7 +9,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
-/// 应用锁原生通道：
+/// 应用锁原生通道（早前批次）：
 /// - isDeviceSecure：KeyguardManager.isKeyguardSecure（设置页开启
 ///   「系统锁屏」模式的前置校验；无需任何权限）。
 /// - requestSystemUnlock：createConfirmDeviceCredentialIntent 走系统
@@ -61,7 +61,7 @@ class AppLockPlugin private constructor(
                 result.success(km.isKeyguardSecure)
             }
             "requestSystemUnlock" -> {
-            // 并发请求先回旧 Result（防其 Dart future
+            // 对抗审查 ①：并发请求先回旧 Result（防其 Dart future
                 // 永久悬挂）——锁屏有 _verifying 防抖但设置页无锁。
                 pendingResult?.success(false)
 

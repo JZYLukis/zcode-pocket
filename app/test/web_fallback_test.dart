@@ -113,7 +113,7 @@ void main() {
     // 视觉确认留真机实测（evidence uncovered 留账）。
   });
 
-  test('http 明文官方域也拒绝（review-fix-1 安全组）', () {
+  test('http 明文官方域也拒绝（早前批次 安全组）', () {
     expect(
       isWebFallbackNavAllowed(Uri.parse('http://zcode.z.ai/remote/v4')),
       isFalse,

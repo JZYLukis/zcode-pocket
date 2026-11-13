@@ -1,4 +1,4 @@
-// 应用锁遮罩：挂在 MaterialApp.builder（Navigator 之上）
+// 应用锁遮罩（早前批次）：挂在 MaterialApp.builder（Navigator 之上）
 // ——不替换 child（保路由状态），Stack 覆盖 + AbsorbPointer + 停动画。
 // 返回键不拦（builder 层无法 PopScope）：返回=退出 app，锁层仍在，
 // 不泄露内容，可接受（注释留痕；如需严格拦截改 navigatorKey+路由方案）。
@@ -35,7 +35,7 @@ class _AppLockGateState extends State<AppLockGate> {
     if (_armed) return;
     final app = AppStateScope.of(context);
     _controller = app.appLock;
-    //  冷启动 fail-open：gate 首帧早于 uiPrefs.load 完成
+    // 对抗审查 ① 冷启动 fail-open：gate 首帧早于 uiPrefs.load 完成
     // （29 个异步安全存储读）——此前一次性闩锁把内存默认值 none 当配置
     // 消费，配了锁的用户杀进程重开=完全没锁。现在：未 loaded 前不闩锁
     // 不装载不渲染 child（只见加载占位），loaded 变真后才一次性装载。
@@ -72,7 +72,7 @@ class _AppLockGateState extends State<AppLockGate> {
       pinSalt: ui.appLockPinSalt,
       pinHash: ui.appLockPinHash,
     );
-    // 软锁死降级提示（一次性）。
+    // 对抗审查 ①：软锁死降级提示（一次性）。
     if (app.appLock.pinMaterialMissing.value) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,7 +102,7 @@ class _AppLockGateState extends State<AppLockGate> {
       builder: (context, _) {
         final locked = controller.locked && controller.mode != AppLockMode.none;
         if (locked) {
-          // 只挡指针不够——TalkBack 可朗读遮罩下的语义树、
+          // 对抗审查 ①：只挡指针不够——TalkBack 可朗读遮罩下的语义树、
           // 硬件键盘焦点可移入并回车触发（IME 连接残留还能往被锁的会话
           // 输入）。锁定瞬间抢焦点断输入连接，并用语义/焦点双向排除。
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -175,7 +175,7 @@ class _LockScreenState extends State<_LockScreen> {
         hashHex: app.uiPrefs.appLockPinHash,
       );
     } on Object {
-      //  变体：salt 非法等异常不得让按钮永久"验证中"。
+      // 对抗审查 ① 变体：salt 非法等异常不得让按钮永久"验证中"。
       r = false;
     } finally {
       if (!mounted) return;
@@ -262,7 +262,7 @@ class _LockScreenState extends State<_LockScreen> {
                       autofocus: true,
                       obscureText: true,
                       keyboardType: TextInputType.number,
-                      // 低2：防输入法侧信道（预测/自动填充/
+                      // 对抗审查 ①低2：防输入法侧信道（预测/自动填充/
                       // 个性化学习不得记忆 PIN）。
                       enableSuggestions: false,
                       autocorrect: false,

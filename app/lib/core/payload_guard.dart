@@ -1,6 +1,6 @@
 /// 协议载荷安全读取守卫（批C 组3 铺满方针，单源）。
 ///
-/// 威胁模型（turn_model.dart 2026-10 首立，本批铺满全库
+/// 威胁模型（turn_model.dart 2026-10 对抗审查 首立，本批铺满全库
 /// build/投影路径）：协议 zod 保证 number，但服务端形态漂移（数字字段
 /// 变 String、List 变 Map、字段缺失）时，裸 `as num?`/`as Map?`/
 /// `as List?` 强转直接 TypeError——发生在 build 期即整页灰屏（release

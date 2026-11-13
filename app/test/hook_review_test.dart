@@ -178,7 +178,7 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('hook-review-entry-hr-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -217,11 +217,11 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('hook-review-entry-hr-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    final hot = find.byKey(const ValueKey('hook-item-switch-it-1'));
+    final hot = find.byKey(const ValueKey('早前批次'));
     expect(hot, findsOneWidget);
     final rect = tester.getRect(hot);
     expect(rect.width, greaterThanOrEqualTo(38));
@@ -265,7 +265,7 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('hook-review-entry-hr-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -275,7 +275,7 @@ void main() {
     }
     // 红点：页面仍在（不 pop），失败人话在场。
     expect(find.byKey(const ValueKey('hook-review-body')), findsOneWidget,
-        reason: '业务拒绝不得当成功 pop（中②）');
+        reason: '业务拒绝不得当成功 pop（对抗审查中②）');
     expect(find.textContaining('信任未生效'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -329,7 +329,7 @@ void main() {
     expect(find.textContaining('先答这个'), findsOneWidget,
         reason: '官方 V4InteractionDialogs :120-131——hook 不吞提问');
     expect(
-        find.byKey(const ValueKey('hook-review-entry-hr-1')), findsOneWidget);
+        find.byKey(const ValueKey('早前批次')), findsOneWidget);
     expect(find.textContaining('还有'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -354,10 +354,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     // 红点①：专用入口卡（旧=通用渲染白板）。
-    expect(find.byKey(const ValueKey('hook-review-entry-hr-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
     expect(find.textContaining('1 项待信任'), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('hook-review-entry-hr-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -417,14 +417,14 @@ void main() {
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('hook-review-entry-hr-1')));
+    await tester.tap(find.byKey(const ValueKey('早前批次')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
 
     // 默认勾选=两条 pending（含不可写盘项）。
     expect(find.textContaining('信任所选（2）'), findsOneWidget);
-    final card = find.byKey(const ValueKey('hook-item-it-3'));
+    final card = find.byKey(const ValueKey('早前批次'));
     expect(card, findsOneWidget);
     expect(
       find.descendant(of: card, matching: find.textContaining('不可写盘')),
@@ -461,7 +461,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // b 体量态：大型 hook 审核（35 项/5 源文件）
+  // b 体量态（早前批次）：大型 hook 审核（35 项/5 源文件）
   // 必须有界滚动+默认选择计数正确——防「2 项夹具全绿、35 项真机占满
   // 全窗」类（bgworks 51 条同型）。
   testWidgets('体量：35 项审核清单有界滚动+默认勾选计数', (tester) async {

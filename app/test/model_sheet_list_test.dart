@@ -36,7 +36,7 @@ class _CatalogApp extends AppState {
           'modelThoughtLevels': ['off', 'low', 'medium', 'high'],
         },
         {
-          'value': 'prov-a/claude-sonnet-4',
+          'value': 'prov-a/早前批次',
           'name': 'Claude',
           'modelProviderId': 'prov-a',
         },
@@ -290,7 +290,7 @@ void main() {
     expect(
       find.byType(ChoiceChip),
       findsNothing,
-      reason: '模型区不再是摊开 chips（用户 2026-10-25 拍板）',
+      reason: '模型区不再是摊开 chips（设计定稿）',
     );
 
     // 未选中行点选 → 挂起回调（provider+裸 modelId）。长目录先滚到行
@@ -383,7 +383,7 @@ void main() {
     expect(
       box.size.height,
       greaterThanOrEqualTo(40),
-      reason: '模型行触控命中盒 ≥40（紧凑二档，用户 2026-10-26 拍板）',
+      reason: '模型行触控命中盒 ≥40（紧凑二档，设计定稿）',
     );
   });
 
@@ -669,7 +669,7 @@ void main() {
           'id': 'model',
           'name': 'Model',
           'options': [
-            for (final pid in ['bigmodel-api', 'bigmodel-api-2'])
+            for (final pid in ['bigmodel-api', '早前批次'])
               {
                 'value': '$pid/GLM-5.3',
                 'name': 'GLM-5.3',
@@ -706,7 +706,7 @@ void main() {
     // 两组都在场（各 1 行）且组头文字互不相同。
     final groupHeaders = find.byKey(const ValueKey('model-group-bigmodel-api'));
     expect(groupHeaders, findsOneWidget);
-    expect(find.byKey(const ValueKey('model-group-bigmodel-api-2')),
+    expect(find.byKey(const ValueKey('早前批次')),
         findsOneWidget);
     final labels = tester
         .widgetList<Text>(find.descendant(
@@ -717,7 +717,7 @@ void main() {
         .toSet();
     final labels2 = tester
         .widgetList<Text>(find.descendant(
-          of: find.byKey(const ValueKey('model-group-bigmodel-api-2')),
+          of: find.byKey(const ValueKey('早前批次')),
           matching: find.byType(Text),
         ))
         .map((t) => t.data)

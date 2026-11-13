@@ -1,4 +1,4 @@
-/// 代码块语法高亮（深色模式批 2-5 解锁实施，用户 2026-10-23 拍板：
+/// 代码块语法高亮（深色模式批 2-5 解锁实施，设计定稿：
 /// 浅深两侧都对齐官方 shiki github-light/github-dark 同档 + 总开关）。
 ///
 /// 值来源：shiki 官方主题包 @shikijs/themes@4.5.0 的 github-light/
@@ -153,7 +153,7 @@ const _languageAliases = {
 };
 
 /// 高亮尺寸护栏（官方同款 cap：highlighted-lightweight-diff-preview.ts:15
-/// 的 120k 字符上限；服务端 conversationFileChangesV4 的
+/// 的 120k 字符上限；对抗审查 ——服务端 conversationFileChangesV4 的
 /// patches 无界，超限直接回落纯文本，防主线程同步 tokenize 秒级卡顿）。
 const _maxHighlightChars = 120000;
 
@@ -434,7 +434,7 @@ List<DiffLineView> highlightDiffLines(
 }) {
   final codeLines = <String>[];
   final kinds = <DiffLineKind>[];
-  // CRLF 尾剥：上游 jsdiff 每块只剥 \n，CRLF 文件的行
+  // CRLF 尾剥（对抗审查）：上游 jsdiff 每块只剥 \n，CRLF 文件的行
   // 尾 \r 存活进 span 且等宽渲染占一格宽（豆腐块）——Flutter 不像
   // HTML 解析器那样归一化 CR，须自剥。
   String strip(dynamic rawLine) => '$rawLine'.replaceFirst(RegExp(r'\r$'), '');

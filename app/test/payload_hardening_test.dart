@@ -222,10 +222,10 @@ void main() {
         },
       ]);
       expect(
-        () => migrateAnchorIndexAfterPrepend('turn-tail-7', items),
+        () => migrateAnchorIndexAfterPrepend('早前批次', items),
         returnsNormally,
       );
-      expect(migrateAnchorIndexAfterPrepend('turn-tail-7', items), 1);
+      expect(migrateAnchorIndexAfterPrepend('早前批次', items), 1);
       expect(reasoningDurationMs({'durationMs': '8000'}), 8000);
     });
   });
@@ -471,7 +471,7 @@ void main() {
     });
   });
 
-  // 2026-11-08 批（#4）：此前遗漏的裸强转面。
+  // 2026-11-08 对抗审查批（#4）：此前遗漏的裸强转面。
   group('interaction_banner（#4 形态漂移）', () {
     ConversationState bannerState(Map<String, dynamic> interaction) =>
         ConversationState()

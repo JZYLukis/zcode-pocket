@@ -251,7 +251,7 @@ class ToolCallTileState extends State<ToolCallTile> {
     if (name != 'read' && name != 'readfile' && name != 'read_file') {
       return null;
     }
-    // 取值链统一走 toolInputArgs（
+    // 取值链统一走 toolInputArgs（对抗审查 ：优先结构化 input——
     // inputText 缺席而 input 已随 running upsert 到场时也能推断）。
     final decoded = toolInputArgs(row);
     if (decoded != null) {
@@ -277,7 +277,7 @@ class ToolCallTileState extends State<ToolCallTile> {
     return (color, label);
   }
 
-  /// 输出可见文本取值链（-2/4-3/4-9，2026-10-22）：
+  /// 输出可见文本取值链（对抗审查 4-2/4-3/4-9，2026-10-22）：
   /// 失败优先 error.message（协议 status=error 必带，官方 toolError.ts
   /// 同序——此前全 app 零消费，失败自动展开可能展开个空白）→ 运行中
   /// 行字段 outputPreview（手机 replayable 档不流 output.text，
@@ -483,7 +483,7 @@ class ToolCallTileState extends State<ToolCallTile> {
                     // 2026-10-23 用户反馈批：扫光文字从前景色改 running
                     // 琥珀——与思考条同配方，运行行一眼可辨；静止回最浅
                     // 文本色不变。
-                    // 官方
+                    // 对抗审查收敛（2026-10-22）：工具行去等宽字体——官方
                     // 工具行是常规无衬线 14px（ToolSummaryRow.tsx:186 text-ui-base，
                     // 等宽只用于代码块/输出区）；中英混排基线问题随之消失。
                     // 批4 反馈②（2026-10-23 用户）：流式期编辑行也显示
@@ -518,7 +518,7 @@ class ToolCallTileState extends State<ToolCallTile> {
                             ],
                           )
                         : Text.rich(
-                            // -2：编辑/写入摘要带 +N -M 行数
+                            // 对抗审查 3-2：编辑/写入摘要带 +N -M 行数
                             // （官方 edit.tsx:125-148 彩色计数，两者皆≤0
                             // 不显示——官方隐藏规则照抄）。
                             TextSpan(
@@ -539,7 +539,7 @@ class ToolCallTileState extends State<ToolCallTile> {
                             ),
                           ),
                   ),
-                  // 收敛：官方完成态不显示状态词（ToolLayout.tsx:119
+                  // 对抗审查收敛：官方完成态不显示状态词（ToolLayout.tsx:119
                   // shouldShowStatusLabel=运行/失败才显示）——「已执行」不再
                   // 每行常驻，降噪。
                   if (statusLabel != '已执行') ...[
@@ -580,9 +580,9 @@ class ToolCallTileState extends State<ToolCallTile> {
             curve: Curves.easeInOutCubic,
             alignment: Alignment.topCenter,
             clipBehavior: Clip.antiAlias,
-            // 官方工具展开内容无导线
+            // 对抗审查收敛：展开区去左导线——官方工具展开内容无导线
             // （ToolLayout.tsx:20-21 仅 pt-2），导线是思考条专属语言。
-            // 展开区（-1/4-3 批3 重构，2026-10-22）：
+            // 展开区（对抗审查 4-1/4-3 批3 重构，2026-10-22）：
             // ①编辑/写入首块=内联 diff（官方 EditInlineDiffContent 对位）；
             // ②输出=限高滚动视口（官方 max-h-5lh overflow-auto——原 8 行
             // ellipsis 死截断第 9 行起永久不可读，与"展开的价值是看输出"
@@ -699,7 +699,7 @@ class ToolProgressLine extends StatelessWidget {
 /// SwitchModeToolCallBlock 对位）：头部=旗帜图标+「计划」标签+计划文件
 /// 名（planFilePath 叶子，官方 getPlanFileLabel 只显叶子）+右上复制；
 /// 正文=MarkdownView 限高 200+底部渐隐（kBottomFadeMask 单源；官方
-/// max-h-64+mask-image 同构——max-height 与渐隐必须在同一裁切节点，
+/// 早前批次+mask-image 同构——max-height 与渐隐必须在同一裁切节点，
 /// 分层会让渐隐落空，官方注释实证）；底部「查看完整计划」按钮推全屏
 /// 只读页。计划文本=协议载荷（AI 产出 markdown），保持原文。
 
@@ -1029,4 +1029,4 @@ class OutputViewportState extends State<OutputViewport> {
 }
 
 /// 编辑/写入展开区内联 diff 预览（官方 EditInlineDiffContent 对位：
-/// structuredPatch ±行着色、限高滚动；-3，2026-10-22）。
+/// structuredPatch ±行着色、限高滚动；对抗审查 3-3，2026-10-22）。
