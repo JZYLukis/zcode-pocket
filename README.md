@@ -280,9 +280,12 @@ status and workaround.
 - Portrait is the only main orientation; wide screens and foldables unfolded
   (≥600dp) use a dual-pane layout (task list + conversation); the
   large-tablet layout is still being polished.
-- No built-in image/PDF preview — the remote-control protocol has no
-  file-byte channel; only newly created HTML files can be previewed. View
-  other files on the desktop.
+- Files generated in a conversation cannot be previewed directly (the
+  remote-control protocol has no byte channel for them): newly created
+  HTML/plain-text files (Markdown/CSV/JSON/code) preview and share locally;
+  binaries such as images, PDFs and spreadsheets can be downloaded via the
+  one-tap "Collect artifacts" command, which asks the agent to publish them
+  as downloadable workflow artifacts.
 - QR pairing shows a static viewfinder instead of a live camera preview
   (a renderer workaround for some devices), and the screen rebuilds once
   after a successful pairing.
@@ -293,9 +296,11 @@ status and workaround.
   correspondingly higher battery use.
 - Off-peak (idle-time) tasks cannot be edited from the phone — the remote
   protocol only exposes create/list; edit them on the desktop.
-- One terminal per desktop: connecting a second phone/account to the same
-  desktop kicks the previous connection (different desktops run in parallel
-  fine); time-share one desktop by switching accounts.
+- One terminal per running desktop instance: connecting a second
+  phone/account to the same instance kicks the previous connection (different
+  desktops run in parallel fine); for two accounts on one machine, run two
+  desktop instances with isolated data roots, or time-share by switching
+  accounts.
 - The prebuilt APK and your own build have different signatures; switching
   between them requires uninstalling, which erases local data (no cloud
   backup).

@@ -41,6 +41,11 @@ is an explicit action.
 **Cost**: N desktops means N connections and N credential sets; the UI must
 make "which computer am I looking at" unambiguous.
 
+Note (desktop-side): the one-terminal rule is per running desktop instance.
+Running two desktop instances on one machine with isolated data roots
+(`ZCODE_DATA_BASE_DIR`) gives each account its own instance — a workaround
+outside this app's scope, but useful to know.
+
 ## 4. Disconnect about 90 seconds after backgrounding
 
 **Problem**: a permanently open WebSocket keeps waking the radio.
@@ -116,15 +121,27 @@ explicit "loaded range only" note while running or offline.
 **Cost**: very long histories need paging; search is not semantic and does not
 index reasoning content.
 
-## 12. No image/PDF preview; HTML preview only
+## 12. File access rides the artifact channel; no general byte-read method
 
 **Problem**: the protocol exposes conversation file changes and workflow
-artifacts, but no general "read arbitrary file bytes" method.
-**Decision**: render newly created HTML files locally; keep images/PDFs out of
-scope rather than asking the agent to inline base64 (which costs tokens every
-turn and stays in context).
-**Cost**: a real usability gap for binary files; it will be revisited if the
-official protocol adds a byte channel.
+artifacts, but no general "read arbitrary file bytes" method — so
+conversation-generated files (images, PDFs, spreadsheets) cannot be fetched
+directly.
+**Decision**: three layers. (1) Preview locally what already arrives: newly
+created HTML and plain-text files (Markdown/CSV/JSON/code) come with their
+full text in the change payload. (2) Workflow artifacts have a real byte
+channel (chunked reads): image artifacts preview, and any artifact —
+including binaries — can be downloaded and shared to the system share sheet.
+(3) For conversation-generated files, a one-tap "Collect artifacts" command
+asks the agent to publish that turn's files as workflow artifacts, making
+them downloadable without paying tokens per byte. Binary artifacts that
+cannot be previewed get a clean "preview not supported" page with a share
+entry, never a wall of mojibake; file names missing an extension get one
+from magic-byte sniffing.
+**Cost**: downloading conversation files is a two-step, agent-mediated path
+rather than a direct save; a huge conversation file still costs the agent a
+read+write round-trip. It will be simplified if the official protocol adds a
+general byte channel.
 
 ## 13. Light-first visual system, dark follows the system
 
