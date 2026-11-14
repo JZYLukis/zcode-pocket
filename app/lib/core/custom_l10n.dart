@@ -101,10 +101,10 @@ const _customEn = <String, String>{
   '重试': 'Retry',
   '已完成': 'Completed',
   '定时任务': 'Scheduled tasks',
-  // 早前批次：宽屏顶栏左栏收起/展开钮 tooltip。
+  // dual-pane-collapse-1：宽屏顶栏左栏收起/展开钮 tooltip。
 
 
-  // 应用内更新（早前批次）。
+  // 应用内更新（in-app-update-1）。
   '软件更新': 'Software update',
   '检查新版本并应用内下载安装（需安装权限）': 'Check for updates and download in-app (install permission required)',
   '应用内更新': 'In-app updates',
@@ -141,7 +141,7 @@ const _customEn = <String, String>{
   '设备未设置系统屏幕锁，无法验证；请先在系统设置中配置锁屏': 'No system screen lock is set, verification unavailable. Configure a screen lock in system settings first',
   '打开系统安全设置': 'Open system security settings',
   '任务列表已收起': 'Task list collapsed',
-  // 应用锁（早前批次）：设置页+锁屏。
+  // 应用锁（app-lock-1）：设置页+锁屏。
   '应用锁': 'App lock',
   '冷启动与后台锁定需验证（系统锁屏 / PIN 码）': 'Verify on cold start and after backgrounding (system lock / PIN)',
   '应用已锁定': 'App locked',
@@ -290,6 +290,8 @@ const _customEn = <String, String>{
   '队列：排队等当前回合结束后依次发送':
       'Queue: send messages in order after the current turn ends',
   '开启后后台保持连接，任务完成/失败/等审批实时通知（首次开启建议先过一遍下方「后台保障设置」）；关闭时退到后台约一分半钟自动断开省电，回前台数秒恢复': 'When on, stay connected in the background for completion, failure, and approval notifications. Review “Background reliability settings” before first use. When off, disconnect after about 90 seconds in the background to save power and reconnect within seconds of returning.',
+  // iOS 档（ios-adaptation-1）：无保活，前台实时+回前台对账。
+  '开启后使用期间实时通知任务完成/失败/等待审批；iOS 后台不保持连接，回到 App 时自动补齐错过的事件并通知': 'When on, get real-time notifications for completions, failures, and approvals while using the app. iOS does not stay connected in the background; missed events are caught up and notified when you return.',
   '等审批通知': 'Approval notifications',
   '会话等待你审批或输入时提醒': 'Notify when a session needs approval or input',
   '任务完成通知': 'Task completion notifications',
@@ -339,7 +341,7 @@ const _customEn = <String, String>{
   '部分手机的省电机制会在后台清理应用——代码全部正确，通知仍可能收不到。开启「审批提醒」前，请把下面几步一次配好（全程只需配置一次）。': 'Battery management on some devices can kill background apps. Even if the code is correct, notifications may still be missed. Before enabling approval reminders, complete these steps once.',
   '启动管理三开关': 'Three background launch switches',
   '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关。': 'Settings → Apps → App launch → ZCode Pocket → choose Manual management, then enable Auto-launch, Secondary launch, and Background activity.',
-  // 早前批次：引导页第 1 步按厂商档位出文案（华为档零变化，
+  // notify-guide-oem-1：引导页第 1 步按厂商档位出文案（华为档零变化，
   // 其余为新增档；华为/荣耀两条 footnote 与「跳转失败」是存量串本批
   // 补译——此前英文界面点跳转按钮会冒中文）。
   '设置 → 应用 → 应用启动管理 → ZCode Pocket → 改为"手动管理"，开启 自启动 / 关联启动 / 后台活动 三个开关（老系统在 手机管家 内）。':
@@ -445,7 +447,7 @@ const _customEn = <String, String>{
   '没有子智能体\n点右下角「新建」创建':
       'No subagents yet\nTap New at the bottom right to create one',
   '插件': 'Plugin',
-  // 早前批次（2026-10-30）：工作流 run 页 + 闲时任务卡
+  // workflow-runs-1（2026-10-30）：工作流 run 页 + 闲时任务卡
   '工作流运行': 'Workflow runs',
   // 早前批次（2026-11-13）：收集产物弹层与顶栏入口。
   '收集产物': 'Collect artifacts',
@@ -936,14 +938,14 @@ const _customEn = <String, String>{
   '定位': 'Jump',
   '该消息在更早的历史中，请上滑加载':
       'That message is in earlier history — scroll up to load more',
-  // 早前批次 批1（2026-11-04 拍板）：账号关联可见性。
+  // multi-account-ux-1 批1（2026-11-04 拍板）：账号关联可见性。
   '重命名账号': 'Rename account',
   '如「公司订阅」「个人号」（仅本机保存）':
       'e.g. "Work subscription", "Personal" (saved on this device only)',
   '跟随当前账号': 'Follows current account',
   '账号已删除': 'Account deleted',
   '当前账号': 'Current account',
-  // 早前批次 批4：多电脑任务聚合。
+  // multi-account-ux-1 批4：多电脑任务聚合。
   '首页显示其他电脑任务': "Show other computers' tasks on home",
   '来自本地缓存快照（可能过期，会标注缓存时间）；不额外连接电脑':
       'From local cache snapshots (may be stale; cached time shown). No extra connections',
@@ -955,7 +957,7 @@ const _customEn = <String, String>{
   // usage 异常人话三条（此前 EN 走 '加载失败：X' 混排）。
   '网络连接不可用，请检查网络': 'Network unavailable. Check your connection',
   '数据为空，请稍后重试': 'No data yet. Try again later',
-  // 早前批次 批2（2026-11-04 拍板）：添加账号语义收敛。
+  // multi-account-ux-1 批2（2026-11-04 拍板）：添加账号语义收敛。
   '账号已添加，当前账号未变': 'Account added. Current account unchanged.',
   '改绑这台电脑的账号？': 'Change the account bound to this computer?',
   '改绑': 'Change',
@@ -1021,11 +1023,11 @@ const _customEn = <String, String>{
 };
 
 final _customPatterns = <_L10nPattern>[
-  // 早前批次 批4：其他电脑聚合区。
+  // multi-account-ux-1 批4：其他电脑聚合区。
   _L10nPattern(RegExp(r'^其他电脑（(\d+)）$'), 'Other computers ({count})', {'count': 1}),
   _L10nPattern(RegExp(r'^缓存于 ([\s\S]+)$'), 'Cached {time}', {'time': 1}),
 
-  // 早前批次 批1：账号管理副标题（拼接串，count=1 单数）。
+  // multi-account-ux-1 批1：账号管理副标题（拼接串，count=1 单数）。
   _L10nPattern(RegExp(r'^([\s\S]+) · 1 台电脑 · 连接中$'),
       '{account} · 1 computer · Connected', {'account': 1}),
   _L10nPattern(RegExp(r'^([\s\S]+) · (\d+) 台电脑 · 连接中$'),
@@ -1035,7 +1037,7 @@ final _customPatterns = <_L10nPattern>[
   _L10nPattern(RegExp(r'^([\s\S]+) · (\d+) 台电脑$'),
       '{account} · {count} computers', {'account': 1, 'count': 2}),
 
-  // 早前批次 批1：设备列表「以 {账号} 拉取」chip。
+  // multi-account-ux-1 批1：设备列表「以 {账号} 拉取」chip。
   _L10nPattern(RegExp(r'^以 ([\s\S]+) 拉取$'), 'Fetch with {account}', {'account': 1}),
 
   // 插值成串的泄漏——tr() 只做精确匹配+regex，带
@@ -1462,7 +1464,7 @@ final _customPatterns = <_L10nPattern>[
     {'reason': 1},
   ),
   _L10nPattern(RegExp(r'^后台工作 · (\d+)$'), 'Background work · {n}', {'n': 1}),
-  // 状态托盘（早前批次）：词在 _zhEnWords，此为组合串。
+  // 状态托盘（status-tray-1109）：词在 _zhEnWords，此为组合串。
   _L10nPattern(RegExp(r'^排队 (\d+) 条$'), 'Queued {n} entries', {'n': 1}),
   _L10nPattern(RegExp(r'^(\d+) 分钟内$'), 'within {n} min', {'n': 1}),
   _L10nPattern(

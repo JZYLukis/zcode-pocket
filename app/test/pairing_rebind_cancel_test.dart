@@ -190,7 +190,7 @@ void main() {
         ],
       ),
     );
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('device-card-dev-1')));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -201,7 +201,7 @@ void main() {
     }
     expect(find.byType(DeviceListPage), findsOneWidget,
         reason: '修复前：取消被当成功，设备列表被 pop 关掉');
-    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+    expect(find.byKey(const ValueKey('device-card-dev-1')), findsOneWidget);
     expect(app.profileCalls.single['forceRebind'], isFalse);
   });
 

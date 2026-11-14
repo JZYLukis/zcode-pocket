@@ -53,7 +53,7 @@ void main() {
     await tester.pumpWidget(
       _host([for (var i = 0; i < kMaxChatAttachments; i++) _file('$i')]),
     );
-    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pending-attachment-0')), findsOneWidget);
     final size = tester.getSize(find.byType(PendingAttachmentChips));
     expect(size.height, lessThanOrEqualTo(336));
     // 文件名与状态同行（chip 后缀）。
@@ -68,20 +68,20 @@ void main() {
     expect(find.byType(Image), findsNWidgets(5));
     // 方形单元格。
     final cell = tester.getSize(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('pending-attachment-0')),
     );
     expect(cell.width, cell.height);
     // 移除角标在场。
     expect(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('pending-attachment-remove-0')),
       findsOneWidget,
     );
     // 3 列：第 4 张图换行（y 更大）。
     final a = tester.getTopLeft(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('pending-attachment-0')),
     );
     final d = tester.getTopLeft(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('pending-attachment-3')),
     );
     expect(d.dy, greaterThan(a.dy));
   });

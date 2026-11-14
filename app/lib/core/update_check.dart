@@ -1,4 +1,4 @@
-// 应用内更新——检查与元数据（早前批次）。
+// 应用内更新——检查与元数据（in-app-update-1）。
 //
 // 数据源：GitHub `releases/latest`（一次返回 tag+各 APK 资产 URL+官方
 // sha256 digest——v1.0.4 实测 digest 与 SHA256SUMS 逐字节吻合，作为

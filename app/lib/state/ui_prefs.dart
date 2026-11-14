@@ -11,7 +11,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// read/write 等工具活动，仅保留思考条与正文。
 class UiPrefs extends ChangeNotifier {
   UiPrefs({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+    // iOS Keychain 定档（ios-adaptation-3）：first_unlock_this_device=
+    // 首次解锁后即可读（E 批前台通知等场景不因锁屏读挂）+ 条目不随
+    // iCloud/迁移备份恢复到其他设备——对齐 Android allowBackup=false
+    // 隐私口径。aOptions 缺省=Android 行为零变化。
+    : _storage = storage ??
+        const FlutterSecureStorage(
+          iOptions: IOSOptions(
+            accessibility: KeychainAccessibility.first_unlock_this_device,
+          ),
+        );
 
   static const _keyShowToolCalls = 'ui.showToolCalls';
   static const _keyLastModel = 'ui.lastModel'; // "providerId/modelId"
@@ -31,7 +40,7 @@ class UiPrefs extends ChangeNotifier {
   static const _keyLocalePreference = 'ui.localePreference';
   static const _keyCodeHighlight = 'ui.codeHighlight';
 
-  /// 早前批次 批4（2026-11-04 拍板）：首页显示其他电脑任务
+  /// multi-account-ux-1 批4（2026-11-04 拍板）：首页显示其他电脑任务
   /// （缓存快照）——默认关。实现纯读 LocalCacheStore，不建连接不订阅。
   static const _keyShowOtherComputers = 'ui.showOtherComputers';
 
@@ -57,11 +66,11 @@ class UiPrefs extends ChangeNotifier {
   /// 不再打扰）。
   static const _keyFabMenuHintShown = 'ui.fabMenuHintShown';
 
-  /// 早前批次：宽屏双栏左栏收起态（vivo X Fold 6 真机
+  /// dual-pane-collapse-1：宽屏双栏左栏收起态（vivo X Fold 6 真机
   /// 反馈「左栏没有展开收起选项」）——收起后右栏全宽，顶栏同位钮切换。
   static const _keyDualPaneCollapsed = 'ui.dualPaneCollapsed';
 
-  /// 应用锁（早前批次）：方式三态/自动锁定秒数（0=立即）/锁定期
+  /// 应用锁（app-lock-1）：方式三态/自动锁定秒数（0=立即）/锁定期
   /// FLAG_SECURE 防缩略图泄露/PIN 盐+哈希（不存明文）。
   static const _keyAppLockMode = 'ui.appLockMode';
   static const _keyAppLockAutoLockSeconds = 'ui.appLockAutoLockSeconds';
@@ -69,7 +78,7 @@ class UiPrefs extends ChangeNotifier {
   static const _keyAppLockPinSalt = 'ui.appLockPinSalt';
   static const _keyAppLockPinHash = 'ui.appLockPinHash';
 
-  /// 应用内更新（早前批次）：开关（默认开）+上次自动检查时刻
+  /// 应用内更新（in-app-update-1）：开关（默认开）+上次自动检查时刻
   /// （epoch 毫秒；24h 节流静默检查）。
   static const _keyUpdateInAppEnabled = 'ui.updateInAppEnabled';
   static const _keyUpdateLastCheckAt = 'ui.updateLastCheckAt';
@@ -408,7 +417,7 @@ class UiPrefs extends ChangeNotifier {
   Set<String> get homeCollapsedGroups =>
       Set.unmodifiable(_homeCollapsedGroups);
 
-  /// 早前批次：双栏左栏收起态（本机界面偏好，跨会话记忆）。
+  /// dual-pane-collapse-1：双栏左栏收起态（本机界面偏好，跨会话记忆）。
   bool get dualPaneCollapsed => _dualPaneCollapsed;
 
   Future<void> setDualPaneCollapsed(bool value) async {
@@ -418,7 +427,7 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyDualPaneCollapsed, value ? 'true' : 'false');
   }
 
-  // ---- 应用锁（早前批次）----
+  // ---- 应用锁（app-lock-1）----
   String get appLockModeRaw => _appLockMode;
   int get appLockAutoLockSeconds => _appLockAutoLockSeconds;
   bool get appLockSecureFlag => _appLockSecureFlag;
@@ -455,7 +464,7 @@ class UiPrefs extends ChangeNotifier {
     await _persist(_keyAppLockPinHash, hashHex);
   }
 
-  // ---- 应用内更新（早前批次）----
+  // ---- 应用内更新（in-app-update-1）----
   bool get updateInAppEnabled => _updateInAppEnabled;
 
   /// 对抗审查 ①：load 是否已完成（AppLockGate 装载门闩——未完成时
@@ -465,6 +474,22 @@ class UiPrefs extends ChangeNotifier {
   /// 测试缝：标记已就绪（secure storage 在测试环境 read 挂起时注入）。
   @visibleForTesting
   void debugMarkLoadedForTest() => _loadedFlag = true;
+
+  /// 内存就绪（demo 模式，ios-adaptation-3）：不触碰存储——默认值即
+  /// 最终值，置就绪**并通知**（AppLockGate 冷启动门闩放行）。
+  ///
+  /// 背景：demo 注入路径跳过 load()，而 AppLockGate 在 asserts 环境
+  /// （集成/widget 测试）判定测试环境不兜底拉起 load——曾致 demo 全树
+  /// 永久停在加载占位（零文本）；生产 demo 此前靠 gate 兜底拉起真
+  /// load() 反而触碰 secure storage（违背 demo 纯度约定）。本方法让
+  /// demo 在全部环境统一「内存默认值就绪、零存储」。
+  void markMemoryReady() {
+    if (_loadedFlag) return;
+    loaded = true;
+    _loadedFlag = true;
+    notifyListeners();
+  }
+
   int get updateLastCheckAt => _updateLastCheckAt;
 
   Future<void> setUpdateInAppEnabled(bool value) async {

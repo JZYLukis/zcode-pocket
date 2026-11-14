@@ -73,10 +73,19 @@ WORD_MAP = [
         r"demo-mode-1|public-media-1(?:-r\d)?"
         r"|run-list-artifacts|dark-screenshots-rework"
     ), "演示模式批"),
-    # 对抗审查 D-8（2026-11-14）：1.0.6 批次 slug 会随注释进公开树
-    #（词表 0 命中实证）——通用批次 slug 形态（xxx-yyy-N）统一改写，
-    # 覆盖未来新批次不再逐个补词。
-    (re.compile(r"\b(?![a-z]+-20\d{2})[a-z]+(?:-[a-z0-9]+)+-\d+\b"), "早前批次"),
+    # 对抗审查 D-8 → CI 46 红修正（2026-11-14）：通用 slug 形态正则
+    # 会误伤测试夹具标识符（turn-tail-5/command-42 等被洗成"早前批次"
+    # 导致公树 CI 全红——私库绿因为清洗只作用于导出）。改白名单制：
+    # 只改写已知批次 slug，新批次发版时补一个词即可。
+    (re.compile(
+        r"\b(?:"
+        r"artifact-share-1|collect-entry-1|conversation-text-share-1"
+        r"|topbar-live-badges-1|topbar-compact-1"
+        r"|acceptance-fix-106-[12]|downloads-hub-1|run-list-artifacts"
+        r"|adversarial-fix-106"
+        r"|issue13-startplan"
+        r")\b"
+    ), "早前批次"),
     # 内部验收/拍板叙事（终审口径：开发过程叙述不入公开注释）。
     (re.compile(r"用户 \d{4}-\d{2}-\d{2} 拍板"), "设计定稿"),
     (re.compile(r"真机验收实录|真机验收反馈"), "实测反馈"),

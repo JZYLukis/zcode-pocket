@@ -1,4 +1,4 @@
-// 早前批次：厂商档位规范化与引导文案选择。
+// notify-guide-oem-1：厂商档位规范化与引导文案选择。
 // 华为档文案逐字钉死（主设备零回归）；vivo 是首个真实目标机（用户
 // 新增 vivo X Fold 6 装机），vivo 档旅程单独锁。
 import 'package:flutter/material.dart' hide Text;

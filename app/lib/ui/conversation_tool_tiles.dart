@@ -699,7 +699,7 @@ class ToolProgressLine extends StatelessWidget {
 /// SwitchModeToolCallBlock 对位）：头部=旗帜图标+「计划」标签+计划文件
 /// 名（planFilePath 叶子，官方 getPlanFileLabel 只显叶子）+右上复制；
 /// 正文=MarkdownView 限高 200+底部渐隐（kBottomFadeMask 单源；官方
-/// 早前批次+mask-image 同构——max-height 与渐隐必须在同一裁切节点，
+/// max-h-64+mask-image 同构——max-height 与渐隐必须在同一裁切节点，
 /// 分层会让渐隐落空，官方注释实证）；底部「查看完整计划」按钮推全屏
 /// 只读页。计划文本=协议载荷（AI 产出 markdown），保持原文。
 

@@ -137,6 +137,22 @@ class TaskCatalog {
     bridge.recovered.addListener(_onBridgeRecoveredReloadTasks);
   }
 
+  /// 拆除订阅与模型（ios-adaptation-3：demo/测试收尾——tasks-index 订阅
+  /// 的周期清理定时器必须取消，widget 测试 pending-timer 不变量；生产
+  /// 目录随栈生命周期由进程退出回收，不经此路）。订阅 dispose 的定时器
+  /// 取消在同步段完成，调用方无需 await。
+  void dispose() {
+    final ti = _tasksIndex;
+    _tasksIndex = null;
+    unawaited(ti?.dispose() ?? Future<void>.value());
+    final model = _taskList;
+    _taskList = null;
+    model?.removeListener(_onTaskListChanged);
+    model?.dispose();
+    _attachedBridge?.recovered.removeListener(_onBridgeRecoveredReloadTasks);
+    _attachedBridge = null;
+  }
+
   void _onBridgeRecoveredReloadTasks() {
     if (_taskList != null) unawaited(loadTaskIndex());
     // 恢复边沿两类数据收敛对称：桥短暂断链期间

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Text;
 import '../core/localized_text.dart';
 
 import '../core/theme.dart';
+import '../platform/capabilities.dart';
 import '../state/app_state_scope.dart';
 import 'notify_guide_page.dart';
 import 'notify_ledger_page.dart';
@@ -64,11 +65,17 @@ class SettingsNotificationsPage extends StatelessWidget {
                 '审批提醒',
                 style: TextStyle(fontSize: AppType.uiBase),
               ),
-              subtitle: const Text(
-                '开启后后台保持连接，任务完成/失败/等审批实时通知'
-                '（首次开启建议先过一遍下方「后台保障设置」）；'
-                '关闭时退到后台约一分半钟自动断开省电，回前台数秒恢复',
-                style: TextStyle(fontSize: AppType.uiCaption),
+              // 文案分档（ios-adaptation-1）：Android=前台服务保活语义；
+              // iOS 无保活（supportsBackgroundKeepAlive=false）按「前台
+              // 实时+回前台对账」档呈现，不承诺后台实时通知。
+              subtitle: Text(
+                ZpCapabilities.supportsBackgroundKeepAlive
+                    ? '开启后后台保持连接，任务完成/失败/等审批实时通知'
+                        '（首次开启建议先过一遍下方「后台保障设置」）；'
+                        '关闭时退到后台约一分半钟自动断开省电，回前台数秒恢复'
+                    : '开启后使用期间实时通知任务完成/失败/等待审批；'
+                        'iOS 后台不保持连接，回到 App 时自动补齐错过的事件并通知',
+                style: const TextStyle(fontSize: AppType.uiCaption),
               ),
             ),
             SwitchListTile(
@@ -107,21 +114,24 @@ class SettingsNotificationsPage extends StatelessWidget {
                 style: TextStyle(fontSize: AppType.uiCaption),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.tune_outlined, size: 20),
-              title: const Text(
-                '后台保障设置',
-                style: TextStyle(fontSize: AppType.uiBase),
+            // OEM 省电白名单引导（notify-guide-oem-1）：iOS 无此概念
+            // （结构性，supportsOemPowerGuide）入口隐藏（ios-adaptation-1）。
+            if (ZpCapabilities.supportsOemPowerGuide)
+              ListTile(
+                leading: const Icon(Icons.tune_outlined, size: 20),
+                title: const Text(
+                  '后台保障设置',
+                  style: TextStyle(fontSize: AppType.uiBase),
+                ),
+                subtitle: const Text(
+                  '部分手机的省电白名单（开"审批提醒"前配一次）',
+                  style: TextStyle(fontSize: AppType.uiCaption),
+                ),
+                trailing: const Icon(Icons.chevron_right, size: 18),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotifyGuidePage()),
+                ),
               ),
-              subtitle: const Text(
-                '部分手机的省电白名单（开"审批提醒"前配一次）',
-                style: TextStyle(fontSize: AppType.uiCaption),
-              ),
-              trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotifyGuidePage()),
-              ),
-            ),
             ListTile(
               leading: const Icon(Icons.receipt_long_outlined, size: 20),
               title: const Text(

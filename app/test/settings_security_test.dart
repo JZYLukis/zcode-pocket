@@ -1,4 +1,4 @@
-// 应用锁设置页（早前批次）：PIN 开启全流程 + 关闭需验证旅程。
+// 应用锁设置页（app-lock-1）：PIN 开启全流程 + 关闭需验证旅程。
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

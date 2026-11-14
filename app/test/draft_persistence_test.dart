@@ -490,7 +490,7 @@ void main() {
     expect(_input(tester), '带附件');
 
     await tester.tap(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('pending-attachment-remove-restored-1-1')),
     );
     await _pump(tester);
     await tester.tap(find.byKey(const ValueKey('send-button')));
@@ -811,7 +811,7 @@ void main() {
     await _pump(tester);
     // 取回字节后入口出现（恢复图无字节时不出现）。
     final entry = find.byKey(
-      const ValueKey('早前批次'),
+      const ValueKey('pending-attachment-annotate-restored-1-0'),
     );
     expect(entry, findsOneWidget);
 

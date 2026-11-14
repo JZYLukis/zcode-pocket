@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 临时文件目录（cache-path=应用私有 cache，FileProvider 仅按各子目录
      一次性只读授权，不暴露其他目录）：updates/=应用内更新 APK 安装器
-（早前批次）；artifacts/=工作流产物分享面板（早前批次）。 -->
+（in-app-update-1）；artifacts/=工作流产物分享面板（早前批次）。 -->
 <paths>
     <cache-path name="update_apk" path="updates/"/>
     <cache-path name="artifact_share" path="artifacts/"/>

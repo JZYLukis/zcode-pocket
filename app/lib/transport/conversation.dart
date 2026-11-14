@@ -2022,6 +2022,10 @@ abstract class _SubscriptionBase<T extends ChangeNotifier> {
   }
 
   Future<void> dispose() async {
+    // 幂等闸（ios-adaptation-3）：registry.close 的 M2 双清遍+外部先行的
+    // 手动 dispose 组合下二次进入曾把已 dispose 的 ConversationState 再
+    // dispose（ChangeNotifier 断言炸）——二次调用直接返回。
+    if (_disposed) return;
     _disposed = true;
     _resubscribeTimer?.cancel();
     _fragmentCleanup?.cancel();

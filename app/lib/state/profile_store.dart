@@ -33,7 +33,16 @@ import '../transport/z_transport.dart';
 /// （重入 `_serialized` 会自锁——队列尾部在等自己）。
 class ProfileStore {
   ProfileStore({FlutterSecureStorage? storage, this.debugBackupPath})
-    : _storage = storage ?? const FlutterSecureStorage();
+    // iOS Keychain 定档（ios-adaptation-3）：first_unlock_this_device=
+    // 首次解锁后即可读（E 批前台通知等场景不因锁屏读挂）+ 条目不随
+    // iCloud/迁移备份恢复到其他设备——对齐 Android allowBackup=false
+    // 隐私口径。aOptions 缺省=Android 行为零变化。
+    : _storage = storage ??
+        const FlutterSecureStorage(
+          iOptions: IOSOptions(
+            accessibility: KeychainAccessibility.first_unlock_this_device,
+          ),
+        );
 
   final FlutterSecureStorage _storage;
   static const _prefix = 'profile.';

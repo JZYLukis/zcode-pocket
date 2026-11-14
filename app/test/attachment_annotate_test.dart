@@ -98,9 +98,9 @@ void main() {
       () => _solidPng(300, 200, const Color(0xFFDDDDDD)),
     );
     await _openEditor(tester, png!);
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('annotate-color-1')));
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('annotate-color-2')));
     await tester.pump();
     expect(tester.takeException(), isNull);
   });

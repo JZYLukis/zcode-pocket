@@ -157,7 +157,7 @@ void main() {
     await store.save(jwt: jwtA, provider: 'bigmodel');
     await store.save(jwt: jwtB, provider: 'zai');
     expect(await store.listAccounts(), hasLength(2));
-    // 早前批次 批2：添加不再抢当前（首账号 acc-a 保持当前）；
+    // multi-account-ux-1 批2：添加不再抢当前（首账号 acc-a 保持当前）；
     // 切默认账号走「设为当前」。
     expect(await store.lastUsedAccountId, 'acc-a',
         reason: '添加第二账号不改当前账号');
@@ -262,7 +262,7 @@ void main() {
     expect(await store.readJwtFor('acc-a'), isNull);
   });
 
-  test('添加账号不切换当前账号（早前批次 批2）', () async {
+  test('添加账号不切换当前账号（multi-account-ux-1 批2）', () async {
     final mem = _MemStorage();
     final store = AccountStore(storage: mem);
     // 首账号：lastUsed 尚空 → 自动设为当前（登录可用）。
@@ -312,7 +312,7 @@ void main() {
         reason: '删空后重登=事实首账号，自动设当前（修复前 setActive:false 路径会漏）');
   });
 
-  test('备注名持久化 + 显示名优先级（早前批次 批1）', () async {
+  test('备注名持久化 + 显示名优先级（multi-account-ux-1 批1）', () async {
     final mem = _MemStorage();
     final store = AccountStore(storage: mem);
     final id = await store.save(

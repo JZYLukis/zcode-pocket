@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zcode_pocket/platform/companion_channels.dart';
 
 void main() {
   late final String updateFlow;
@@ -99,6 +100,63 @@ void main() {
       );
     }
     expect(insetSrc.contains('refreshSystemInset'), isTrue);
+  });
+
+  group('companion 通道注册表（ios-adaptation-1 平台缝）', () {
+    test('注册表与 lib/ 通道字面量双向一致（防漂移）', () {
+      final literals = <String>{};
+      for (final entity in Directory('lib').listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        final src = entity.readAsStringSync();
+        for (final m in RegExp(
+          // [a-z_]+ 收紧：文档注释里的 MethodChannel('companion/...')
+          // 形态（platform/companion_channels.dart 自述）不入账。
+          r"MethodChannel\('(companion/[a-z_]+)'\)",
+        ).allMatches(src)) {
+          literals.add(m.group(1)!);
+        }
+      }
+      expect(literals, isNotEmpty, reason: '解析失败会让本守卫失效');
+      final registered = kCompanionChannels.map((c) => c.name).toSet();
+      expect(
+        registered.length,
+        kCompanionChannels.length,
+        reason: '注册表通道名重复',
+      );
+      final unregistered = literals.difference(registered);
+      expect(
+        unregistered,
+        isEmpty,
+        reason: 'lib/ 出现未登记通道 $unregistered——新通道必须登记进 '
+            'platform/companion_channels.dart（含 iOS 计划）',
+      );
+      final stale = registered.difference(literals);
+      expect(
+        stale,
+        isEmpty,
+        reason: '注册表登记但 lib/ 已无调用点（陈旧条目）：$stale——通道'
+            '退役须同步清理注册表',
+      );
+    });
+
+    test('注册表通道名必须在 Android Kotlin 源出现（原生侧删改即拦）', () {
+      final kt = StringBuffer();
+      for (final entity
+          in Directory('android/app/src').listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.kt')) continue;
+        kt.writeln(entity.readAsStringSync());
+      }
+      final text = kt.toString();
+      expect(text, isNotEmpty, reason: '解析失败会让本守卫失效');
+      for (final ch in kCompanionChannels) {
+        expect(
+          text.contains('"${ch.name}"'),
+          isTrue,
+          reason: '${ch.name} 未在 Android Kotlin 源出现——原生侧删通道/'
+              '改名须同步注册表（双向契约）',
+        );
+      }
+    });
   });
 }
 

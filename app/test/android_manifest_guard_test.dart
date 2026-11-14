@@ -44,7 +44,7 @@ void main() {
     );
   });
 
-  test('应用内更新安装链路三件套（早前批次）', () {
+  test('应用内更新安装链路三件套（in-app-update-1）', () {
     final manifest = File('android/app/src/main/AndroidManifest.xml')
         .readAsStringSync();
     final permissions = _usesPermissions(manifest);

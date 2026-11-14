@@ -25,6 +25,10 @@ import 'demo_script.dart';
 class DemoAppState extends AppState {
   DemoAppState() {
     loaded = true;
+    // 偏好内存就绪（ios-adaptation-3）：默认值即最终值、零存储触碰
+    // ——AppLockGate 冷启动门闩由此放行。此前 asserts 环境（集成测试）
+    // 曾因 gate 不兜底拉起 load() 而 demo 又跳过 load → 全树永久占位。
+    uiPrefs.markMemoryReady();
 
     // —— 单电脑单账号档案 ——
     _demoProfile = AccountV2Profile(
@@ -85,8 +89,20 @@ class DemoAppState extends AppState {
   @override
   void dispose() {
     _disposedSelf = true;
-    _script.dispose();
-    _bridge.dispose();
+    // 订阅拆除（ios-adaptation-3）：si/tasks-index 订阅与会话注册表各带
+    // 周期清理定时器（_SubscriptionBase._fragmentCleanup）——必须显式
+    // 拆除。整体走一个异步序列：registry.close 必须在桥活着时**await
+    // 完成**（首版 unawaited 后立刻拆桥，退订尾巴撞死桥抛错——demo
+    // 门面测试实证）；桥最后拆。
+    final si = _siSub;
+    _siSub = null;
+    unawaited(() async {
+      await (si?.dispose() ?? Future<void>.value());
+      _catalog.dispose();
+      await _registry.close(awaitWrites: false);
+      _script.dispose();
+      _bridge.dispose();
+    }());
     super.dispose();
   }
 

@@ -554,7 +554,7 @@ class FileSummaryCardState extends State<FileSummaryCard> {
     final sessionId = widget.sessionId;
     final target = _target;
     if (sessionId == null || target == null || !mounted) return;
-    // 生成文件预览·网页档（早前批次，用户拍板只做 html）+文本档
+    // 生成文件预览·网页档（file-preview-1，用户拍板只做 html）+文本档
     // （早前批次）：新建文件的全文随 fileChanges 到达
     // ——html 走 WebView 渲染、白名单文本走等宽只读+分享（均为纯原生
     // 数据，零提示词零额度）；编辑过的文件只送变更行，宁进 diff 也不

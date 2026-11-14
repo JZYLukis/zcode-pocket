@@ -173,16 +173,16 @@ void main() {
   test('WebView 返回值解码：含引号值（user_info JSON 文本）整串读回', () {
     // Android 原样返回的编码形态：{"id":"u-1"} 存进 localStorage 后经
     // getItem 读回，内层引号全部带 \" 转义。
-    const encoded = '"{\\"id\\":\\"早前批次\\",\\"username\\":\\"zhang\\"}"';
+    const encoded = '"{\\"id\\":\\"u-bigmodel-1\\",\\"username\\":\\"zhang\\"}"';
     expect(
       decodeWebViewJsStringResult(encoded),
-      '{"id":"早前批次","username":"zhang"}',
+      '{"id":"u-bigmodel-1","username":"zhang"}',
       reason: '修复前（手工剥首尾引号）得到 {\\\"id\\\":...}——反斜杠在 JSON '
           '串外非法，下游 jsonDecode 必败',
     );
     // 读回值可直接被身份收割解析。
     final identity = jsonDecode(decodeWebViewJsStringResult(encoded) ?? '');
-    expect((identity as Map)['id'], '早前批次');
+    expect((identity as Map)['id'], 'u-bigmodel-1');
   });
 
   test('WebView 返回值解码：JWT/无引号兜底/null 边界', () {
@@ -195,5 +195,22 @@ void main() {
         reason: '值内引号转义正确还原');
     expect(decodeWebViewJsStringResult('plain-no-quotes'), 'plain-no-quotes',
         reason: '非 JSON 编码形态回落旧剥壳逻辑（个别通道原样返回兜底）');
+  });
+
+  // iOS WKWebView 形态（ios-adaptation-3 钉死）：runJavaScriptReturningResult
+  // 对字符串按原样（非 JSON 编码）返回的概率形态——现有回落分支天然
+  // 覆盖，此处钉住防未来重构破坏。
+  test('WebView 返回值解码：WKWebView 原样形态（无外层引号）', () {
+    expect(decodeWebViewJsStringResult('eyJhbGciOi.payload.sig'),
+        'eyJhbGciOi.payload.sig',
+        reason: '裸 JWT（iOS 原样返回）——jsonDecode 失败后原样透传');
+    expect(decodeWebViewJsStringResult('say "hi" ok'), 'say "hi" ok',
+        reason: '含内层引号的裸值——无外层引号可剥，原样透传');
+    expect(
+      decodeWebViewJsStringResult('{"id":"u-1"}'),
+      '{"id":"u-1"}',
+      reason: '整体恰为合法 JSON 的裸值——jsonDecode 得 Map 非 String，'
+          '落回落分支原样透传（不吞内容）',
+    );
   });
 }

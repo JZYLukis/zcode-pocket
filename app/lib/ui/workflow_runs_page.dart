@@ -15,7 +15,7 @@ import 'file_preview.dart' show HtmlPreviewPage;
 import 'share_flow.dart'
     show formatArtifactBytes, shareArtifactRemotely, shareBytesAsFile;
 
-/// 工作流 run 目录与详情（早前批次，2026-10-30 用户拍板「更新
+/// 工作流 run 目录与详情（workflow-runs-1，2026-10-30 用户拍板「更新
 /// 工作流及闲时执行部分」）：官方 v4 只读查询族——workflowRuns（run 摘
 /// 要，五态）/workflowRunEvents（journal 事件分页）/workflowRunArtifacts
 /// （产物清单）/workflowRunArtifactRead（内容产物字节 ≤512KiB 分块，形
@@ -477,7 +477,7 @@ class _WorkflowRunsPageState extends State<WorkflowRunsPage> {
                               ),
                             ),
                               const SizedBox(width: 8),
-                              // 视觉补跑必修（早前批次，Visual B
+                              // 视觉补跑必修（Visual B
                               // 像素实测）：原先 Flexible(状态) 与 Expanded(标题)
                               // 双分把行宽对半分——状态只画约 55dp、剩余约
                               // 87dp 全落行尾=右缘死区（时间不靠右、不同状态

@@ -1,4 +1,4 @@
-// 应用锁遮罩（早前批次）：挂在 MaterialApp.builder（Navigator 之上）
+// 应用锁遮罩（app-lock-1）：挂在 MaterialApp.builder（Navigator 之上）
 // ——不替换 child（保路由状态），Stack 覆盖 + AbsorbPointer + 停动画。
 // 返回键不拦（builder 层无法 PopScope）：返回=退出 app，锁层仍在，
 // 不泄露内容，可接受（注释留痕；如需严格拦截改 navigatorKey+路由方案）。

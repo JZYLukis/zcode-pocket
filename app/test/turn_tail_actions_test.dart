@@ -324,12 +324,12 @@ void main() {
     await tester.pumpWidget(_host(app));
     await tester.tap(find.text('open'));
     await _pump(tester);
-    expect(find.byKey(const ValueKey('早前批次')), findsOneWidget);
+    expect(find.byKey(const ValueKey('file-summary-card-2')), findsOneWidget);
     // 卡外距=0。
     final card = tester.widget<Container>(
       find
           .ancestor(
-            of: find.byKey(const ValueKey('早前批次')),
+            of: find.byKey(const ValueKey('file-summary-card-2')),
             matching: find.byType(Container),
           )
           .first,

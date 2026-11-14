@@ -36,7 +36,7 @@ class _CatalogApp extends AppState {
           'modelThoughtLevels': ['off', 'low', 'medium', 'high'],
         },
         {
-          'value': 'prov-a/早前批次',
+          'value': 'prov-a/claude-sonnet-4',
           'name': 'Claude',
           'modelProviderId': 'prov-a',
         },
@@ -669,7 +669,7 @@ void main() {
           'id': 'model',
           'name': 'Model',
           'options': [
-            for (final pid in ['bigmodel-api', '早前批次'])
+            for (final pid in ['bigmodel-api', 'bigmodel-api-2'])
               {
                 'value': '$pid/GLM-5.3',
                 'name': 'GLM-5.3',
@@ -706,7 +706,7 @@ void main() {
     // 两组都在场（各 1 行）且组头文字互不相同。
     final groupHeaders = find.byKey(const ValueKey('model-group-bigmodel-api'));
     expect(groupHeaders, findsOneWidget);
-    expect(find.byKey(const ValueKey('早前批次')),
+    expect(find.byKey(const ValueKey('model-group-bigmodel-api-2')),
         findsOneWidget);
     final labels = tester
         .widgetList<Text>(find.descendant(
@@ -717,7 +717,7 @@ void main() {
         .toSet();
     final labels2 = tester
         .widgetList<Text>(find.descendant(
-          of: find.byKey(const ValueKey('早前批次')),
+          of: find.byKey(const ValueKey('model-group-bigmodel-api-2')),
           matching: find.byType(Text),
         ))
         .map((t) => t.data)

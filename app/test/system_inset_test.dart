@@ -1,4 +1,4 @@
-// 早前批次 r3：底部安全区原生直推通道（vivo MediaQuery 透传
+// dual-pane-collapse-2 r3：底部安全区原生直推通道（vivo MediaQuery 透传
 // 断裂的终局方案——原生监听 insets 推 dp 值，Dart ValueNotifier 接收）。
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

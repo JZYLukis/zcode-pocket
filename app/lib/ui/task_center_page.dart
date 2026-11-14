@@ -84,7 +84,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   _paneSelection;
   bool _wideLayout = false;
 
-  /// 早前批次：宽屏双栏左栏收起态（vivo X Fold 6 真机反馈
+  /// dual-pane-collapse-1：宽屏双栏左栏收起态（vivo X Fold 6 真机反馈
   /// 「左栏没有展开收起选项」）。UiPrefs 持久化跨会话记忆；右栏无选中
   /// （空态）时自动展开——收起只为专注看会话，无会话可看时收起无意义。
   bool _paneCollapsed = false;
@@ -315,7 +315,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     await _runBatchOp('已删除', (app, id) => app.deleteTask(id));
   }
 
-  /// 批3（早前批次）：上次看到的活跃设备——切电脑（含通知
+  /// 批3（multi-account-ux-1）：上次看到的活跃设备——切电脑（含通知
   /// 直达 activate 的隐式切换）后清掉跨电脑残留状态（搜索词/多选/右栏）。
   String? _lastSeenDeviceSid;
   AppState? _appRef;
@@ -352,7 +352,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 早前批次：收起态从 UiPrefs 预填（首帧同步 seed，
+    // dual-pane-collapse-1：收起态从 UiPrefs 预填（首帧同步 seed，
     // 避免展开→收起闪烁）。
     if (!_paneCollapsedSeeded) {
       _paneCollapsedSeeded = true;
@@ -360,7 +360,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
     }
   }
 
-  /// 早前批次：切换左栏收起/展开（持久化）。
+  /// dual-pane-collapse-1：切换左栏收起/展开（持久化）。
   void _togglePaneCollapsed() {
     // ③：收起时顺手收搜索/多选——否则状态被藏进收起的左栏，返回键
     // 连按无可见反馈（第一次按在清不可见的搜索态）。
@@ -951,7 +951,7 @@ class _TaskCenterPageState extends State<TaskCenterPage> {
           },
           child: Scaffold(
             appBar: _GlassAppBar(
-              // 早前批次 批1（2026-11-04 拍板）：多账号时顶栏
+              // multi-account-ux-1 批1（2026-11-04 拍板）：多账号时顶栏
               // 显示「电脑名 · 账号显示名」（备注名优先）；单账号/无账号
               // 维度维持电脑名。
               title: app.activeAccountLabel == null
@@ -1522,7 +1522,7 @@ List<AccountV2Profile> otherComputerCandidates(
     .where((p) => p.deviceSid != activeSid && !p.invalid)
     .toList();
 
-/// 批4（早前批次）：其他电脑聚合区的任务行——缓存快照只读
+/// 批4（multi-account-ux-1）：其他电脑聚合区的任务行——缓存快照只读
 /// 展示（紧凑单行：标题+电脑标识前缀），点击=activate 该电脑后经
 /// pendingOpenTask 打开（复用通知直达编排）。
 class _OtherComputerTaskRow extends StatelessWidget {
@@ -1578,7 +1578,7 @@ class _TaskHomeView extends StatefulWidget {
   /// 非在线预览：仅显示上次内容，running/waiting 清洗为 idle。
   final bool stale;
 
-  /// 双栏紧凑档（早前批次）：任务行=官方桌面侧栏式单行小标题。
+  /// 双栏紧凑档（fold-dual-pane-2）：任务行=官方桌面侧栏式单行小标题。
   final bool compact;
 
   /// 右栏当前打开的会话（=taskId）——紧凑行选中填充信号。
@@ -1637,7 +1637,7 @@ class _TaskHomeView extends StatefulWidget {
     required this.fullyExpandedGroups,
     required this.onProgressChanged,
     this.onLongPress,
-    // 早前批次 r3/r4（用户反馈：把手占左栏宽度不可取）——
+    // dual-pane-collapse-2 r3/r4（用户反馈：把手占左栏宽度不可取）——
     // 收起钮在「最近/项目」分段行尾（⋮ 右侧），宽屏恒可用。
     this.onPaneCollapse,
   });
@@ -2220,7 +2220,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
                   );
                 case TaskHomeItemKind.more:
                   final key = item.groupKey!;
-                  // 紧凑档（早前批次）：官方桌面「显示更多」=低灰文字
+                  // 紧凑档（fold-dual-pane-2）：官方桌面「显示更多」=低灰文字
                   // 链——窄栏里品牌色实心钮视觉过重。
                   // 优化批 #13：默认档组感知（项目组 3/最近视图时间桶 5），
                   // 与 buildTaskHomeItems 的 _resolveGroupVisible 同口径。
@@ -2246,7 +2246,7 @@ class _TaskHomeViewState extends State<_TaskHomeView> {
                     child: Row(
                       children: [
                         // 验收#9（优化意见 C）：窄屏档撤蓝底主按钮——
-                        // 统一低灰文字钮（对齐 早前批次 宽屏档；用户
+                        // 统一低灰文字钮（对齐 fold-dual-pane-2 宽屏档；用户
                         // 拍板弱化：原品牌色实心钮太抢眼且占空间）。
                         Expanded(
                           child: TextButton.icon(
@@ -2469,7 +2469,7 @@ class _TaskList extends StatelessWidget {
   final DateTime? homeNow;
   final bool holdForTaskNavigation;
 
-  /// 双栏紧凑档（早前批次）：宽屏左栏任务行=官方桌面侧栏式
+  /// 双栏紧凑档（fold-dual-pane-2）：宽屏左栏任务行=官方桌面侧栏式
   /// 单行小标题（图标槽+标题+相对时间），窄屏保持卡片。
   final bool compact;
 
@@ -3911,7 +3911,7 @@ class _SummaryStrip extends StatelessWidget {
   }
 }
 
-/// 双栏左栏紧凑任务行（早前批次，用户 2026-10-29 反馈「任务仅需
+/// 双栏左栏紧凑任务行（fold-dual-pane-2，用户 2026-10-29 反馈「任务仅需
 /// 一个小标题」）：对标官方桌面侧栏——单行「图标槽+标题+相对时间」，
 /// 无卡片无状态徽标；状态压进图标槽（运行=spinner、未读=蓝点、其余
 /// 留白），选中=整行低饱和填充（官方唯一信号，文字不变色）。

@@ -302,7 +302,7 @@ void main() {
           title: '运行',
         )),
       );
-      expect(find.byKey(const ValueKey('早前批次')),
+      expect(find.byKey(const ValueKey('workflow-artifact-share-art-1')),
           findsOneWidget,
           reason: '内容产物必须有分享入口');
       expect(find.byKey(const ValueKey('workflow-artifact-share-art-dash')),
@@ -310,7 +310,7 @@ void main() {
           reason: '看板四类无内容字节，不给分享入口');
 
       await tester
-          .tap(find.byKey(const ValueKey('早前批次')));
+          .tap(find.byKey(const ValueKey('workflow-artifact-share-art-1')));
       await tester.pump(const Duration(milliseconds: 200));
       expect(find.text('正在获取产物…'), findsOneWidget);
 
@@ -343,7 +343,7 @@ void main() {
         )),
       );
       await tester
-          .tap(find.byKey(const ValueKey('早前批次')));
+          .tap(find.byKey(const ValueKey('workflow-artifact-share-art-1')));
       for (var i = 0; i < 10; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -376,7 +376,7 @@ void main() {
           title: '运行',
         )),
       );
-      await tester.tap(find.byKey(const ValueKey('早前批次')));
+      await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
       for (var i = 0; i < 10; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -412,7 +412,7 @@ void main() {
         )),
       );
       await tester
-          .tap(find.byKey(const ValueKey('早前批次')));
+          .tap(find.byKey(const ValueKey('workflow-artifact-share-art-1')));
       for (var i = 0; i < 10; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -496,7 +496,7 @@ void main() {
           title: '运行',
         )),
       );
-      await tester.tap(find.byKey(const ValueKey('早前批次')));
+      await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
       for (var i = 0; i < 12; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -536,7 +536,7 @@ void main() {
           title: '运行',
         )),
       );
-      await tester.tap(find.byKey(const ValueKey('早前批次')));
+      await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
       for (var i = 0; i < 12; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
@@ -553,7 +553,7 @@ void main() {
 
       // 未截断（1 块）：入口在场且可分享。
       _ShareApp.blockCount = 1;
-      await tester.tap(find.byKey(const ValueKey('早前批次')));
+      await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }

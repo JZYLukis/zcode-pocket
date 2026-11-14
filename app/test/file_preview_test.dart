@@ -12,7 +12,7 @@ import 'package:zcode_pocket/ui/conversation_page.dart';
 import 'package:zcode_pocket/ui/diff_viewer_page.dart';
 import 'package:zcode_pocket/ui/file_preview.dart';
 
-/// 生成文件预览·网页档（早前批次，2026-10-29 用户拍板「只做 html
+/// 生成文件预览·网页档（file-preview-1，2026-10-29 用户拍板「只做 html
 /// 的部分」）：协议无任意文件字节读取通道——唯一原生路径=新建 html 全文
 /// 随 fileChanges 到达，本地 WebView 渲染（零提示词零额度）。图片/PDF
 /// 档经用户拍板不做。本文件锁：纯函数（全文拼装/扩展名判定/导航白名单）
@@ -301,7 +301,7 @@ void main() {
       );
     });
 
-    test('injectPreviewCsp：connect-src 关死且注入 head（早前批次 安全组）', () {
+    test('injectPreviewCsp：connect-src 关死且注入 head（review-fix-1 安全组）', () {
       final injected = injectPreviewCsp('<html><head><title>x</title></head><body>y</body></html>');
       expect(injected, contains("connect-src 'none'"));
       expect(injected.indexOf('Content-Security-Policy'),
@@ -493,7 +493,7 @@ void main() {
     for (var i = 0; i < 12; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('file-summary-card-2')));
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -543,7 +543,7 @@ void main() {
     for (var i = 0; i < 12; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('file-summary-card-2')));
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }

@@ -234,18 +234,18 @@ void main() {
       }
 
       // 首题（单选）走自定义答案 → 自动进第二题（单选自定义顶替选项）。
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+      await tapVisible(find.byKey(const ValueKey('q-custom-open-0')));
       await tester.enterText(
-          find.byKey(const ValueKey('早前批次')), 'LevelDB');
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+          find.byKey(const ValueKey('q-custom-input-0')), 'LevelDB');
+      await tapVisible(find.byKey(const ValueKey('q-custom-confirm-0')));
       expect(find.text('要'), findsOneWidget, reason: '单选自定义确认后自动推进');
 
       // 末题（多选）不勾任何选项、只填自定义 → 修复前提交钮恒禁用
       // （「选择后继续」），本断言红。
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+      await tapVisible(find.byKey(const ValueKey('q-custom-open-1')));
       await tester.enterText(
-          find.byKey(const ValueKey('早前批次')), '视数据量定');
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+          find.byKey(const ValueKey('q-custom-input-1')), '视数据量定');
+      await tapVisible(find.byKey(const ValueKey('q-custom-confirm-1')));
       expect(find.text('选择后继续'), findsNothing,
           reason: '修复前：多选仅自定义时提交钮死锁在禁用文案');
       expect(find.textContaining('提交（已选 2 题）'), findsOneWidget,
@@ -283,10 +283,10 @@ void main() {
       }
 
       // 首题单选自定义 → 推进到第二题；‹ 回看第一题。
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+      await tapVisible(find.byKey(const ValueKey('q-custom-open-0')));
       await tester.enterText(
-          find.byKey(const ValueKey('早前批次')), 'LevelDB');
-      await tapVisible(find.byKey(const ValueKey('早前批次')));
+          find.byKey(const ValueKey('q-custom-input-0')), 'LevelDB');
+      await tapVisible(find.byKey(const ValueKey('q-custom-confirm-0')));
       await tapVisible(find.byKey(const ValueKey('question-prev')));
       expect(find.text('Redis'), findsOneWidget);
       // 修复前：› 与主按钮都只看 _qSelected（自定义题为空集）→ 双双禁用，

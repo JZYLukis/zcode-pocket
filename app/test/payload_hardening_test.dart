@@ -222,10 +222,10 @@ void main() {
         },
       ]);
       expect(
-        () => migrateAnchorIndexAfterPrepend('早前批次', items),
+        () => migrateAnchorIndexAfterPrepend('turn-tail-7', items),
         returnsNormally,
       );
-      expect(migrateAnchorIndexAfterPrepend('早前批次', items), 1);
+      expect(migrateAnchorIndexAfterPrepend('turn-tail-7', items), 1);
       expect(reasoningDurationMs({'durationMs': '8000'}), 8000);
     });
   });

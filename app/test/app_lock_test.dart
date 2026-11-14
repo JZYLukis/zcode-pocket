@@ -1,4 +1,4 @@
-// 应用锁（早前批次）：纯逻辑（autoLock 判定/PIN hash/爆破冷却/mode
+// 应用锁（app-lock-1）：纯逻辑（autoLock 判定/PIN hash/爆破冷却/mode
 // 解析）+ 锁遮罩旅程（PIN 模式解锁/系统模式通道）+ 设置页三态切换。
 import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';

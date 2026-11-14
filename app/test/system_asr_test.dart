@@ -390,7 +390,7 @@ void main() {
       expect(find.textContaining('活着'), findsOneWidget);
     });
 
-    testWidgets('早前批次：引擎 error 先到立即失败（不再悬挂在拾音态）', (tester) async {
+    testWidgets('review-fix-1：引擎 error 先到立即失败（不再悬挂在拾音态）', (tester) async {
       grantMic();
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(body: VoiceInputSheet(onSend: (_) {})),
@@ -405,7 +405,7 @@ void main() {
               'completer=UI 悬挂+unhandled async error');
     });
 
-    testWidgets('早前批次：「直接用当前文字」立即进预览（原为无操作）', (tester) async {
+    testWidgets('review-fix-1：「直接用当前文字」立即进预览（原为无操作）', (tester) async {
       grantMic();
       await tester.pumpWidget(AppStateScope(
         app: AppState(),
@@ -438,7 +438,7 @@ void main() {
       expect(find.text('说完了'), findsNothing, reason: '已离开拾音态');
     });
 
-    testWidgets('早前批次：VOICE_HMS 开但插件缺席 → 错配自愈回退系统通道', (tester) async {
+    testWidgets('review-fix-1：VOICE_HMS 开但插件缺席 → 错配自愈回退系统通道', (tester) async {
       sheet.debugVoiceHmsOverride = true;
       // HMS 通道 mock 成缺席（ping=false，等同原生插件不在包）。
       const hmsCh = MethodChannel('companion/hms_asr');

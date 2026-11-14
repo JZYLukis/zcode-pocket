@@ -212,7 +212,7 @@ class AppChartPalette {
     required this.sourceColors,
   });
 
-  /// 用量图表 6 色（浅=官方 --早前批次..6 浅色近似；深=官方
+  /// 用量图表 6 色（浅=官方 --color-usage-chart-1..6 浅色近似；深=官方
   /// 深色 1..6：#4099FF/#46BF72/#7B5CE5/#FF5C5C/#FF8A30/#42C8C8）。
   final List<Color> series;
 
@@ -350,7 +350,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     ),
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-light 早前批次..6（styles.css，2026-10-26
+        // 官方 zai-light usage-chart-1..6（styles.css，2026-10-26
         // 对齐轮替换——原 5 色系 tailwind-600 自选非官方）。
         Color(0xFF0B7FFF), // chart-1 蓝
         Color(0xFF1E8A3E), // chart-2 绿
@@ -474,7 +474,7 @@ class AppThemeSpec extends ThemeExtension<AppThemeSpec> {
     // 官方深色实为蓝阶——与浅色同型偏差，留痕）；来源 7 色=裁量提亮版。
     charts: const AppChartPalette(
       series: [
-        // 官方 zai-dark 早前批次..6（前 5 色原已一致，补第 6 色）。
+        // 官方 zai-dark usage-chart-1..6（前 5 色原已一致，补第 6 色）。
         Color(0xFF4099FF), // chart-1
         Color(0xFF46BF72), // chart-2
         Color(0xFF7B5CE5), // chart-3

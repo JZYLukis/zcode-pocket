@@ -338,7 +338,7 @@ class TimelineMarkerItem extends ChatItem {
   } else if (type == 'compact') {
     final status = '${marker['status'] ?? ''}';
     final auto = '${marker['origin'] ?? ''}' == 'auto';
-    // 早前批次：文案对齐官方 zh-CN（contextCompaction.*
+    // compact-command-1：文案对齐官方 zh-CN（contextCompaction.*
     // started=正在压缩上下文/skipped=已是最新/completedAuto=已自动
     // 压缩/completed=已压缩）。
     label = switch (status) {

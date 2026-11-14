@@ -172,11 +172,11 @@ void main() {
     await tester.pumpWidget(_host(app));
     await _pump(tester);
     await scrollListToBottom(tester);
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('file-summary-card-2')));
     // 明细异步到达（fileChanges 桩）→补吸底→内容滚入。
     await _pump(tester);
     expect(
-      bottomVisible(tester, find.byKey(const ValueKey('早前批次'))),
+      bottomVisible(tester, find.byKey(const ValueKey('file-summary-card-2'))),
       isTrue,
       reason: '首次展开（明细异步加载）后文件卡须滚入可视区（吸底清单#3，'
           '2026-10-24 真机实锤"有时不吸底"的回归靶）',

@@ -4,6 +4,7 @@ import 'dart:convert' show jsonDecode, jsonEncode;
 import 'package:flutter/material.dart' hide Text;
 
 import '../core/localized_text.dart';
+import '../core/webview_errors.dart';
 
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -235,13 +236,15 @@ class _LoginPageState extends State<LoginPage> {
               'resource-error: ${e.errorCode} ${e.description} '
               'main=${e.isForMainFrame} url=${e.url}',
             );
-            // OAuth 流程多次跨域重定向期间，Android
-            // WebView 对主框架报 ERR_ABORTED(-1)（被新导航取代）是已知
-            // 常态——不过滤会把进行中的授权流程整页换成错误视图。真实
-            // 失败（DNS/TLS 等）仍走错误态。
-            const errAborted = -1;
-            if (e.isForMainFrame == true &&
-                e.errorCode != errAborted &&
+            // 取消导航过滤平台化（ios-adaptation-3）：Android ERR_ABORTED
+            // (-1)/iOS NSURLErrorCancelled(-999) 都是 OAuth 跨域重定向
+            // 常态，不过滤会把进行中的授权流程整页换成错误视图；子资源
+            // 错误一律不拦（WKWebView 上报更频繁）。真实失败（DNS/TLS
+            // 等）仍走错误态。纯函数见 core/webview_errors.dart。
+            if (isFatalWebViewMainFrameError(
+                  e.errorCode,
+                  e.isForMainFrame,
+                ) &&
                 mounted) {
               setState(() => _loadError = '${e.errorCode}: ${e.description}');
             }
@@ -405,7 +408,7 @@ class _LoginPageState extends State<LoginPage> {
       // 轮询+不 pop"的哑死态。连续失败 5 次放弃（保留页面让用户手动退）。
       String? savedAccountId;
       try {
-        // 早前批次 批2（2026-11-04 拍板）：登录只入库不改当前
+        // multi-account-ux-1 批2（2026-11-04 拍板）：登录只入库不改当前
         // 账号。用 store 默认智能语义（setActive=null：仅当 lastUsed 尚
         // 空=首账号时自动设当前）—— 修正：显式 false 会把
         // 「首账号自动设当前」一并短路，全新安装后 lastUsed 永不存在，

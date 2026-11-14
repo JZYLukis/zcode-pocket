@@ -190,7 +190,7 @@ class _SettingsAccountsPageState extends State<SettingsAccountsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  // 早前批次 批1：备注名优先（如「公司订阅」），
+                  // multi-account-ux-1 批1：备注名优先（如「公司订阅」），
                   // 未设置回退 provider；备注名是用户自定内容不翻译。
                   account.label.trim().isNotEmpty
                       ? account.label.trim()

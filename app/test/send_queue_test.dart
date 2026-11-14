@@ -445,7 +445,7 @@ void main() {
       );
     });
 
-    testWidgets('重放钉 commandId：重试用同一 ID（早前批次 双发红线）', (tester) async {
+    testWidgets('重放钉 commandId：重试用同一 ID（review-fix-1 双发红线）', (tester) async {
       final store = _MemorySendQueueStore({});
       final app = _QueueApp(store);
       await tester.pumpWidget(_host(app, sessionId: 's1'));

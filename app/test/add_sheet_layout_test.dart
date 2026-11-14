@@ -43,7 +43,7 @@ Future<void> _sheetEntriesVisible(WidgetTester tester, double w) async {
   ]) {
     expect(f, findsOneWidget);
   }
-  // 早前批次：查看型入口已移出面板；「收集产物」随 downloads-
+  // entry-polish-1：查看型入口已移出面板；「收集产物」随 downloads-
   // hub-1 迁至产物下载页（顶栏入口），不再占面板位。
   expect(find.byKey(const ValueKey('add-usage')), findsNothing);
   expect(find.byKey(const ValueKey('add-collect-artifacts')), findsNothing);

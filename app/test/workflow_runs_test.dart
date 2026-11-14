@@ -14,7 +14,7 @@ import 'package:zcode_pocket/transport/rpc_frame_transport.dart';
 import 'package:zcode_pocket/ui/conversation_page.dart';
 import 'package:zcode_pocket/ui/workflow_runs_page.dart';
 
-/// 工作流 run 查询族 + 闲时任务卡（早前批次，2026-10-30 用户拍板
+/// 工作流 run 查询族 + 闲时任务卡（workflow-runs-1，2026-10-30 用户拍板
 /// 「更新工作流及闲时执行部分」）：官方 v4 只读族（workflowRuns/Events/
 /// Artifacts/ArtifactRead）+ OffPeakCreate 工具行卡片（官方
 /// offpeak-create.tsx 输出解析语义对位）。
@@ -232,7 +232,7 @@ void main() {
     expect(offPeakCreateSummary(const {}), isNull);
   });
 
-  testWidgets('早前批次 销账：目录空态呈现（empty-error 账实一致）', (tester) async {
+  testWidgets('review-fix-1 销账：目录空态呈现（empty-error 账实一致）', (tester) async {
     final app = _WfApp(
       runsResult: const {'runs': []},
       detailResult: const {'events': [], 'artifacts': []},
@@ -244,7 +244,7 @@ void main() {
         reason: '空态文案（此前 ui-coverage 声称覆盖但零断言）');
   });
 
-  testWidgets('早前批次 销账：目录加载失败可重试（empty-error 账实一致）', (tester) async {
+  testWidgets('review-fix-1 销账：目录加载失败可重试（empty-error 账实一致）', (tester) async {
     final app = _WfApp(
       runsResult: const {'runs': []},
       detailResult: const {'events': [], 'artifacts': []},
@@ -454,10 +454,10 @@ void main() {
     // （视觉走查）：产物卡此前零间距叠放+行高 39.7——两张卡
     // 像一整块且低于 44 触控/可读下限。修=相邻 6dp 间距+行高 ≥44。
     final cardA = tester.getRect(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('workflow-artifact-art-1')),
     );
     final cardB = tester.getRect(
-      find.byKey(const ValueKey('早前批次')),
+      find.byKey(const ValueKey('workflow-artifact-art-2')),
     );
     expect(cardB.top - cardA.bottom, greaterThanOrEqualTo(6),
         reason: '相邻产物卡垂直间距 ≥6dp（修复前=0）');
@@ -466,14 +466,14 @@ void main() {
     expect(cardB.height, greaterThanOrEqualTo(44));
 
     // 点产物 → 分块读取 → 文本预览页。
-    await tester.tap(find.byKey(const ValueKey('早前批次')));
+    await tester.tap(find.byKey(const ValueKey('workflow-artifact-art-1')));
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.textContaining('今日完成 3 项工作'), findsOneWidget);
   });
 
-  // 视觉补跑必修（早前批次，Visual B 审查实测 87dp 死区）：
+  // 视觉补跑必修（Visual B 审查实测 87dp 死区）：
   // run 行状态/时间必须贴卡片右缘——旧实现 Expanded+Flexible 双分，
   // 状态只画半行宽的一小段、剩余空间全落行尾（时间不靠右+长标题提前
   // 省略）。红=修复前 card.right - time.right ≈ 99dp（87 死区+12 内边距）。

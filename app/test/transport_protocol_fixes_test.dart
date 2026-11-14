@@ -23,7 +23,7 @@ class _FixChannel extends ChannelClient {
   /// createSession 的应答（默认 accepted）；测试可换成 duplicate/rejected。
   Map<String, dynamic> createSessionReply = {
     'status': 'accepted',
-    'result': {'type': 'createSession', 'sessionId': '早前批次'},
+    'result': {'type': 'createSession', 'sessionId': 'new-s-1'},
   };
 
   /// createSession 应答闸门（制造"已发出、未返回"的窗口）。
@@ -292,13 +292,13 @@ void main() {
     });
 
     test('无活跃执行时不带该键（官方可选字段）', () async {
-      final sub = await conv.subscribe('早前批次');
+      final sub = await conv.subscribe('s-stop-2');
       addTearDown(sub.dispose);
       sub.state.applyFrame(
         _snapshotFrame(logEpoch: 'e1', control: {'phase': 'idle'}),
         onGap: () => fail('不应 gap'),
       );
-      await conv.stop('早前批次');
+      await conv.stop('s-stop-2');
       final envelope = bridge.channel.lastCommandEnvelope('stop');
       expect((envelope['payload'] as Map).containsKey('expectedForegroundExecutionId'),
           isFalse);

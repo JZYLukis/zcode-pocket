@@ -261,7 +261,7 @@ void main() {
 
   test('createSession 的 commandId 转正到新会话键（开源审查 G1 P2-2/G2 P2-5）', () async {
     final newSid = await conv.createSession('ws-1', firstText: 'hi');
-    expect(newSid, '早前批次');
+    expect(newSid, 'new-s-1');
     expect(bridge._channel.commandIds, hasLength(1));
     expect(
       conv.lastCommandIdOf(newSid),

@@ -290,7 +290,7 @@ void main() {
       expect(opens.single['project'], isA<Map<dynamic, dynamic>>());
     });
 
-    test('redrive 不劫持已恢复的工作区（早前批次 A5：触发时复查桥状态）', () async {
+    test('redrive 不劫持已恢复的工作区（review-fix-1 A5：触发时复查桥状态）', () async {
       unawaited(stack.switchToProject(_p2));
       // 用户两连发（opens 1-2）+ 首次重驱动重放自身也是两连发（opens 3-4）
       // ——等重放完全落地（opening 回落=finally 已排定 3s 档下一次）再设闸。

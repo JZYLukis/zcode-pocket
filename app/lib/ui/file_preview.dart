@@ -9,7 +9,7 @@ import '../core/theme.dart';
 import '../state/app_state_scope.dart';
 import 'share_flow.dart' show shareBytesAsFile;
 
-/// 生成文件预览·网页档（早前批次，2026-10-29 用户拍板「只做 html
+/// 生成文件预览·网页档（file-preview-1，2026-10-29 用户拍板「只做 html
 /// 的部分」）：官方协议无任意文件字节读取通道（zcode-protocol-v4
 /// V4_METHODS 全量核实；官方 web 远程同样抑制 html 预览卡，见
 /// assistantPreviewCards.ts:311「Web 远控没有本地端口转发或 HTML 运行

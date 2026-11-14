@@ -701,7 +701,7 @@ class _TableViewState extends State<_TableView> {
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: context.colors.borderFaint),
       ),
-      // 视觉补跑必修（早前批次，Visual A 复签终版）：5 列
+      // 视觉补跑必修（Visual A 复签终版）：5 列
       // 形态右缘硬切零提示。第一轮只加底部 Scrollbar——A 复签实锤
       // thumb 落在全表底部（34 行≈1630dp 折叠线外），正视区仍零提示；
       // 且内容收缩后卡片右侧留 85dp 空白带。终版=①minWidth 填满卡片
@@ -941,7 +941,7 @@ class _ChartView extends StatelessWidget {
               chartType: allNumeric ? spec.chartType : 'bar',
               gridColor: context.colors.borderFaint,
               lineColor: context.colors.foregroundSubtlest,
-              // 视觉补跑必修（早前批次，Visual A）：官方
+              // 视觉补跑必修（Visual A）：官方
               // ArtifactChartView 有 XAxis/YAxis+悬浮 tooltip，手机无
               // hover——无刻度=真人只能读形状读不出任何数值。补=左缘
               // y 刻度（网格线对位）+首末 x 标签。

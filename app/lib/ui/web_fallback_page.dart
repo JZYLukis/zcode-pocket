@@ -6,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../core/localized_text.dart';
 import '../core/theme.dart';
+import '../core/webview_errors.dart';
 
 /// 官方网页版远控备用入口（阶段 4.2 最小版 / -8B，2026-10-29 批次）：
 /// 零协议依赖的逃生舱——原生协议漂移/握手失败时仍可用官方 Web 远控。
@@ -87,12 +88,14 @@ class _WebFallbackPageState extends State<WebFallbackPage> {
             // 下一次导航（刷新/点链接触发 onPageStarted）为止。
           },
           onWebResourceError: (e) {
-            // OAuth 多次跨域重定向期间，Android WebView 对主框架报
-            // ERR_ABORTED(-1)（被新导航取代）是常态——不过滤会把进行中
-            // 的授权流程整页换成错误提示（对齐 login_page 同款）。
-            const errAborted = -1;
-            if (e.isForMainFrame == true &&
-                e.errorCode != errAborted &&
+            // 取消导航过滤平台化（ios-adaptation-3，对齐 login_page）：
+            // Android ERR_ABORTED(-1)/iOS NSURLErrorCancelled(-999) 都是
+            // 跨域重定向常态；子资源错误一律不拦。纯函数见
+            // core/webview_errors.dart。
+            if (isFatalWebViewMainFrameError(
+                  e.errorCode,
+                  e.isForMainFrame,
+                ) &&
                 mounted) {
               setState(() => _loadError = '${e.errorCode}: ${e.description}');
             }

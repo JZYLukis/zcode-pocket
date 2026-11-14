@@ -252,7 +252,7 @@ class DeviceStackRegistry {
     String? accountId,
     bool forceRebind = false,
   }) async {
-    // 早前批次 批2（2026-11-04 拍板）：同一台电脑改绑到另一个
+    // multi-account-ux-1 批2（2026-11-04 拍板）：同一台电脑改绑到另一个
     // 账号属破坏性操作（旧账号的连接将失效）——已绑定且账号将变时抛
     // [AccountRebindRequired] 由调用方弹确认，确认后 forceRebind 重调。
     final probeSid = params.deviceSid?.trim() ?? '';
@@ -745,7 +745,7 @@ class DeviceStackRegistry {
   }
 }
 
-/// 换账号重扫同一台电脑时的确认需求（早前批次 批2）。
+/// 换账号重扫同一台电脑时的确认需求（multi-account-ux-1 批2）。
 /// 调用方捕获后弹「该电脑当前绑定 {旧账号}，改为 {新账号}？」；确认后
 /// 以 `addV2Profile(..., forceRebind: true)` 重调完成改绑。
 class AccountRebindRequired implements Exception {

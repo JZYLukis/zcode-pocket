@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme.dart';
 import 'core/l10n.dart';
+import 'platform/capabilities.dart';
 import 'state/app_state.dart';
 import 'state/app_state_scope.dart';
 import 'ui/app_lock_gate.dart';
@@ -44,14 +45,17 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
     // 但持有引用并在 dispose 释放——测试
     // 反复 pumpWidget 不再累积 observer/滞留已 dispose 的 AppState。
     _app.appLock.attach();
-  // 应用内更新（早前批次）：启动 30s 后静默检查一次（24h 节流
+  // 应用内更新（in-app-update-1）：启动 30s 后静默检查一次（24h 节流
   // 在 UiPrefs；失败无感；弹窗走 navigatorKey）。Timer 挂 State——widget
-  // 测试树销毁时必须取消（pending timer 断言）。
-  _updateCheckTimer = Timer(const Duration(seconds: 30), () {
-    final ctx = updateNavigatorKey.currentContext;
-    if (ctx == null || !mounted) return;
-    unawaited(checkAndPrompt(ctx, manual: false));
-  });
+  // 测试树销毁时必须取消（pending timer 断言）。iOS 无侧装更新
+  // （supportsSelfUpdate=false，结构性）不排定时器（ios-adaptation-1）。
+  if (ZpCapabilities.supportsSelfUpdate) {
+    _updateCheckTimer = Timer(const Duration(seconds: 30), () {
+      final ctx = updateNavigatorKey.currentContext;
+      if (ctx == null || !mounted) return;
+      unawaited(checkAndPrompt(ctx, manual: false));
+    });
+  }
   _lifecycleListener = AppLifecycleListener(
       onPause: _app.onAppPaused,
       onResume: _app.onAppResumed,
@@ -176,7 +180,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
                     statusBarIconBrightness: Brightness.dark,
                   ),
             child: MaterialApp(
-              navigatorKey: updateNavigatorKey, // 应用内更新弹窗（早前批次）
+              navigatorKey: updateNavigatorKey, // 应用内更新弹窗（in-app-update-1）
               title: 'ZCode Pocket', // 批次5：旧名清理（改名遗漏，显示名统一）
               debugShowCheckedModeBanner: false,
               locale: L10n.flutterLocale,
@@ -192,7 +196,7 @@ class _ZcodeCompanionAppState extends State<ZcodeCompanionApp>
               // 钳制在 builder 层=对所有路由/弹层统一生效。
               builder: (context, child) => MediaQuery.withClampedTextScaling(
                 maxScaleFactor: 1.3,
-                // 应用锁遮罩（早前批次）：builder 层=Navigator 之上，
+                // 应用锁遮罩（app-lock-1）：builder 层=Navigator 之上，
                 // 覆盖所有路由/弹层；Stack 保 child 树不被卸载。
                 child: AppLockGate(child: child ?? const SizedBox.shrink()),
               ),

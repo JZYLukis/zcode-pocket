@@ -114,7 +114,7 @@ void main() {
     expect(persisted!.channelActive.length, 2);
   });
 
-  test('写失败不更新指纹：同内容下轮重试落盘（早前批次 A8）', () async {
+  test('写失败不更新指纹：同内容下轮重试落盘（review-fix-1 A8）', () async {
     final dir = await Directory.systemTemp.createTemp('dedup-retry');
     addTearDown(() => dir.deleteSync(recursive: true));
     // 模拟瞬时 IO 错误：种子写成功 → 首次变更写失败 → 恢复。

@@ -1,4 +1,4 @@
-// 应用内更新——流程编排与 UI（早前批次）。
+// 应用内更新——流程编排与 UI（in-app-update-1）。
 // checkAndPrompt：统一入口（manual=true 跳过 24h 节流并给无更新反馈）。
 // 静默检查由 app 启动 30s 后触发（失败无感）。
 import 'dart:async';

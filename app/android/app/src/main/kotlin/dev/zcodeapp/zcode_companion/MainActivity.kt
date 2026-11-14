@@ -107,7 +107,7 @@ class MainActivity : FlutterActivity() {
         intent.removeExtra("shortcut_action")
     }
 
-    // 应用锁（早前批次）：系统锁屏凭证验证的 onActivityResult 转发
+    // 应用锁（app-lock-1）：系统锁屏凭证验证的 onActivityResult 转发
     // （AppLockPlugin.requestSystemUnlock 的 pending result 在此收尾）。
     override fun onDestroy() {
         // 对抗审查 ④M3：释放通道插件持有的 Activity 强引用与挂起 result
@@ -123,7 +123,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // 底部安全区直推（早前批次 r3，vivo 任务栏遮挡终局）：
+        // 底部安全区直推（dual-pane-collapse-2 r3，vivo 任务栏遮挡终局）：
         // vivo 展开态任务栏在 rootWindowInsets 正常上报（169px）但 Flutter
         // 的 MediaQuery.viewPadding 拿 0（透传断裂，探针/截图双证）——原生
         // 监听 insets 变化把 bottom（systemBars∪navBars∪cutout 最大值，
@@ -140,7 +140,7 @@ class MainActivity : FlutterActivity() {
         // 系统语音识别通道（2026-10-28 语音泛用批）：标准 SpeechRecognizer
         // 无界面流式接线（companion/sys_asr）。
         SystemAsrPlugin.bind(flutterEngine, this)
-        // 应用锁通道（早前批次）：系统锁屏凭证验证 + FLAG_SECURE 联动。
+        // 应用锁通道（app-lock-1）：系统锁屏凭证验证 + FLAG_SECURE 联动。
         AppLockPlugin.bind(flutterEngine, this)
         readExtras(intent)
         // companion/test 通道（名字沿用历史测试缝）：现承载
@@ -221,7 +221,7 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
-        // 本机应用版本（早前批次）：关于页显示自身 versionName
+        // 本机应用版本（parity-fix-1）：关于页显示自身 versionName
         // （release 含 HEAD 指纹）；零第三方依赖，走包管理器。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/appinfo")
             .setMethodCallHandler { call, result ->
@@ -280,7 +280,7 @@ class MainActivity : FlutterActivity() {
                     result.notImplemented()
                 }
             }
-        // 应用内更新通道（早前批次）：ABI/安装能力/安装器调起/
+        // 应用内更新通道（in-app-update-1）：ABI/安装能力/安装器调起/
         // 官方签名比对（自行构建包跨签名覆盖必失败→提示走手动更新）/
         // 网络类型（移动数据先问流量）。
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "companion/update")
@@ -429,11 +429,11 @@ class MainActivity : FlutterActivity() {
                     // 丢失（候选 06 真机实证：钮位✓遮挡仍在=恒 0）。
                     "currentSystemInset" ->
                         result.success(bottomSystemInsetDp(window.decorView.rootWindowInsets))
-                    // 厂商原始串回传（早前批次）：Dart 侧规范化
+                    // 厂商原始串回传（notify-guide-oem-1）：Dart 侧规范化
                     // 出档位并切换引导文案（oem_vendor.dart）——原生只透传，
                     // 保持两端唯一真值在 Dart（可测）。
                     "manufacturer" -> result.success(Build.MANUFACTURER ?: "")
-                    // 引导页三层兜底（phase3-notify-design，早前批次
+                    // 引导页三层兜底（phase3-notify-design，notify-guide-oem-1
                     // 起按厂商出候选）：①本厂商已知组件名直跳 → ②应用详情页
                     // → ③图文指引
                     "openStartupManage" -> {
@@ -559,7 +559,7 @@ class MainActivity : FlutterActivity() {
         return maxOf(sb.bottom, nb.bottom, cut.bottom) / resources.displayMetrics.density
     }
 
-    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层；早前批次
+    /// 本厂商「启动管理/自启动」页组件候选（三层兜底第 1 层；notify-guide-oem-1
     /// 起按 Build.MANUFACTURER 选表——其他厂商的包必不在本机，跨厂商尝试
     /// 无意义；未知厂商（三星等无此类页面的品牌）返回空表直接走详情页兜底）。
     /// 组件名随系统版本漂移，故每厂按新旧顺序多给几个。

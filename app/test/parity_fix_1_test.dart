@@ -196,7 +196,7 @@ void main() {
       ]);
       final markers = items.whereType<TimelineMarkerItem>().toList();
       expect(markers, hasLength(4), reason: '四类标记全部渲染（此前只 modelChange）');
-      // 早前批次：文案对齐官方 zh-CN（contextCompaction.started）。
+      // compact-command-1：文案对齐官方 zh-CN（contextCompaction.started）。
       expect(markers[0].label, '正在压缩上下文');
       expect(markers[0].running, isTrue);
       expect(markers[1].label, '本会话由分支创建');
@@ -372,7 +372,7 @@ void main() {
         'commands': [
           {'sessionId': 's-1', 'commandId': 'cmd-1'},
         ],
-      }, reason: '官方形状=workspace 目标平铺+commands（早前批次 A1：'
+      }, reason: '官方形状=workspace 目标平铺+commands（review-fix-1 A1：'
           '此前缺 scope，host resolveWorkspaceKey 路由必败=真机死路径）');
       expect(result, {'status': 'accepted'}, reason: 'results[0].result 透传');
       expect(conv.lastCommandIdOf('s-1'), isNull, reason: '未发命令时无记录');

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- ios-adaptation-2（B 批）：Keychain Sharing——flutter_secure_storage_darwin
+	     0.3.2 README 要求（DebugProfile+Release 两套同配）。$(AppIdentifierPrefix)
+	     由签名时 Team 前缀展开；模拟器 no-codesign 构建忽略 entitlements 不受阻。 -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)dev.zcodeapp.zcodePocket</string>
+	</array>
+</dict>
+</plist>

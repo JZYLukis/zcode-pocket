@@ -1,4 +1,4 @@
-// 应用内更新（早前批次）：版本比较/ABI 选择/digest 解析/
+// 应用内更新（in-app-update-1）：版本比较/ABI 选择/digest 解析/
 // markdown 剥离纯函数 + HttpServer mock 的下载（Range 续传/镜像兜底/
 // SHA256 校验拒篡改）。
 import 'dart:async';
@@ -33,9 +33,9 @@ void main() {
 
   group('ABI 与 digest', () {
     final assets = [
-      UpdateAsset('早前批次.0.5-arm64-v8a.apk', 'u1', 'a' * 64),
-      UpdateAsset('早前批次.0.5-armeabi-v7a.apk', 'u2', 'b' * 64),
-      UpdateAsset('早前批次.0.5-x86_64.apk', 'u3', 'c' * 64),
+      UpdateAsset('zcode-pocket-1.0.5-arm64-v8a.apk', 'u1', 'a' * 64),
+      UpdateAsset('zcode-pocket-1.0.5-armeabi-v7a.apk', 'u2', 'b' * 64),
+      UpdateAsset('zcode-pocket-1.0.5-x86_64.apk', 'u3', 'c' * 64),
     ];
     test('按设备 ABI 选择资产（含别名归一）', () {
       expect(pickAssetForAbi(assets, 'arm64-v8a')?.name,
@@ -82,7 +82,7 @@ void main() {
         'body': '## 说明\\n- 修复',
         'assets': [
           {
-            'name': '早前批次.0.5-arm64-v8a.apk',
+            'name': 'zcode-pocket-1.0.5-arm64-v8a.apk',
             'browser_download_url': 'https://example.com/a.apk',
             'digest': 'sha256:${'a' * 64}',
           },

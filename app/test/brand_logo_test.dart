@@ -19,7 +19,7 @@ void main() {
       'K3.1-PRO': 'assets/brand_logos/kimi.svg',
       'moonshot-kimi/k3.1': 'assets/brand_logos/kimi.svg',
       // 其余家抽查
-      '早前批次': 'assets/brand_logos/claude.svg',
+      'claude-sonnet-4': 'assets/brand_logos/claude.svg',
       'gemini-2.5-pro': 'assets/brand_logos/googlegemini.svg',
       'deepseek-v3': 'assets/brand_logos/deepseek.svg',
       'qwen3-max': 'assets/brand_logos/qwen.svg',

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../core/localized_text.dart';
 import '../core/theme.dart';
+import '../platform/capabilities.dart';
 import '../state/app_state_scope.dart';
 import 'app_widgets.dart';
 import 'about_page.dart';
@@ -140,7 +141,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const AppSectionHeader('功能'),
-            // 早前批次 批4（2026-11-04 拍板）：多电脑任务聚合
+            // multi-account-ux-1 批4（2026-11-04 拍板）：多电脑任务聚合
             // 开关（默认关）——纯读本地缓存快照，不建连接不订阅。
             SwitchListTile(
               key: const ValueKey('settings-show-other-computers'),
@@ -200,36 +201,39 @@ class SettingsPage extends StatelessWidget {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const UsagePage())),
             ),
-            // 应用内更新（早前批次）：入口行（检查更新+开关收在
-            // 二级动作——开关单独一行，避免一级页过长）。
-            ListTile(
-              leading: const Icon(Icons.system_update_outlined, size: 20),
-              title: const Text(
-                '软件更新',
-                style: TextStyle(fontSize: AppType.uiBase),
+            // 应用内更新（in-app-update-1）：入口行（检查更新+开关收在
+            // 二级动作——开关单独一行，避免一级页过长）。iOS 无侧装更新
+            // （结构性，supportsSelfUpdate）两行整体隐藏（ios-adaptation-1）。
+            if (ZpCapabilities.supportsSelfUpdate) ...[
+              ListTile(
+                leading: const Icon(Icons.system_update_outlined, size: 20),
+                title: const Text(
+                  '软件更新',
+                  style: TextStyle(fontSize: AppType.uiBase),
+                ),
+                subtitle: const Text(
+                  '检查新版本并应用内下载安装（需安装权限）',
+                  style: TextStyle(fontSize: AppType.uiCaption),
+                ),
+                trailing: const Icon(Icons.chevron_right, size: 18),
+                onTap: () => unawaited(checkAndPrompt(context, manual: true)),
               ),
-              subtitle: const Text(
-                '检查新版本并应用内下载安装（需安装权限）',
-                style: TextStyle(fontSize: AppType.uiCaption),
+              SwitchListTile(
+                key: const ValueKey('settings-update-in-app'),
+                secondary: const Icon(Icons.download_outlined, size: 20),
+                title: const Text(
+                  '应用内更新',
+                  style: TextStyle(fontSize: AppType.uiBase),
+                ),
+                subtitle: const Text(
+                  '关闭后仅提示新版本，不下载也不申请安装权限',
+                  style: TextStyle(fontSize: AppType.uiCaption),
+                ),
+                value: app.uiPrefs.updateInAppEnabled,
+                onChanged: (v) => app.uiPrefs.setUpdateInAppEnabled(v),
               ),
-              trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () => unawaited(checkAndPrompt(context, manual: true)),
-            ),
-            SwitchListTile(
-              key: const ValueKey('settings-update-in-app'),
-              secondary: const Icon(Icons.download_outlined, size: 20),
-              title: const Text(
-                '应用内更新',
-                style: TextStyle(fontSize: AppType.uiBase),
-              ),
-              subtitle: const Text(
-                '关闭后仅提示新版本，不下载也不申请安装权限',
-                style: TextStyle(fontSize: AppType.uiCaption),
-              ),
-              value: app.uiPrefs.updateInAppEnabled,
-              onChanged: (v) => app.uiPrefs.setUpdateInAppEnabled(v),
-            ),
-            // 应用锁（早前批次）：安全组（方式三态/自动锁定/防泄露）。
+            ],
+            // 应用锁（app-lock-1）：安全组（方式三态/自动锁定/防泄露）。
             const AppSectionHeader('安全'),
             ListTile(
               leading: const Icon(Icons.lock_outline, size: 20),

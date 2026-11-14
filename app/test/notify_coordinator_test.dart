@@ -184,7 +184,7 @@ void main() {
     );
   });
 
-  test('幽灵栈不挡重挂：拆栈未 detach 后同 sid 新栈通知复活（早前批次 A4）', () async {
+  test('幽灵栈不挡重挂：拆栈未 detach 后同 sid 新栈通知复活（review-fix-1 A4）', () async {
     // 换账号重连/auth-required 路径 dispose 旧栈但不 detachStack——
     // 修复前 attachStack 被 containsKey 幽灵门短路，新栈通知永久失效。
     final old = _FakeStack('d1');

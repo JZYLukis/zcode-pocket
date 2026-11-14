@@ -190,7 +190,7 @@ class _PairingPageState extends State<PairingPage> {
           if (!mounted) return;
           // 本次登录刚写入的账号：登录页新返回 accountId（save 的返回
           // 值）；旧形态/兜底取列表首项 mostRecentAccountId（**不是**
-          // lastUsed——早前批次 批2 起添加第二个账号不再改
+          // lastUsed——multi-account-ux-1 批2 起添加第二个账号不再改
           // 当前账号，lastUsed 仍是旧账号，正是本条反馈的错误来源）。
           targetAccountId = result['accountId'];
           if (targetAccountId == null || targetAccountId.isEmpty) {

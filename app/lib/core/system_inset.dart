@@ -1,4 +1,4 @@
-// 系统底部安全区直推通道（早前批次 r3，vivo 任务栏遮挡终局）。
+// 系统底部安全区直推通道（dual-pane-collapse-2 r3，vivo 任务栏遮挡终局）。
 //
 // 背景：vivo 展开态任务栏在原生 rootWindowInsets 里正常上报
 //（navBars bottom=169px，zb-insets 探针实证），但 Flutter 的

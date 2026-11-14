@@ -37,7 +37,7 @@ void main() {
     expect(find.byKey(const ValueKey('add-voice')), findsNothing);
     // 同面板其余入口照常（语音缺席不破面板）。
     expect(find.byKey(const ValueKey('add-attachment')), findsOneWidget);
-    // 早前批次：add-usage 已移出加号面板（状态环为主入口）。
+    // entry-polish-1：add-usage 已移出加号面板（状态环为主入口）。
     expect(find.text('添加上下文'), findsOneWidget);
   });
 

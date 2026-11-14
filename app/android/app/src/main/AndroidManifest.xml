@@ -28,7 +28,7 @@
          声明的 foregroundServiceType 配套；原 dataSync 型权限随类型退役） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <!-- 应用内更新（早前批次）：下载官方 APK 并调起系统安装器
+    <!-- 应用内更新（in-app-update-1）：下载官方 APK 并调起系统安装器
          （用户点「立即更新」时才触发授权流程；更新检查/开关关闭状态
          完全不涉及本权限）。静态断言见 android_manifest_guard_test.dart。 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>

@@ -334,7 +334,7 @@ class _ConversationPageState extends State<ConversationPage> {
   );
   List<SendQueueEntry> get _queueEntries => _queue.entries;
 
-  /// 状态托盘展开态（早前批次）：≥2 源合并时的折叠开关；
+  /// 状态托盘展开态（status-tray-1109）：≥2 源合并时的折叠开关；
   /// 单源直通路径不读它。会话内保持。
   bool _statusTrayExpanded = false;
   bool _stickToBottom = true;
@@ -1175,7 +1175,7 @@ class _ConversationPageState extends State<ConversationPage> {
     });
   }
 
-  /// 批3（早前批次）：本会话页所属电脑——切电脑后 push 进来
+  /// 批3（multi-account-ux-1）：本会话页所属电脑——切电脑后 push 进来
   /// 的旧电脑会话必须自动退出（否则对旧栈订阅会失败且用户看到"假死"）。
   String? _ownerDeviceSid;
   bool _sidPopScheduled = false;
@@ -2192,7 +2192,7 @@ class _ConversationPageState extends State<ConversationPage> {
   }) async {
     final app = AppStateScope.of(context);
     if (text.trim().isEmpty || _sending) return false;
-    // 会话压缩（早前批次，用户反馈「手机发起压缩无任何提示」
+    // 会话压缩（compact-command-1，用户反馈「手机发起压缩无任何提示」
     // 根因：官方 compact 是专用命令信封，我们此前按纯文本发送=CLI 不
     // 执行。官方 compact 无参数——精确匹配 /compact 走命令通道；其余
     // 带参形态维持文本由 CLI 自行解释。维护命令不进离线队列。
@@ -3576,7 +3576,7 @@ class _ConversationPageState extends State<ConversationPage> {
       );
 
   Future<void> _showAddSheet() async {
-    // 早前批次：面板回归纯"添加"语义 5 项（早前批次 的
+    // entry-polish-1：面板回归纯"添加"语义 5 项（早前批次 的
     // 「收集产物」第 6 项已随 早前批次 迁至产物下载页顶栏入口）。
     await showModalBottomSheet<void>(
       context: context,
@@ -4599,7 +4599,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 const PopupMenuItem(value: 'archive', child: Text('归档')),
                 // 工作流运行入口已提升到顶栏一级（早前批次），
                 // 菜单槽位撤销。
-                // 后台工作二级页入口（早前批次 反馈②）：
+                // 后台工作二级页入口（compactness-feedback-1109 反馈②）：
                 // 完全撤出输入区一级空间——有后台工作才出现在菜单，带
                 // 计数；一级感知=任务卡后台小点（B 批既有）。
                 if ((_sub?.state.backgroundWorks ?? const []).isNotEmpty)
@@ -5204,8 +5204,8 @@ class _ConversationPageState extends State<ConversationPage> {
               onModeTap: () => _showModeSheet(effState),
             ),
 
-          // ── 状态托盘（早前批次，用户拍板）：输入侧状态合并
-          // 治理——结果未知/暂存/排队 三源（早前批次
+          // ── 状态托盘（status-tray-1109，用户拍板）：输入侧状态合并
+          // 治理——结果未知/暂存/排队 三源（compactness-feedback-1109
           // 反馈②：后台工作整类撤出输入区，归 ⋮ 二级页）。单源直通原
           // 条带（零回归），≥2 源合并成一行摘要（段点+计数），展开=
           // 限高 240 堆叠原条带（撤销/核对动作原样）。
